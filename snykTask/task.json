@@ -1,0 +1,115 @@
+{
+    "id": "c48b2e85-a66b-4c74-a1cb-f052c514e165",
+    "name": "snykTask",
+    "friendlyName": "My Test Task",
+    "description": "Azure Pipelines Task for Snyk",
+    "helpMarkDown": "",
+    "category": "Utility",
+    "author": "Snyk",
+    "version": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 0
+    },
+    "instanceNameFormat": "Snyk scan for open source vulnerabilities",
+    "inputs": [
+        {
+            "name": "stepDisplayName",
+            "label": "Step Display Name",
+            "type": "string",
+            "required": true,
+            "defaultValue": "Snyk scan for open source vulnerabilities",
+            "helpMarkDown": "Step Display Name"
+        },
+        {
+            "name": "authToken",
+            "label": "Snyk authorization token",
+            "type": "string",
+            "required": true,
+            "defaultValue": "",
+            "helpMarkDown": "Snyk authorization token"
+        },
+        {
+            "name": "serviceConnectionEndpoint",
+            "type": "connectedService:Snyk",
+            "label": "Snyk API Token",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "Choose your Snyk service connection from your Azure DevOps project settings."
+        },
+        {
+            "name": "project-name",
+            "label": "Project name in Snyk",
+            "type": "string",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "What you want to call (or already have called) this project in Snyk"
+        },
+        {
+            "name": "testDirectory",
+            "label": "Test (Working) Directory",
+            "type": "filePath",
+            "required": true,
+            "defaultValue": "$(Build.SourcesDirectory)",
+            "helpMarkDown": "Test (Working) Directory"
+        },
+        {
+            "name": "target-file",
+            "label": "Path to manifest file to test",
+            "type": "filePath",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "Path to manifest file to test"
+        },
+        {
+            "name": "organization",
+            "label": "Organization name (or ID) in Snyk",
+            "type": "string",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "Organization name (or ID) in Snyk"
+        },
+        {
+            "name": "severity-threshold",
+            "label": "The testing severity threshold",
+            "type": "pickList",
+            "required": false,
+            "defaultValue": "",
+            "options": {
+              "default": "",
+              "High": "High",
+              "Medium": "Medium"
+            },
+            "helpMarkDown": "The testing severity threshold. Leave blank for no threshold."
+        },
+        {
+            "name": "fail-on-issues",
+            "label": "Should cause Pipeline to fail if vulnerability/license issues are found",
+            "type": "boolean",
+            "required": true,
+            "defaultValue": "true",
+            "helpMarkDown": "Organization name (or ID) in Snyk"
+        },
+        {
+            "name": "monitor-on-build",
+            "label": "Run the Snyk monitor after test?",
+            "type": "boolean",
+            "required": true,
+            "defaultValue": "true",
+            "helpMarkDown": "Select true if you want to run the monitor the dependency tree within Snyk."
+        },
+        {
+            "name": "additional-arguments",
+            "label": "Additional command-line args for Snyk CLI (advanced)",
+            "type": "string",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "Additional command-line args for Snyk CLI (advanced)"
+        }
+    ],
+    "execution": {
+        "Node": {
+            "target": "./dist/index.js"
+        }
+    }
+}
