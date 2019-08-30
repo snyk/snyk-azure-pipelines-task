@@ -8,7 +8,7 @@ const tmr: tmrm.TaskMockRunner = new tmrm.TaskMockRunner(taskPath);
 tmr.setInput("stepDisplayName", "some stepDisplayName");
 tmr.setInput("authToken", "some-authToken");
 // tmr.setInput("project-name", "some-project-name");
-tmr.setInput("testDirectory", "some/dir");
+tmr.setInput("test-directory", "some/dir");
 // tmr.setInput("target-file", "some/dir/pom.xml");
 tmr.setInput("organization", "some-snyk-org");
 // tmr.setInput('severity-threshold', 'High');

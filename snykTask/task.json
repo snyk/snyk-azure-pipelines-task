@@ -22,14 +22,6 @@
             "helpMarkDown": "Step Display Name"
         },
         {
-            "name": "authToken",
-            "label": "Snyk authorization token",
-            "type": "string",
-            "required": true,
-            "defaultValue": "",
-            "helpMarkDown": "Snyk authorization token"
-        },
-        {
             "name": "serviceConnectionEndpoint",
             "type": "connectedService:Snyk",
             "label": "Snyk API Token",
@@ -46,20 +38,20 @@
             "helpMarkDown": "What you want to call (or already have called) this project in Snyk"
         },
         {
-            "name": "testDirectory",
+            "name": "test-directory",
             "label": "Test (Working) Directory",
             "type": "filePath",
-            "required": true,
+            "required": false,
             "defaultValue": "$(Build.SourcesDirectory)",
             "helpMarkDown": "Test (Working) Directory"
         },
         {
             "name": "target-file",
-            "label": "Path to manifest file to test",
-            "type": "filePath",
+            "label": "Relative path to manifest file to test",
+            "type": "string",
             "required": false,
             "defaultValue": "",
-            "helpMarkDown": "Path to manifest file to test"
+            "helpMarkDown": "Relative path to manifest file to test"
         },
         {
             "name": "organization",

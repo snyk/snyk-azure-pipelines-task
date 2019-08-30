@@ -1,5 +1,6 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import * as tr from "azure-pipelines-task-lib/toolrunner";
+import * as path from "path";
 // import { loadPartialConfig } from '@babel/core';
 
 enum InstallMethod {
@@ -10,13 +11,17 @@ enum InstallMethod {
 
 async function run() {
   try {
+
+    const currentWorkingDirectory: string = tl.cwd();
+    console.log(`currentWorkingDirectory: ${currentWorkingDirectory}\n`);
+
     const isTest: boolean = tl.getInput("isTest", false) === "true";
 
     // retrieve and log all input fields
     const stepDisplayName = tl.getInput("stepDisplayName", true);
     console.log(`stepDisplayName: ${stepDisplayName}`);
 
-    const authToken = tl.getInput("authToken", true);
+    const authToken = tl.getInput("authToken", false);
     console.log(`authToken: ${authToken}`);
 
     const serviceConnectionEndpoint = tl.getInput(
@@ -34,7 +39,6 @@ async function run() {
     if (isTest) {
       // use authToken field
       authTokenToUse = authToken;
-      // todo: remove authToken from task specification
     } else if (authToken && !serviceConnectionEndpoint) {
       // use authToken field
       console.log(
@@ -69,10 +73,13 @@ async function run() {
     const projectName = tl.getInput("project-name", false);
     console.log(`project-name: ${projectName}`);
 
-    const testDirectory = tl.getInput("testDirectory", true);
-    console.log(`testDirectory: ${testDirectory}`);
+    const testDirectory = tl.getInput("test-directory", false);
+    console.log(`test-directory: ${testDirectory}`);
 
-    const targetFile = tl.getInput("target-file", false);
+    let inputTargetFile = tl.getInput("target-file", false);
+    console.log(`target-file (raw input): ${inputTargetFile}`);
+
+    const targetFile = inputTargetFile;
     console.log(`targetFile: ${targetFile}`);
 
     const organization = tl.getInput("organization", false);
@@ -225,7 +232,8 @@ async function run() {
         .arg("monitor")
         .argIf(targetFile, `--file=${targetFile}`)
         .argIf(organization, `--org=${organization}`)
-        .argIf(projectName, `--project-name=${projectName}`);
+        .argIf(projectName, `--project-name=${projectName}`)
+        .argIf(additionalArguments, additionalArguments);
 
       const snykMonitorExitCode = await snykMonitorToolRunner.exec(options);
       console.log(`snykMonitorExitCode: ${snykMonitorExitCode}\n`);

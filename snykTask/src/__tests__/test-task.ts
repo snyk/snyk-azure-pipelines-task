@@ -45,7 +45,7 @@ test("basic smoke test - inputs are ok", () => {
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/snyk monitor --org=some-snyk-org --project-name=some-project-name"
+      "/usr/bin/snyk monitor --org=some-snyk-org --project-name=some-project-name --someAdditionalArgs"
     ]
   ).toBe(true);
 });
