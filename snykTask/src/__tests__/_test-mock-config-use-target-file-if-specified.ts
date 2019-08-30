@@ -49,11 +49,15 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/snyk test --file=some/dir/pom.xml": {
+    "/usr/bin/sudo snyk auth some-authToken": {
+      code: 0,
+      stdout: "Snyk CLI authorized!"
+    },
+    "/usr/bin/sudo snyk test --file=some/dir/pom.xml": {
       code: 0,
       stdout: "No issues found"
     },
-    "/usr/bin/snyk monitor --file=some/dir/pom.xml --org=some-snyk-org": {
+    "/usr/bin/sudo snyk monitor --file=some/dir/pom.xml --org=some-snyk-org": {
       code: 0,
       stdout: "No issues found"
     }

@@ -41,11 +41,16 @@ test("basic smoke test - inputs are ok", () => {
   expect(mockTestRunner.errorIssues.length).toBe(0); // "should have no errors");
 
   expect(
-    mockTestRunner.cmdlines["/usr/bin/snyk test --someAdditionalArgs"]
+    mockTestRunner.cmdlines["/usr/bin/sudo snyk auth some-authToken"]
   ).toBe(true);
+
+  expect(
+    mockTestRunner.cmdlines["/usr/bin/sudo snyk test --someAdditionalArgs"]
+  ).toBe(true);
+
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/snyk monitor --org=some-snyk-org --project-name=some-project-name --someAdditionalArgs"
+      "/usr/bin/sudo snyk monitor --org=some-snyk-org --project-name=some-project-name --someAdditionalArgs"
     ]
   ).toBe(true);
 });
@@ -100,7 +105,7 @@ test("doesn't fail if severity-threshold is specified", () => {
   expect(testMockRunner.errorIssues.length).toBe(0); // "should have no errors");
 
   expect(
-    testMockRunner.cmdlines["/usr/bin/snyk test --severity-threshold=high"]
+    testMockRunner.cmdlines["/usr/bin/sudo snyk test --severity-threshold=high"]
   ).toBe(true);
 });
 
@@ -267,11 +272,11 @@ test("test that if you set target-file that we use it ", () => {
   expect(mockTestRunner.errorIssues.length).toBe(0); // "should have no errors");
 
   expect(
-    mockTestRunner.cmdlines["/usr/bin/snyk test --file=some/dir/pom.xml"]
+    mockTestRunner.cmdlines["/usr/bin/sudo snyk test --file=some/dir/pom.xml"]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/snyk monitor --file=some/dir/pom.xml --org=some-snyk-org"
+      "/usr/bin/sudo snyk monitor --file=some/dir/pom.xml --org=some-snyk-org"
     ]
   ).toBe(true);
 });

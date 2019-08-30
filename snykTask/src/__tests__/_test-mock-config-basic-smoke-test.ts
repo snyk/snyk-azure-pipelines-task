@@ -49,11 +49,15 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/snyk test --someAdditionalArgs": {
+    "/usr/bin/sudo snyk auth some-authToken": {
+      code: 0,
+      stdout: "Snyk CLI authorized!"
+    },
+    "/usr/bin/sudo snyk test --someAdditionalArgs": {
       code: 0,
       stdout: "No issues found"
     },
-    "/usr/bin/snyk monitor --org=some-snyk-org --project-name=some-project-name --someAdditionalArgs": {
+    "/usr/bin/sudo snyk monitor --org=some-snyk-org --project-name=some-project-name --someAdditionalArgs": {
       code: 0,
       stdout: "No issues found"
     }

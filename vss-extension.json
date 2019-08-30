@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "jeff-test-task",
     "name": "Jeff Test Task",
-    "version": "0.0.73",
+    "version": "0.0.76",
     "publisher": "jeff-snyk-test",
     "targets": [
         {

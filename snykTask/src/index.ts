@@ -1,6 +1,5 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import * as tr from "azure-pipelines-task-lib/toolrunner";
-import * as path from "path";
 // import { loadPartialConfig } from '@babel/core';
 
 enum InstallMethod {
@@ -9,9 +8,19 @@ enum InstallMethod {
   Binary
 }
 
+function buildToolRunner(tool: string, requiresSudo: boolean): tr.ToolRunner {
+  if (requiresSudo) {
+    const sudoPath = tl.which("sudo");
+    return tl.tool(sudoPath).arg(tool);
+  } else {
+    const toolPath = tl.which(tool);
+    console.log(`toolPath: ${toolPath}`);
+    return tl.tool(toolPath);
+  }
+}
+
 async function run() {
   try {
-
     const currentWorkingDirectory: string = tl.cwd();
     console.log(`currentWorkingDirectory: ${currentWorkingDirectory}\n`);
 
@@ -76,7 +85,7 @@ async function run() {
     const testDirectory = tl.getInput("test-directory", false);
     console.log(`test-directory: ${testDirectory}`);
 
-    let inputTargetFile = tl.getInput("target-file", false);
+    const inputTargetFile = tl.getInput("target-file", false);
     console.log(`target-file (raw input): ${inputTargetFile}`);
 
     const targetFile = inputTargetFile;
@@ -134,48 +143,21 @@ async function run() {
     }
     console.log(`installMethod: ${installMethod}\n`);
 
-    if (installMethod === InstallMethod.NPMWithSudo) {
-      // install using sudo - seems to work regardless of if you've used the `NodeTool` task
-      const sudoPath = tl.which("sudo");
-      console.log(`sudoPath: ${sudoPath}`);
-      const sudoToolRunner = tl
-        .tool(sudoPath)
-        .arg("npm")
-        .arg("install")
-        .arg("-g")
-        .arg("snyk");
+    const useSudo = installMethod === InstallMethod.NPMWithSudo;
+    console.log(`useSudo: ${useSudo}`);
 
-      const sudoExecExitCode = await sudoToolRunner.exec(options);
-      console.log(`sudoExecExitCode: ${sudoExecExitCode}\n`);
-    } else if (installMethod === InstallMethod.NPM) {
-      // install snyk via npm
-      // this seems to work only if you use the task `NodeTool` ahead of it because if you don't, you get an error having do do within permissions
+    // Install snyk
+    const installSnykToolRunner: tr.ToolRunner = buildToolRunner("npm", useSudo)
+      .arg("install")
+      .arg("-g")
+      .arg("snyk");
 
-      const npmPath = tl.which("npm");
-      console.log(`npmPath: ${npmPath}`);
-
-      const npmToolRunnerInstallSnyk = tl
-        .tool(npmPath)
-        .arg("install")
-        .arg("-g")
-        .arg("snyk");
-
-      const npmInstallSnykExitCode = await npmToolRunnerInstallSnyk.exec(
-        options
-      );
-      console.log(`npmInstallSnykExitCode: ${npmInstallSnykExitCode}\n`);
-    } else if (installMethod === InstallMethod.Binary) {
-      // not implemented
-    }
+    const installSnykExitCode = await installSnykToolRunner.exec(options);
+    console.log(`installSnykExitCode: ${installSnykExitCode}\n`);
 
     // snyk auth
-    const snykPath = tl.which("snyk");
-    console.log(`snykPath: ${snykPath}`);
-
-    const snykAuthToolRunner = tl
-      .tool(snykPath)
+    const snykAuthToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
       .arg("auth")
-      // .arg(authToken);
       .arg(authTokenToUse);
 
     const snykAuthExitCode = await snykAuthToolRunner.exec(options);
@@ -204,8 +186,7 @@ async function run() {
     console.log(`severityThreshold: ${severityThreshold}\n`);
     console.log(`cleansedSeverityThreshold: ${cleansedSeverityThreshold}\n`);
 
-    const snykTestToolRunner = tl
-      .tool(snykPath)
+    const snykTestToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
       .arg("test")
       .argIf(
         cleansedSeverityThreshold,
@@ -224,11 +205,13 @@ async function run() {
       );
     }
 
-    console.log(`doMonitor: ${monitorOnBuild}`);
+    console.log(`monitorOnBuild: ${monitorOnBuild}`);
 
     if (monitorOnBuild && snykTestExitCode === 0) {
-      const snykMonitorToolRunner = tl
-        .tool(snykPath)
+      const snykMonitorToolRunner: tr.ToolRunner = buildToolRunner(
+        "snyk",
+        useSudo
+      )
         .arg("monitor")
         .argIf(targetFile, `--file=${targetFile}`)
         .argIf(organization, `--org=${organization}`)
