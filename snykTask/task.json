@@ -1,7 +1,7 @@
 {
-    "id": "c48b2e85-a66b-4c74-a1cb-f052c514e165",
-    "name": "snykTask",
-    "friendlyName": "My Test Task",
+    "id": "826d5fe9-3983-4643-b918-487964d7cc87",
+    "name": "SnykSecurityScan",
+    "friendlyName": "Snyk Security Scan",
     "description": "Azure Pipelines Task for Snyk",
     "helpMarkDown": "",
     "category": "Utility",
@@ -13,14 +13,6 @@
     },
     "instanceNameFormat": "Snyk scan for open source vulnerabilities",
     "inputs": [
-        {
-            "name": "stepDisplayName",
-            "label": "Step Display Name",
-            "type": "string",
-            "required": true,
-            "defaultValue": "Snyk scan for open source vulnerabilities",
-            "helpMarkDown": "Step Display Name"
-        },
         {
             "name": "serviceConnectionEndpoint",
             "type": "connectedService:Snyk",
@@ -97,6 +89,14 @@
             "required": false,
             "defaultValue": "",
             "helpMarkDown": "Additional command-line args for Snyk CLI (advanced)"
+        },
+        {
+            "name": "docker-image-name",
+            "label": "The image name if scanning a container image",
+            "type": "string",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "The image name if scanning a container image"
         }
     ],
     "execution": {

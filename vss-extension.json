@@ -1,8 +1,8 @@
 {
     "manifestVersion": 1,
-    "id": "jeff-test-task",
-    "name": "Jeff Test Task",
-    "version": "0.0.76",
+    "id": "snyk-security-scan-dev",
+    "name": "Snyk Security Scan (Dev)",
+    "version": "0.0.9",
     "publisher": "jeff-snyk-test",
     "targets": [
         {

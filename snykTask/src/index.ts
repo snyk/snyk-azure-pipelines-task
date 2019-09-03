@@ -27,9 +27,6 @@ async function run() {
     const isTest: boolean = tl.getInput("isTest", false) === "true";
 
     // retrieve and log all input fields
-    const stepDisplayName = tl.getInput("stepDisplayName", true);
-    console.log(`stepDisplayName: ${stepDisplayName}`);
-
     const authToken = tl.getInput("authToken", false);
     console.log(`authToken: ${authToken}`);
 
@@ -106,6 +103,9 @@ async function run() {
 
     const additionalArguments = tl.getInput("additional-arguments", false);
     console.log(`additional-arguments: ${additionalArguments}`);
+
+    const dockerImageName = tl.getInput("docker-image-name", false);
+    console.log(`docker-image-name: ${additionalArguments}`);
 
     const options = {
       cwd: testDirectory,
@@ -192,6 +192,8 @@ async function run() {
         cleansedSeverityThreshold,
         `--severity-threshold=${cleansedSeverityThreshold}`
       )
+      .argIf(dockerImageName, `--docker`)
+      .argIf(dockerImageName, `${dockerImageName}`)
       .argIf(targetFile, `--file=${targetFile}`)
       .argIf(additionalArguments, additionalArguments);
 
@@ -213,6 +215,8 @@ async function run() {
         useSudo
       )
         .arg("monitor")
+        .argIf(dockerImageName, `--docker`)
+        .argIf(dockerImageName, `${dockerImageName}`)
         .argIf(targetFile, `--file=${targetFile}`)
         .argIf(organization, `--org=${organization}`)
         .argIf(projectName, `--project-name=${projectName}`)
