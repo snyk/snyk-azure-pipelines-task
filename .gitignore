@@ -11,3 +11,5 @@ snykTask/coverage
 package-lock.json
 *.vsix
 .eslintcache
+.circleci
+.ops
