@@ -16,6 +16,7 @@ tmr.setInput("fail-on-issues", "true");
 tmr.setInput("monitor-on-build", "true");
 // tmr.setInput('additional-arguments', '');
 tmr.setInput("isTest", "true");
+tmr.setInput("testType", "app");
 
 const answers: ma.TaskLibAnswers = {
   which: {

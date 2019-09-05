@@ -1,5 +1,7 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import * as tr from "azure-pipelines-task-lib/toolrunner";
+import { TaskArgs } from "./task-args";
+
 // import { loadPartialConfig } from '@babel/core';
 
 enum InstallMethod {
@@ -19,24 +21,65 @@ function buildToolRunner(tool: string, requiresSudo: boolean): tr.ToolRunner {
   }
 }
 
+// const parseInput = (parameterName: string, isRequired: boolean) : string => {
+//   return tl.getInput(parameterName, isRequired);
+// };
+
+// const parseBooleanInput = (parameterName: string, isRequired: boolean) : boolean => {
+//   return tl.getBoolInput(parameterName, isRequired);
+// };
+
+function parseInputArgs(): TaskArgs {
+  const taskArgs: TaskArgs = new TaskArgs();
+
+  taskArgs.targetFile = tl.getInput("target-file", false);
+  taskArgs.dockerImageName = tl.getInput("docker-image-name", false);
+  taskArgs.dockerfilePath = tl.getInput("dockerfile-path", false);
+  taskArgs.severityThreshold = tl.getInput("severity-threshold", false);
+
+  taskArgs.projectName = tl.getInput("project-name", false);
+  taskArgs.organization = tl.getInput("organization", false);
+
+  // TODO: this should use getBoolInput
+  taskArgs.monitorOnBuild = tl.getBoolInput("monitor-on-build", true);
+  taskArgs.failOnIssues = tl.getBoolInput("fail-on-issues", true);
+  taskArgs.additionalArguments = tl.getInput("additional-arguments", false);
+
+  taskArgs.testDirectory = tl.getInput("test-directory", false);
+
+  return taskArgs;
+}
+
 async function run() {
   try {
     const currentWorkingDirectory: string = tl.cwd();
     console.log(`currentWorkingDirectory: ${currentWorkingDirectory}\n`);
 
-    const isTest: boolean = tl.getInput("isTest", false) === "true";
+    const taskArgs: TaskArgs = parseInputArgs();
+    console.log(`taskArgs.targetFile: ${taskArgs.targetFile}`);
+    console.log(`taskArgs.dockerImageName: ${taskArgs.dockerImageName}`);
+    console.log(`taskArgs.dockerfilePath: ${taskArgs.dockerfilePath}`);
+    console.log(`taskArgs.severityThreshold: ${taskArgs.severityThreshold}`);
+    console.log(`taskArgs.projectName: ${taskArgs.projectName}`);
+    console.log(`taskArgs.organization: ${taskArgs.organization}`);
+    console.log(`taskArgs.monitorOnBuild: ${taskArgs.monitorOnBuild}`);
+    console.log(`taskArgs.failOnIssues: ${taskArgs.failOnIssues}`);
+    console.log(
+      `taskArgs.additionalArguments: ${taskArgs.additionalArguments}`
+    );
+    console.log("\n");
 
-    // retrieve and log all input fields
+    // Just used for testing
+    const isTest: boolean = tl.getInput("isTest", false) === "true";
     const authToken = tl.getInput("authToken", false);
-    console.log(`authToken: ${authToken}`);
 
     const serviceConnectionEndpoint = tl.getInput(
-      "serviceConnectionEndpoint",
+      "service-connection-endpoint",
       false
     );
-    console.log(`serviceConnectionEndpoint: ${serviceConnectionEndpoint}\n`);
+    console.log(`service-connection-endpoint: ${serviceConnectionEndpoint}\n`);
 
-    // todo: see about using something like tl.logDetail
+    // TODO: see about using something like tl.logDetail
 
     // const authTokenToUse = authToken;
     let authTokenToUse = "";
@@ -48,7 +91,7 @@ async function run() {
     } else if (authToken && !serviceConnectionEndpoint) {
       // use authToken field
       console.log(
-        "authToken is set and serviceConnectionEndpoint is not... using authToken"
+        "authToken is set and service-connection-endpoint is not... using authToken"
       );
       authTokenToUse = authToken;
     } else {
@@ -58,8 +101,6 @@ async function run() {
           serviceConnectionEndpoint,
           false
         );
-
-        // const endpointAuthorization = tl.getEndpointAuthorization("mySnykServiceConnectionEndpoint", false);
 
         if (endpointAuthorization) {
           const authTokenFromServiceConnection =
@@ -72,43 +113,8 @@ async function run() {
       }
     }
 
-    console.log("\nTokens:");
-    console.log(`authToken: ${authToken}\n`);
-    console.log(`authTokenToUse: ${authTokenToUse}\n`);
-
-    const projectName = tl.getInput("project-name", false);
-    console.log(`project-name: ${projectName}`);
-
-    const testDirectory = tl.getInput("test-directory", false);
-    console.log(`test-directory: ${testDirectory}`);
-
-    const inputTargetFile = tl.getInput("target-file", false);
-    console.log(`target-file (raw input): ${inputTargetFile}`);
-
-    const targetFile = inputTargetFile;
-    console.log(`targetFile: ${targetFile}`);
-
-    const organization = tl.getInput("organization", false);
-    console.log(`organization: ${organization}`);
-
-    const severityThreshold = tl.getInput("severity-threshold", false);
-    console.log(`severity-threshold: ${severityThreshold}`);
-
-    const failOnIssues = tl.getBoolInput("fail-on-issues", true);
-    console.log(`fail-on-issues: ${failOnIssues}`);
-
-    const monitorOnBuild: boolean =
-      tl.getInput("monitor-on-build", true) === "true";
-    console.log(`monitor-on-build: ${monitorOnBuild}`);
-
-    const additionalArguments = tl.getInput("additional-arguments", false);
-    console.log(`additional-arguments: ${additionalArguments}`);
-
-    const dockerImageName = tl.getInput("docker-image-name", false);
-    console.log(`docker-image-name: ${additionalArguments}`);
-
     const options = {
-      cwd: testDirectory,
+      cwd: taskArgs.testDirectory,
       failOnStdErr: false,
       ignoreReturnCode: true
     } as tr.IExecOptions;
@@ -168,23 +174,24 @@ async function run() {
 
     // Snyk test
     let cleansedSeverityThreshold = "";
-    if (severityThreshold) {
-      cleansedSeverityThreshold = severityThreshold.toLowerCase();
+    if (taskArgs.severityThreshold) {
+      cleansedSeverityThreshold = taskArgs.severityThreshold.toLowerCase();
 
       if (
         cleansedSeverityThreshold !== "high" &&
-        cleansedSeverityThreshold !== "medium"
+        cleansedSeverityThreshold !== "medium" &&
+        cleansedSeverityThreshold !== "low"
       ) {
         tl.setResult(
           tl.TaskResult.Failed,
-          "severity threshold must be 'high' or 'medium' (case insensitive)"
+          "If set, severity threshold must be 'high' or 'medium' or 'low' (case insensitive). If not set, the default is 'low'."
         );
         return;
       }
     }
-
-    console.log(`severityThreshold: ${severityThreshold}\n`);
     console.log(`cleansedSeverityThreshold: ${cleansedSeverityThreshold}\n`);
+
+    const fileArg = taskArgs.getFileParameter();
 
     const snykTestToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
       .arg("test")
@@ -192,35 +199,34 @@ async function run() {
         cleansedSeverityThreshold,
         `--severity-threshold=${cleansedSeverityThreshold}`
       )
-      .argIf(dockerImageName, `--docker`)
-      .argIf(dockerImageName, `${dockerImageName}`)
-      .argIf(targetFile, `--file=${targetFile}`)
-      .argIf(additionalArguments, additionalArguments);
+      .argIf(taskArgs.dockerImageName, `--docker`)
+      .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
+      .argIf(fileArg, `--file=${fileArg}`)
+
+      .argIf(taskArgs.additionalArguments, taskArgs.additionalArguments);
 
     const snykTestExitCode = await snykTestToolRunner.exec(options);
     console.log(`snykTestExitCode: ${snykTestExitCode}\n`);
 
-    if (failOnIssues && snykTestExitCode !== 0) {
+    if (taskArgs.failOnIssues && snykTestExitCode !== 0) {
       tl.setResult(
         tl.TaskResult.Failed,
         "failing task because `snyk test` found issues"
       );
     }
 
-    console.log(`monitorOnBuild: ${monitorOnBuild}`);
-
-    if (monitorOnBuild && snykTestExitCode === 0) {
+    if (taskArgs.monitorOnBuild && snykTestExitCode === 0) {
       const snykMonitorToolRunner: tr.ToolRunner = buildToolRunner(
         "snyk",
         useSudo
       )
         .arg("monitor")
-        .argIf(dockerImageName, `--docker`)
-        .argIf(dockerImageName, `${dockerImageName}`)
-        .argIf(targetFile, `--file=${targetFile}`)
-        .argIf(organization, `--org=${organization}`)
-        .argIf(projectName, `--project-name=${projectName}`)
-        .argIf(additionalArguments, additionalArguments);
+        .argIf(taskArgs.dockerImageName, `--docker`)
+        .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
+        .argIf(fileArg, `--file=${fileArg}`)
+        .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
+        .argIf(taskArgs.projectName, `--project-name=${taskArgs.projectName}`)
+        .argIf(taskArgs.additionalArguments, taskArgs.additionalArguments);
 
       const snykMonitorExitCode = await snykMonitorToolRunner.exec(options);
       console.log(`snykMonitorExitCode: ${snykMonitorExitCode}\n`);

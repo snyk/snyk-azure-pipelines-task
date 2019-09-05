@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "snyk-security-scan-dev",
     "name": "Snyk Security Scan (Dev)",
-    "version": "0.0.9",
+    "version": "0.0.39",
     "publisher": "jeff-snyk-test",
     "targets": [
         {
