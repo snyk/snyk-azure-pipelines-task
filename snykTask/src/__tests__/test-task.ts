@@ -55,6 +55,37 @@ test("basic smoke test - inputs are ok", () => {
   ).toBe(true);
 });
 
+test("basic smoke test for container test - inputs are ok", () => {
+  const testMockConfigPath = getFullPathToTestConfig(
+    "_test-mock-config-basic-smoke-test-docker.js"
+  );
+  const mockTestRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
+    testMockConfigPath
+  );
+
+  mockTestRunner.run();
+
+  expect(mockTestRunner.succeeded).toBe(true); // 'should have succeeded'
+  expect(mockTestRunner.warningIssues.length).toBe(0); // "should have no warnings");
+  expect(mockTestRunner.errorIssues.length).toBe(0); // "should have no errors");
+
+  expect(
+    mockTestRunner.cmdlines["/usr/bin/sudo snyk auth some-authToken"]
+  ).toBe(true);
+
+  expect(
+    mockTestRunner.cmdlines[
+      "/usr/bin/sudo snyk test --docker myImage --file=Dockerfile --someAdditionalArgs"
+    ]
+  ).toBe(true);
+
+  expect(
+    mockTestRunner.cmdlines[
+      "/usr/bin/sudo snyk monitor --docker myImage --file=Dockerfile --org=some-snyk-org --project-name=some-project-name --someAdditionalArgs"
+    ]
+  ).toBe(true);
+});
+
 // test that it doesn't fail if the project-name input is not specified
 test("doesn't fail if project-name is not specified", () => {
   const testMockConfigPath = getFullPathToTestConfig(
@@ -146,7 +177,7 @@ test("fails if severity-threshold is invalid", () => {
   expect(testMockRunner.warningIssues.length).toBe(0); // "should have no warnings");
   expect(testMockRunner.errorIssues.length).toBe(1); // "should have no errors");
   expect(testMockRunner.errorIssues[0]).toBe(
-    "severity threshold must be 'high' or 'medium' (case insensitive)"
+    "If set, severity threshold must be 'high' or 'medium' or 'low' (case insensitive). If not set, the default is 'low'."
   );
 });
 
