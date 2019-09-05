@@ -29,6 +29,7 @@ module.exports = {
 
       '@typescript-eslint/no-var-requires': 0,
       '@typescript-eslint/no-use-before-define': 0,
+      '@typescript-eslint/no-inferrable-types': "off",
       'no-prototype-builtins': 0,
       'require-atomic-updates': 0,
     },
