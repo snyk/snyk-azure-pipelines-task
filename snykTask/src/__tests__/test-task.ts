@@ -179,6 +179,16 @@ test("fails if severity-threshold is invalid", () => {
   expect(testMockRunner.errorIssues[0]).toBe(
     "If set, severity threshold must be 'high' or 'medium' or 'low' (case insensitive). If not set, the default is 'low'."
   );
+
+  const commandsCalled = Object.keys(testMockRunner.cmdlines);
+  commandsCalled.forEach(cmd => {
+    if (cmd.includes("snyk monitor")) {
+      fail("snyk monitor should not be run");
+    }
+    if (cmd.includes("snyk test")) {
+      fail("snyk monitor should not be run");
+    }
+  });
 });
 
 // test that it doesn't fail if the additional-arguments is not set
@@ -291,11 +301,11 @@ test("if snyk test fails then snyk monitor should not run", () => {
 // this and that snyk monitor does not run.
 test("if snyk test fails then snyk monitor should not run", () => {
   const testMockConfigPath = getFullPathToTestConfig(
-      "_test-mock-config-snyk-test-fails-for-reasons-other-than-issues-found.ts"
+    "_test-mock-config-snyk-test-fails-for-reasons-other-than-issues-found.ts"
   );
   console.log(`testMockConfigPath: ${testMockConfigPath}`);
   const testMockRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
-      testMockConfigPath
+    testMockConfigPath
   );
 
   testMockRunner.run();
@@ -304,7 +314,7 @@ test("if snyk test fails then snyk monitor should not run", () => {
   expect(testMockRunner.warningIssues.length).toBe(0);
   expect(testMockRunner.errorIssues.length).toBe(1);
   expect(testMockRunner.errorIssues[0]).toBe(
-      "failing task because `snyk test` was improperly used or had other errors"
+    "failing task because `snyk test` was improperly used or had other errors"
   );
 
   const commandsCalled = Object.keys(testMockRunner.cmdlines);

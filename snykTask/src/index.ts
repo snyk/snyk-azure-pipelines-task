@@ -14,7 +14,21 @@ const CLI_EXIT_CODE_SUCCESS = 0;
 const CLI_EXIT_CODE_ISSUES_FOUND = 1;
 const CLI_EXIT_CODE_INVALID_USE = 2;
 
-let taskDebug = true;
+const taskDebug = true;
+
+// I can't Mock the getPlatform stuff: https://github.com/microsoft/azure-pipelines-task-lib/issues/530
+function chooseInstallMethod(p: tl.Platform): InstallMethod {
+  if (p === tl.Platform.Linux) {
+    return InstallMethod.NPMWithSudo;
+  } else if (p === tl.Platform.Windows) {
+    return InstallMethod.NPM;
+  } else if (p === tl.Platform.MacOS) {
+    return InstallMethod.NPM;
+  } else {
+    // this is not possible but is required because JavaScript
+    return InstallMethod.NPM;
+  }
+}
 
 function buildToolRunner(tool: string, requiresSudo: boolean): tr.ToolRunner {
   if (requiresSudo) {
@@ -42,6 +56,21 @@ function parseInputArgs(): TaskArgs {
   taskArgs.dockerImageName = tl.getInput("docker-image-name", false);
   taskArgs.dockerfilePath = tl.getInput("dockerfile-path", false);
   taskArgs.severityThreshold = tl.getInput("severity-threshold", false);
+  if (taskArgs.severityThreshold) {
+    const severityThresholdLowerCase = taskArgs.severityThreshold.toLowerCase();
+
+    if (
+        severityThresholdLowerCase !== "high" &&
+        severityThresholdLowerCase !== "medium" &&
+        severityThresholdLowerCase !== "low"
+    ) {
+      tl.setResult(
+          tl.TaskResult.Failed,
+          "If set, severity threshold must be 'high' or 'medium' or 'low' (case insensitive). If not set, the default is 'low'."
+      );
+      throw new Error(); // makes the task finish
+    }
+  }
 
   taskArgs.projectName = tl.getInput("project-name", false);
   taskArgs.organization = tl.getInput("organization", false);
@@ -135,20 +164,6 @@ async function run() {
       const lsExitCode = await lsToolRunner.exec(options);
       console.log(`lsExitCode: ${lsExitCode}\n`);
     }
-
-    // I can't Mock the getPlatform stuff: https://github.com/microsoft/azure-pipelines-task-lib/issues/530
-    const chooseInstallMethod = (p: tl.Platform) => {
-      if (p === tl.Platform.Linux) {
-        return InstallMethod.NPMWithSudo;
-      } else if (p === tl.Platform.Windows) {
-        return InstallMethod.NPM;
-      } else if (p === tl.Platform.MacOS) {
-        return InstallMethod.NPM;
-      } else {
-        // this is not possible but is required because JavaScript
-        return InstallMethod.NPM;
-      }
-    };
 
     let installMethod = InstallMethod.NPMWithSudo;
     if (!isTest) {
