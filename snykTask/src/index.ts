@@ -10,6 +10,12 @@ enum InstallMethod {
   Binary
 }
 
+const CLI_EXIT_CODE_SUCCESS = 0;
+const CLI_EXIT_CODE_ISSUES_FOUND = 1;
+const CLI_EXIT_CODE_INVALID_USE = 2;
+
+let taskDebug = true;
+
 function buildToolRunner(tool: string, requiresSudo: boolean): tr.ToolRunner {
   if (requiresSudo) {
     const sudoPath = tl.which("sudo");
@@ -52,22 +58,25 @@ function parseInputArgs(): TaskArgs {
 
 async function run() {
   try {
+    // taskDebug = tl.getBoolInput("debug-task", false);
     const currentWorkingDirectory: string = tl.cwd();
     console.log(`currentWorkingDirectory: ${currentWorkingDirectory}\n`);
 
     const taskArgs: TaskArgs = parseInputArgs();
-    console.log(`taskArgs.targetFile: ${taskArgs.targetFile}`);
-    console.log(`taskArgs.dockerImageName: ${taskArgs.dockerImageName}`);
-    console.log(`taskArgs.dockerfilePath: ${taskArgs.dockerfilePath}`);
-    console.log(`taskArgs.severityThreshold: ${taskArgs.severityThreshold}`);
-    console.log(`taskArgs.projectName: ${taskArgs.projectName}`);
-    console.log(`taskArgs.organization: ${taskArgs.organization}`);
-    console.log(`taskArgs.monitorOnBuild: ${taskArgs.monitorOnBuild}`);
-    console.log(`taskArgs.failOnIssues: ${taskArgs.failOnIssues}`);
-    console.log(
-      `taskArgs.additionalArguments: ${taskArgs.additionalArguments}`
-    );
-    console.log("\n");
+    if (taskDebug) {
+      console.log(`taskArgs.targetFile: ${taskArgs.targetFile}`);
+      console.log(`taskArgs.dockerImageName: ${taskArgs.dockerImageName}`);
+      console.log(`taskArgs.dockerfilePath: ${taskArgs.dockerfilePath}`);
+      console.log(`taskArgs.severityThreshold: ${taskArgs.severityThreshold}`);
+      console.log(`taskArgs.projectName: ${taskArgs.projectName}`);
+      console.log(`taskArgs.organization: ${taskArgs.organization}`);
+      console.log(`taskArgs.monitorOnBuild: ${taskArgs.monitorOnBuild}`);
+      console.log(`taskArgs.failOnIssues: ${taskArgs.failOnIssues}`);
+      console.log(
+        `taskArgs.additionalArguments: ${taskArgs.additionalArguments}`
+      );
+      console.log("\n");
+    }
 
     // Just used for testing
     const isTest: boolean = tl.getInput("isTest", false) === "true";
@@ -78,8 +87,6 @@ async function run() {
       false
     );
     console.log(`service-connection-endpoint: ${serviceConnectionEndpoint}\n`);
-
-    // TODO: see about using something like tl.logDetail
 
     // const authTokenToUse = authToken;
     let authTokenToUse = "";
@@ -119,16 +126,17 @@ async function run() {
       ignoreReturnCode: true
     } as tr.IExecOptions;
 
-    const lsPath = tl.which("ls");
-    console.log(`\nlsPath: ${lsPath}\n`);
+    if (taskDebug) {
+      const lsPath = tl.which("ls");
+      console.log(`\nlsPath: ${lsPath}\n`);
 
-    const lsToolRunner: tr.ToolRunner = tl.tool(lsPath);
-    lsToolRunner.arg("-la");
-    const lsExitCode = await lsToolRunner.exec(options);
-    console.log(`lsExitCode: ${lsExitCode}\n`);
+      const lsToolRunner: tr.ToolRunner = tl.tool(lsPath);
+      lsToolRunner.arg("-la");
+      const lsExitCode = await lsToolRunner.exec(options);
+      console.log(`lsExitCode: ${lsExitCode}\n`);
+    }
 
     // I can't Mock the getPlatform stuff: https://github.com/microsoft/azure-pipelines-task-lib/issues/530
-
     const chooseInstallMethod = (p: tl.Platform) => {
       if (p === tl.Platform.Linux) {
         return InstallMethod.NPMWithSudo;
@@ -208,14 +216,24 @@ async function run() {
     const snykTestExitCode = await snykTestToolRunner.exec(options);
     console.log(`snykTestExitCode: ${snykTestExitCode}\n`);
 
-    if (taskArgs.failOnIssues && snykTestExitCode !== 0) {
+    if (
+      taskArgs.failOnIssues &&
+      snykTestExitCode === CLI_EXIT_CODE_ISSUES_FOUND
+    ) {
       tl.setResult(
         tl.TaskResult.Failed,
         "failing task because `snyk test` found issues"
       );
     }
 
-    if (taskArgs.monitorOnBuild && snykTestExitCode === 0) {
+    if (snykTestExitCode >= CLI_EXIT_CODE_INVALID_USE) {
+      tl.setResult(
+        tl.TaskResult.Failed,
+        "failing task because `snyk test` was improperly used or had other errors"
+      );
+    }
+
+    if (taskArgs.monitorOnBuild && snykTestExitCode === CLI_EXIT_CODE_SUCCESS) {
       const snykMonitorToolRunner: tr.ToolRunner = buildToolRunner(
         "snyk",
         useSudo

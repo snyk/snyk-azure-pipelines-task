@@ -287,6 +287,34 @@ test("if snyk test fails then snyk monitor should not run", () => {
   });
 });
 
+// make sure that if snyk test fails for a reason other than issues being found that the error messaging indicates
+// this and that snyk monitor does not run.
+test("if snyk test fails then snyk monitor should not run", () => {
+  const testMockConfigPath = getFullPathToTestConfig(
+      "_test-mock-config-snyk-test-fails-for-reasons-other-than-issues-found.ts"
+  );
+  console.log(`testMockConfigPath: ${testMockConfigPath}`);
+  const testMockRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
+      testMockConfigPath
+  );
+
+  testMockRunner.run();
+
+  expect(testMockRunner.succeeded).toBe(false);
+  expect(testMockRunner.warningIssues.length).toBe(0);
+  expect(testMockRunner.errorIssues.length).toBe(1);
+  expect(testMockRunner.errorIssues[0]).toBe(
+      "failing task because `snyk test` was improperly used or had other errors"
+  );
+
+  const commandsCalled = Object.keys(testMockRunner.cmdlines);
+  commandsCalled.forEach(cmd => {
+    if (cmd.includes("snyk monitor")) {
+      fail("snyk monitor should not be run");
+    }
+  });
+});
+
 // test that the --file= thing works
 test("test that if you set target-file that we use it ", () => {
   const testMockConfigPath = getFullPathToTestConfig(
