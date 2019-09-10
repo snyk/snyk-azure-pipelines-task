@@ -14,7 +14,6 @@ const CLI_EXIT_CODE_SUCCESS = 0;
 const CLI_EXIT_CODE_ISSUES_FOUND = 1;
 const CLI_EXIT_CODE_INVALID_USE = 2;
 
-const taskDebug = true;
 
 // I can't Mock the getPlatform stuff: https://github.com/microsoft/azure-pipelines-task-lib/issues/530
 function chooseInstallMethod(p: tl.Platform): InstallMethod {
@@ -49,7 +48,7 @@ function buildToolRunner(tool: string, requiresSudo: boolean): tr.ToolRunner {
 //   return tl.getBoolInput(parameterName, isRequired);
 // };
 
-function parseInputArgs(): TaskArgs {
+function parseInputArgs(debug: boolean): TaskArgs {
   const taskArgs: TaskArgs = new TaskArgs();
 
   taskArgs.targetFile = tl.getInput("target-file", false);
@@ -60,52 +59,138 @@ function parseInputArgs(): TaskArgs {
     const severityThresholdLowerCase = taskArgs.severityThreshold.toLowerCase();
 
     if (
-        severityThresholdLowerCase !== "high" &&
-        severityThresholdLowerCase !== "medium" &&
-        severityThresholdLowerCase !== "low"
+      severityThresholdLowerCase !== "high" &&
+      severityThresholdLowerCase !== "medium" &&
+      severityThresholdLowerCase !== "low"
     ) {
       tl.setResult(
-          tl.TaskResult.Failed,
-          "If set, severity threshold must be 'high' or 'medium' or 'low' (case insensitive). If not set, the default is 'low'."
+        tl.TaskResult.Failed,
+        "If set, severity threshold must be 'high' or 'medium' or 'low' (case insensitive). If not set, the default is 'low'."
       );
       throw new Error(); // makes the task finish
+    } else {
+      taskArgs.severityThreshold = severityThresholdLowerCase;
     }
   }
 
   taskArgs.projectName = tl.getInput("project-name", false);
   taskArgs.organization = tl.getInput("organization", false);
 
-  // TODO: this should use getBoolInput
   taskArgs.monitorOnBuild = tl.getBoolInput("monitor-on-build", true);
   taskArgs.failOnIssues = tl.getBoolInput("fail-on-issues", true);
   taskArgs.additionalArguments = tl.getInput("additional-arguments", false);
 
   taskArgs.testDirectory = tl.getInput("test-directory", false);
 
+  if (debug) {
+    console.log(`taskArgs.targetFile: ${taskArgs.targetFile}`);
+    console.log(`taskArgs.dockerImageName: ${taskArgs.dockerImageName}`);
+    console.log(`taskArgs.dockerfilePath: ${taskArgs.dockerfilePath}`);
+    console.log(`taskArgs.severityThreshold: ${taskArgs.severityThreshold}`);
+    console.log(`taskArgs.projectName: ${taskArgs.projectName}`);
+    console.log(`taskArgs.organization: ${taskArgs.organization}`);
+    console.log(`taskArgs.monitorOnBuild: ${taskArgs.monitorOnBuild}`);
+    console.log(`taskArgs.failOnIssues: ${taskArgs.failOnIssues}`);
+    console.log(
+      `taskArgs.additionalArguments: ${taskArgs.additionalArguments}`
+    );
+    console.log("\n");
+  }
+
   return taskArgs;
+}
+
+async function showDirectoryListing(options: tr.IExecOptions) {
+  const lsPath = tl.which("ls");
+  console.log(`\nlsPath: ${lsPath}\n`);
+
+  const lsToolRunner: tr.ToolRunner = tl.tool(lsPath);
+  lsToolRunner.arg("-la");
+  const lsExitCode = await lsToolRunner.exec(options);
+  console.log(`lsExitCode: ${lsExitCode}\n`);
+}
+
+async function installSnyk(
+  taskArgs: TaskArgs,
+  options: tr.IExecOptions,
+  useSudo: boolean
+) {
+  const installSnykToolRunner: tr.ToolRunner = buildToolRunner("npm", useSudo)
+    .arg("install")
+    .arg("-g")
+    .arg("snyk");
+
+  const installSnykExitCode = await installSnykToolRunner.exec(options);
+  console.log(`installSnykExitCode: ${installSnykExitCode}\n`);
+}
+
+async function authorizeSnyk(
+  snykToken: string,
+  options: tr.IExecOptions,
+  useSudo: boolean
+) {
+  // TODO: play with setVariable as an option to use instead of running `snyk auth`
+  // tl.setVariable('SNYK_TOKEN', authToken, true);
+
+  const snykAuthToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
+    .arg("auth")
+    .arg(snykToken);
+
+  const snykAuthExitCode = await snykAuthToolRunner.exec(options);
+  console.log(`snykAuthExitCode: ${snykAuthExitCode}\n`);
+}
+
+async function runSnykTest(
+  taskArgs: TaskArgs,
+  options: tr.IExecOptions,
+  fileArg: string,
+  useSudo: boolean
+): Promise<number> {
+  const snykTestToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
+    .arg("test")
+    .argIf(
+      taskArgs.severityThreshold,
+      `--severity-threshold=${taskArgs.severityThreshold}`
+    )
+    .argIf(taskArgs.dockerImageName, `--docker`)
+    .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
+    .argIf(fileArg, `--file=${fileArg}`)
+
+    .argIf(taskArgs.additionalArguments, taskArgs.additionalArguments);
+
+  const snykTestExitCode = await snykTestToolRunner.exec(options);
+  console.log(`snykTestExitCode: ${snykTestExitCode}\n`);
+
+  return snykTestExitCode;
+}
+
+async function runSnykMonitor(
+  taskArgs: TaskArgs,
+  options: tr.IExecOptions,
+  fileArg: string,
+  useSudo: boolean
+) {
+  const snykMonitorToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
+    .arg("monitor")
+    .argIf(taskArgs.dockerImageName, `--docker`)
+    .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
+    .argIf(fileArg, `--file=${fileArg}`)
+    .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
+    .argIf(taskArgs.projectName, `--project-name=${taskArgs.projectName}`)
+    .argIf(taskArgs.additionalArguments, taskArgs.additionalArguments);
+
+  const snykMonitorExitCode = await snykMonitorToolRunner.exec(options);
+  console.log(`snykMonitorExitCode: ${snykMonitorExitCode}\n`);
 }
 
 async function run() {
   try {
+    const taskDebug = true;
     // taskDebug = tl.getBoolInput("debug-task", false);
     const currentWorkingDirectory: string = tl.cwd();
     console.log(`currentWorkingDirectory: ${currentWorkingDirectory}\n`);
 
-    const taskArgs: TaskArgs = parseInputArgs();
-    if (taskDebug) {
-      console.log(`taskArgs.targetFile: ${taskArgs.targetFile}`);
-      console.log(`taskArgs.dockerImageName: ${taskArgs.dockerImageName}`);
-      console.log(`taskArgs.dockerfilePath: ${taskArgs.dockerfilePath}`);
-      console.log(`taskArgs.severityThreshold: ${taskArgs.severityThreshold}`);
-      console.log(`taskArgs.projectName: ${taskArgs.projectName}`);
-      console.log(`taskArgs.organization: ${taskArgs.organization}`);
-      console.log(`taskArgs.monitorOnBuild: ${taskArgs.monitorOnBuild}`);
-      console.log(`taskArgs.failOnIssues: ${taskArgs.failOnIssues}`);
-      console.log(
-        `taskArgs.additionalArguments: ${taskArgs.additionalArguments}`
-      );
-      console.log("\n");
-    }
+    const taskArgs: TaskArgs = parseInputArgs(taskDebug);
 
     // Just used for testing
     const isTest: boolean = tl.getInput("isTest", false) === "true";
@@ -156,13 +241,7 @@ async function run() {
     } as tr.IExecOptions;
 
     if (taskDebug) {
-      const lsPath = tl.which("ls");
-      console.log(`\nlsPath: ${lsPath}\n`);
-
-      const lsToolRunner: tr.ToolRunner = tl.tool(lsPath);
-      lsToolRunner.arg("-la");
-      const lsExitCode = await lsToolRunner.exec(options);
-      console.log(`lsExitCode: ${lsExitCode}\n`);
+      showDirectoryListing(options);
     }
 
     let installMethod = InstallMethod.NPMWithSudo;
@@ -175,61 +254,17 @@ async function run() {
     const useSudo = installMethod === InstallMethod.NPMWithSudo;
     console.log(`useSudo: ${useSudo}`);
 
-    // Install snyk
-    const installSnykToolRunner: tr.ToolRunner = buildToolRunner("npm", useSudo)
-      .arg("install")
-      .arg("-g")
-      .arg("snyk");
+    await installSnyk(taskArgs, options, useSudo);
 
-    const installSnykExitCode = await installSnykToolRunner.exec(options);
-    console.log(`installSnykExitCode: ${installSnykExitCode}\n`);
-
-    // snyk auth
-    const snykAuthToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
-      .arg("auth")
-      .arg(authTokenToUse);
-
-    const snykAuthExitCode = await snykAuthToolRunner.exec(options);
-    console.log(`snykAuthExitCode: ${snykAuthExitCode}\n`);
-
-    // TODO: play with setVariable as an option to use instead of running `snyk auth`
-    // tl.setVariable('SNYK_TOKEN', authToken, true);
-
-    // Snyk test
-    let cleansedSeverityThreshold = "";
-    if (taskArgs.severityThreshold) {
-      cleansedSeverityThreshold = taskArgs.severityThreshold.toLowerCase();
-
-      if (
-        cleansedSeverityThreshold !== "high" &&
-        cleansedSeverityThreshold !== "medium" &&
-        cleansedSeverityThreshold !== "low"
-      ) {
-        tl.setResult(
-          tl.TaskResult.Failed,
-          "If set, severity threshold must be 'high' or 'medium' or 'low' (case insensitive). If not set, the default is 'low'."
-        );
-        return;
-      }
-    }
-    console.log(`cleansedSeverityThreshold: ${cleansedSeverityThreshold}\n`);
+    await authorizeSnyk(authTokenToUse, options, useSudo);
 
     const fileArg = taskArgs.getFileParameter();
-
-    const snykTestToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
-      .arg("test")
-      .argIf(
-        cleansedSeverityThreshold,
-        `--severity-threshold=${cleansedSeverityThreshold}`
-      )
-      .argIf(taskArgs.dockerImageName, `--docker`)
-      .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
-      .argIf(fileArg, `--file=${fileArg}`)
-
-      .argIf(taskArgs.additionalArguments, taskArgs.additionalArguments);
-
-    const snykTestExitCode = await snykTestToolRunner.exec(options);
-    console.log(`snykTestExitCode: ${snykTestExitCode}\n`);
+    const snykTestExitCode = await runSnykTest(
+      taskArgs,
+      options,
+      fileArg,
+      useSudo
+    );
 
     if (
       taskArgs.failOnIssues &&
@@ -249,20 +284,7 @@ async function run() {
     }
 
     if (taskArgs.monitorOnBuild && snykTestExitCode === CLI_EXIT_CODE_SUCCESS) {
-      const snykMonitorToolRunner: tr.ToolRunner = buildToolRunner(
-        "snyk",
-        useSudo
-      )
-        .arg("monitor")
-        .argIf(taskArgs.dockerImageName, `--docker`)
-        .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
-        .argIf(fileArg, `--file=${fileArg}`)
-        .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
-        .argIf(taskArgs.projectName, `--project-name=${taskArgs.projectName}`)
-        .argIf(taskArgs.additionalArguments, taskArgs.additionalArguments);
-
-      const snykMonitorExitCode = await snykMonitorToolRunner.exec(options);
-      console.log(`snykMonitorExitCode: ${snykMonitorExitCode}\n`);
+      runSnykMonitor(taskArgs, options, fileArg, useSudo);
     }
   } catch (err) {
     console.log("exception caught!");
