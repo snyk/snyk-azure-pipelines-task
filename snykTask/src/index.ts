@@ -51,10 +51,10 @@ function buildToolRunner(tool: string, requiresSudo: boolean): tr.ToolRunner {
 function parseInputArgs(debug: boolean): TaskArgs {
   const taskArgs: TaskArgs = new TaskArgs();
 
-  taskArgs.targetFile = tl.getInput("target-file", false);
-  taskArgs.dockerImageName = tl.getInput("docker-image-name", false);
-  taskArgs.dockerfilePath = tl.getInput("dockerfile-path", false);
-  taskArgs.severityThreshold = tl.getInput("severity-threshold", false);
+  taskArgs.targetFile = tl.getInput("targetFile", false);
+  taskArgs.dockerImageName = tl.getInput("dockerImageName", false);
+  taskArgs.dockerfilePath = tl.getInput("dockerfilePath", false);
+  taskArgs.severityThreshold = tl.getInput("severityThreshold", false);
   if (taskArgs.severityThreshold) {
     const severityThresholdLowerCase = taskArgs.severityThreshold.toLowerCase();
 
@@ -73,14 +73,14 @@ function parseInputArgs(debug: boolean): TaskArgs {
     }
   }
 
-  taskArgs.projectName = tl.getInput("project-name", false);
+  taskArgs.projectName = tl.getInput("projectName", false);
   taskArgs.organization = tl.getInput("organization", false);
 
-  taskArgs.monitorOnBuild = tl.getBoolInput("monitor-on-build", true);
-  taskArgs.failOnIssues = tl.getBoolInput("fail-on-issues", true);
-  taskArgs.additionalArguments = tl.getInput("additional-arguments", false);
+  taskArgs.monitorOnBuild = tl.getBoolInput("monitorOnBuild", true);
+  taskArgs.failOnIssues = tl.getBoolInput("failOnIssues", true);
+  taskArgs.additionalArguments = tl.getInput("additionalArguments", false);
 
-  taskArgs.testDirectory = tl.getInput("test-directory", false);
+  taskArgs.testDirectory = tl.getInput("testDirectory", false);
 
   if (debug) {
     console.log(`taskArgs.targetFile: ${taskArgs.targetFile}`);
@@ -197,10 +197,10 @@ async function run() {
     const authToken = tl.getInput("authToken", false);
 
     const serviceConnectionEndpoint = tl.getInput(
-      "service-connection-endpoint",
+      "serviceConnectionEndpoint",
       false
     );
-    console.log(`service-connection-endpoint: ${serviceConnectionEndpoint}\n`);
+    console.log(`serviceConnectionEndpoint: ${serviceConnectionEndpoint}\n`);
 
     // const authTokenToUse = authToken;
     let authTokenToUse = "";
@@ -212,7 +212,7 @@ async function run() {
     } else if (authToken && !serviceConnectionEndpoint) {
       // use authToken field
       console.log(
-        "authToken is set and service-connection-endpoint is not... using authToken"
+        "authToken is set and serviceConnectionEndpoint is not... using authToken"
       );
       authTokenToUse = authToken;
     } else {

@@ -7,14 +7,14 @@ const tmr: tmrm.TaskMockRunner = new tmrm.TaskMockRunner(taskPath);
 
 tmr.setInput("stepDisplayName", "some stepDisplayName");
 tmr.setInput("authToken", "some-authToken");
-// tmr.setInput("project-name", "some-project-name");
-tmr.setInput("test-directory", "some/dir");
-// tmr.setInput("target-file", "some/dir/pom.xml");
+// tmr.setInput("projectName", "someProjectName");
+tmr.setInput("testDirectory", "some/dir");
+// tmr.setInput("targetFile", "some/dir/pom.xml");
 tmr.setInput("organization", "some-snyk-org");
-// tmr.setInput('severity-threshold', '');
-tmr.setInput("fail-on-issues", "true");
-tmr.setInput("monitor-on-build", "true");
-// tmr.setInput('additional-arguments', '--someAdditionalArgs');
+tmr.setInput("severityThreshold", "");
+tmr.setInput("failOnIssues", "true");
+tmr.setInput("monitorOnBuild", "true");
+tmr.setInput("additionalArguments", "");
 tmr.setInput("isTest", "true");
 tmr.setInput("testType", "app");
 
@@ -58,9 +58,6 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "No issues found"
     }
-
-    // "ls":  "/bin/ls",
-    // "npm": "/usr/bin/npm"
   }
 };
 

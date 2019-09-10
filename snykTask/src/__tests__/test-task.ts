@@ -50,7 +50,7 @@ test("basic smoke test - inputs are ok", () => {
 
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/sudo snyk monitor --org=some-snyk-org --project-name=some-project-name --someAdditionalArgs"
+      "/usr/bin/sudo snyk monitor --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs"
     ]
   ).toBe(true);
 });
@@ -81,15 +81,15 @@ test("basic smoke test for container test - inputs are ok", () => {
 
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/sudo snyk monitor --docker myImage --file=Dockerfile --org=some-snyk-org --project-name=some-project-name --someAdditionalArgs"
+      "/usr/bin/sudo snyk monitor --docker myImage --file=Dockerfile --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs"
     ]
   ).toBe(true);
 });
 
-// test that it doesn't fail if the project-name input is not specified
-test("doesn't fail if project-name is not specified", () => {
+// test that it doesn't fail if the projectName input is not specified
+test("doesn't fail if projectName is not specified", () => {
   const testMockConfigPath = getFullPathToTestConfig(
-    "_test-mock-config-no-project-name.js"
+    "_test-mock-config-no-projectName.js"
   );
   console.log(`testMockConfigPath: ${testMockConfigPath}`);
   const testMockRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
@@ -119,10 +119,10 @@ test("doesn't fail if organization is not specified", () => {
   expect(testMockRunner.errorIssues.length).toBe(0); // "should have no errors");
 });
 
-// test that it doesn't fail if the severity-threshold is set
-test("doesn't fail if severity-threshold is specified", () => {
+// test that it doesn't fail if the severityThreshold is set
+test("doesn't fail if severityThreshold is specified", () => {
   const testMockConfigPath = getFullPathToTestConfig(
-    "_test-mock-config-with-severity-threshold.js"
+    "_test-mock-config-with-severityThreshold.js"
   );
   console.log(`testMockConfigPath: ${testMockConfigPath}`);
   const testMockRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
@@ -140,10 +140,10 @@ test("doesn't fail if severity-threshold is specified", () => {
   ).toBe(true);
 });
 
-// test that it doesn't fail if the severity-threshold is null
-test("doesn't fail if severity-threshold is not specified", () => {
+// test that it doesn't fail if the severityThreshold is null
+test("doesn't fail if severityThreshold is not specified", () => {
   const testMockConfigPath = getFullPathToTestConfig(
-    "_test-mock-config-with-null-severity-threshold.js"
+    "_test-mock-config-with-null-severityThreshold.js"
   );
   console.log(`testMockConfigPath: ${testMockConfigPath}`);
   const testMockRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
@@ -157,10 +157,10 @@ test("doesn't fail if severity-threshold is not specified", () => {
   expect(testMockRunner.errorIssues.length).toBe(0); // "should have no errors");
 });
 
-// test that it fails on invalid severity-threshold input
-test("fails if severity-threshold is invalid", () => {
+// test that it fails on invalid severityThreshold input
+test("fails if severityThreshold is invalid", () => {
   const testMockConfigPath = getFullPathToTestConfig(
-    "_test-mock-config-with-invalid-severity-threshold.js"
+    "_test-mock-config-with-invalid-severityThreshold.js"
   );
   console.log(`testMockConfigPath: ${testMockConfigPath}`);
   const testMockRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
@@ -191,10 +191,10 @@ test("fails if severity-threshold is invalid", () => {
   });
 });
 
-// test that it doesn't fail if the additional-arguments is not set
-test("doesn't fail if additional-arguments is not set", () => {
+// test that it doesn't fail if the additionalArguments is not set
+test("doesn't fail if additionalArguments is not set", () => {
   const testMockConfigPath = getFullPathToTestConfig(
-    "_test-mock-config-with-null-additional-arguments.js"
+    "_test-mock-config-with-null-additionalArguments.js"
   );
 
   console.log(`testMockConfigPath: ${testMockConfigPath}`);
@@ -209,10 +209,10 @@ test("doesn't fail if additional-arguments is not set", () => {
   expect(testMockRunner.errorIssues.length).toBe(0); // "should have no errors");
 });
 
-// test that snyk monitor is not called if monitor-on-build is false\
-test("snyk monitor is not called if monitor-on-build is false", () => {
+// test that snyk monitor is not called if monitorOnBuild is false\
+test("snyk monitor is not called if monitorOnBuild is false", () => {
   const testMockConfigPath = getFullPathToTestConfig(
-    "_test-mock-config-monitor-on-build-false.js"
+    "_test-mock-config-monitorOnBuild-false.js"
   );
   console.log(`testMockConfigPath: ${testMockConfigPath}`);
   const testMockRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
@@ -233,10 +233,10 @@ test("snyk monitor is not called if monitor-on-build is false", () => {
   });
 });
 
-// if fail-on-issues is false and snyk test finds issues, then the task should not fail
-test("if fail-on-issues is false and snyk test finds issues, then the task should not fail", () => {
+// if failOnIssues is false and snyk test finds issues, then the task should not fail
+test("if failOnIssues is false and snyk test finds issues, then the task should not fail", () => {
   const testMockConfigPath = getFullPathToTestConfig(
-    "_test-mock-config-no-fail-task-if-snyk-finds-issues-but-fail-on-issues-is-false.js"
+    "_test-mock-config-no-fail-task-if-snyk-finds-issues-but-failOnIssues-is-false.js"
   );
   console.log(`testMockConfigPath: ${testMockConfigPath}`);
   const testMockRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
@@ -250,10 +250,10 @@ test("if fail-on-issues is false and snyk test finds issues, then the task shoul
   expect(testMockRunner.errorIssues.length).toBe(0); // "should have no errors");
 });
 
-// if fail-on-issues is true and snyk test finds issues, then the task should fail
-test("if fail-on-issues is true and snyk test finds issues, then the task should fail", () => {
+// if failOnIssues is true and snyk test finds issues, then the task should fail
+test("if failOnIssues is true and snyk test finds issues, then the task should fail", () => {
   const testMockConfigPath = getFullPathToTestConfig(
-    "_test-mock-config-no-fail-task-if-snyk-finds-issues-but-fail-on-issues-is-true.js"
+    "_test-mock-config-no-fail-task-if-snyk-finds-issues-but-failOnIssues-is-true.js"
   );
   console.log(`testMockConfigPath: ${testMockConfigPath}`);
   const testMockRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
@@ -326,9 +326,9 @@ test("if snyk test fails then snyk monitor should not run", () => {
 });
 
 // test that the --file= thing works
-test("test that if you set target-file that we use it ", () => {
+test("test that if you set targetFile that we use it ", () => {
   const testMockConfigPath = getFullPathToTestConfig(
-    "_test-mock-config-use-target-file-if-specified.js"
+    "_test-mock-config-use-targetFile-if-specified.js"
   );
   const mockTestRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
     testMockConfigPath

@@ -6,7 +6,7 @@
 const ta = require("../task-args");
 
 // Azure's getInput() returns nulls for inputs which are not set. Make sure they don't result in NPEs in the task args parsing.
-test("ensure no problems if both target-file and docker-file-path are both not set", () => {
+test("ensure no problems if both targetFile and docker-file-path are both not set", () => {
   const args = new ta.TaskArgs();
   args.dockerImageName = "some-docker-image";
   args.targetFile = null;

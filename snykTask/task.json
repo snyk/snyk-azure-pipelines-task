@@ -41,7 +41,7 @@
             }
         },
         {
-            "name": "service-connection-endpoint",
+            "name": "serviceConnectionEndpoint",
             "type": "connectedService:Snyk",
             "label": "Snyk API Token",
             "required": true,
@@ -50,7 +50,7 @@
         },
 
         {
-            "name": "target-file",
+            "name": "targetFile",
             "label": "Path to manifest file to test (relative to repo root or working directory, if set)",
             "type": "string",
             "required": false,
@@ -60,7 +60,7 @@
         },
 
         {
-            "name": "docker-image-name",
+            "name": "dockerImageName",
             "label": "Container Image Name",
             "type": "string",
             "required": true,
@@ -69,7 +69,7 @@
             "visibleRule": "testType = container"
         },
         {
-            "name": "dockerfile-path",
+            "name": "dockerfilePath",
             "label": "Path to Dockerfile",
             "type": "string",
             "required": false,
@@ -79,7 +79,7 @@
         },
 
         {
-            "name": "severity-threshold",
+            "name": "severityThreshold",
             "label": "The testing severity threshold",
             "type": "pickList",
             "required": false,
@@ -102,7 +102,7 @@
             "groupName": "additionalSettings"
         },
         {
-            "name": "monitor-on-build",
+            "name": "monitorOnBuild",
             "label": "Run the Snyk monitor after test?",
             "type": "boolean",
             "required": true,
@@ -111,7 +111,7 @@
             "groupName": "additionalSettings"
         },
         {
-            "name": "fail-on-issues",
+            "name": "failOnIssues",
             "label": "Fail build if Snyk finds issues",
             "type": "boolean",
             "required": true,
@@ -120,7 +120,7 @@
             "groupName": "additionalSettings"
         },
         {
-            "name": "project-name",
+            "name": "projectName",
             "label": "Project name in Snyk",
             "type": "string",
             "required": false,
@@ -130,7 +130,7 @@
         },
 
         {
-            "name": "test-directory",
+            "name": "testDirectory",
             "label": "Test (Working) Directory",
             "type": "filePath",
             "required": false,
@@ -139,7 +139,7 @@
             "groupName": "advanced"
         },
         {
-            "name": "additional-arguments",
+            "name": "additionalArguments",
             "label": "Additional command-line args for Snyk CLI (advanced)",
             "type": "string",
             "required": false,

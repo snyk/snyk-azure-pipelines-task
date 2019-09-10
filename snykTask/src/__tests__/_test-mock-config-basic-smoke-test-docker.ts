@@ -8,18 +8,18 @@ const tmr: tmrm.TaskMockRunner = new tmrm.TaskMockRunner(taskPath);
 tmr.setInput("stepDisplayName", "some stepDisplayName");
 tmr.setInput("authToken", "some-authToken");
 tmr.setInput("serviceConnectionEndpoint", "mySnykServiceConnectionEndpoint");
-tmr.setInput("project-name", "some-project-name");
-tmr.setInput("test-directory", "some/dir");
-// tmr.setInput("target-file", "some/dir/pom.xml");
+tmr.setInput("projectName", "some-projectName");
+tmr.setInput("testDirectory", "some/dir");
+// tmr.setInput("targetFile", "some/dir/pom.xml");
 tmr.setInput("organization", "some-snyk-org");
-tmr.setInput("severity-threshold", "");
-tmr.setInput("fail-on-issues", "true");
-tmr.setInput("monitor-on-build", "true");
-tmr.setInput("additional-arguments", "--someAdditionalArgs");
+tmr.setInput("severityThreshold", "");
+tmr.setInput("failOnIssues", "true");
+tmr.setInput("monitorOnBuild", "true");
+tmr.setInput("additionalArguments", "--someAdditionalArgs");
 tmr.setInput("isTest", "true");
 tmr.setInput("testType", "container");
-tmr.setInput("docker-image-name", "myImage");
-tmr.setInput("dockerfile-path", "Dockerfile");
+tmr.setInput("dockerImageName", "myImage");
+tmr.setInput("dockerfilePath", "Dockerfile");
 
 const answers: ma.TaskLibAnswers = {
   which: {
@@ -60,7 +60,7 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "No issues found"
     },
-    "/usr/bin/sudo snyk monitor --docker myImage --file=Dockerfile --org=some-snyk-org --project-name=some-project-name --someAdditionalArgs": {
+    "/usr/bin/sudo snyk monitor --docker myImage --file=Dockerfile --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs": {
       code: 0,
       stdout: "No issues found"
     }
