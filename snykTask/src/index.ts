@@ -1,6 +1,6 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import * as tr from "azure-pipelines-task-lib/toolrunner";
-import { TaskArgs } from "./task-args";
+import { TaskArgs, getAuthToken } from "./task-args";
 
 // import { loadPartialConfig } from '@babel/core';
 
@@ -13,7 +13,6 @@ enum InstallMethod {
 const CLI_EXIT_CODE_SUCCESS = 0;
 const CLI_EXIT_CODE_ISSUES_FOUND = 1;
 const CLI_EXIT_CODE_INVALID_USE = 2;
-
 
 // I can't Mock the getPlatform stuff: https://github.com/microsoft/azure-pipelines-task-lib/issues/530
 function chooseInstallMethod(p: tl.Platform): InstallMethod {
@@ -194,45 +193,8 @@ async function run() {
 
     // Just used for testing
     const isTest: boolean = tl.getInput("isTest", false) === "true";
-    const authToken = tl.getInput("authToken", false);
 
-    const serviceConnectionEndpoint = tl.getInput(
-      "serviceConnectionEndpoint",
-      false
-    );
-    console.log(`serviceConnectionEndpoint: ${serviceConnectionEndpoint}\n`);
-
-    // const authTokenToUse = authToken;
-    let authTokenToUse = "";
-
-    // very kludgy thing to make the tests work but have it still work in Azure with the service connection
-    if (isTest) {
-      // use authToken field
-      authTokenToUse = authToken;
-    } else if (authToken && !serviceConnectionEndpoint) {
-      // use authToken field
-      console.log(
-        "authToken is set and serviceConnectionEndpoint is not... using authToken"
-      );
-      authTokenToUse = authToken;
-    } else {
-      // pull token from the service connection and fail if it is not set
-      if (serviceConnectionEndpoint) {
-        const endpointAuthorization = tl.getEndpointAuthorization(
-          serviceConnectionEndpoint,
-          false
-        );
-
-        if (endpointAuthorization) {
-          const authTokenFromServiceConnection =
-            endpointAuthorization.parameters["apitoken"];
-          authTokenToUse = authTokenFromServiceConnection;
-          console.log(
-            `authTokenFromServiceConnection: ${authTokenFromServiceConnection}\n`
-          );
-        }
-      }
-    }
+    const authTokenToUse = getAuthToken(isTest);
 
     const options = {
       cwd: taskArgs.testDirectory,
