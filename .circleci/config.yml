@@ -7,8 +7,6 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      - run: echo "test"
-      - run: pwd
       - run:
           name: Build and test
           command: |
@@ -33,6 +31,14 @@ workflows:
 
   workflow_test:
     jobs:
+      - build:
+          name: wf_build
+          filters:
+            branches:
+              ignore:
+                - master
+                - develop
+
       - build:
           name: wf_build
           filters:
