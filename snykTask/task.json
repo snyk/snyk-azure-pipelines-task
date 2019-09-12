@@ -28,7 +28,7 @@
         {
             "name": "serviceConnectionEndpoint",
             "type": "connectedService:Snyk",
-            "label": "Snyk API Token",
+            "label": "Snyk API token",
             "required": true,
             "defaultValue": "",
             "helpMarkDown": "Choose your Snyk service connection from your Azure DevOps project settings."
@@ -47,6 +47,20 @@
             "properties": {
                 "EditableOptions": "False"
             }
+        },
+
+        {
+            "name": "severityThreshold",
+            "label": "Testing severity threshold",
+            "type": "pickList",
+            "required": false,
+            "defaultValue": "low",
+            "options": {
+              "low": "Low (default)",
+              "medium": "Medium",
+              "high": "High"
+            },
+            "helpMarkDown": "The testing severity threshold. Leave blank for no threshold."
         },
 
         {
@@ -69,20 +83,6 @@
         },
 
         {
-            "name": "severityThreshold",
-            "label": "The testing severity threshold",
-            "type": "pickList",
-            "required": false,
-            "defaultValue": "low",
-            "options": {
-              "low": "Low (default)",
-              "medium": "Medium",
-              "high": "High"
-            },
-            "helpMarkDown": "The testing severity threshold. Leave blank for no threshold.",
-            "groupName": "additionalSettings"
-        },
-        {
             "name": "monitorOnBuild",
             "label": "Run the Snyk monitor after test?",
             "type": "boolean",
@@ -100,7 +100,7 @@
         },
         {
             "name": "targetFile",
-            "label": "Path to manifest file to test",
+            "label": "Custom path to manifest file to test",
             "type": "string",
             "required": false,
             "defaultValue": "",
