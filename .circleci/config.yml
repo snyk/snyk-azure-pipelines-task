@@ -4,9 +4,7 @@ jobs:
   build:
     docker:
       - image: circleci/node:lts
-
     working_directory: ~/repo
-
     steps:
       - checkout
       - run: echo "test"
@@ -21,3 +19,34 @@ jobs:
             npm run eslint
             npm run format:check
             npm test
+
+  deploy-pre-dev:
+    docker:
+      - image: circleci/node:lts
+    working_directory: ~/repo
+    steps:
+      - run: echo "deploy here"
+
+
+workflows:
+  version: 2
+
+  workflow_test:
+    jobs:
+      - build:
+          name: wf_build
+          filters:
+            branches:
+              ignore:
+                - master
+                - develop
+
+      - deploy-pre-dev:
+          name: wf_deploy_pre_dev
+          requires:
+            - wf_build
+          filters:
+            branches:
+              ignore:
+                - master
+                - develop
