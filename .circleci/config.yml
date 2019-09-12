@@ -11,7 +11,7 @@ jobs:
       - checkout
       - run: echo "test"
       - run: pwd
-      - run: cd snykScan
+      - run: cd snykTask
       - run: pwd
       - run: ls -la
       - run: npm install
