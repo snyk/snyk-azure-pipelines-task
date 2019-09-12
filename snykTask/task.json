@@ -26,6 +26,14 @@
     ],
     "inputs": [
         {
+            "name": "serviceConnectionEndpoint",
+            "type": "connectedService:Snyk",
+            "label": "Snyk API Token",
+            "required": true,
+            "defaultValue": "",
+            "helpMarkDown": "Choose your Snyk service connection from your Azure DevOps project settings."
+        },
+        {
             "name": "testType",
             "type": "pickList",
             "label": "What do you want to test?",
@@ -39,24 +47,6 @@
             "properties": {
                 "EditableOptions": "False"
             }
-        },
-        {
-            "name": "serviceConnectionEndpoint",
-            "type": "connectedService:Snyk",
-            "label": "Snyk API Token",
-            "required": true,
-            "defaultValue": "",
-            "helpMarkDown": "Choose your Snyk service connection from your Azure DevOps project settings."
-        },
-
-        {
-            "name": "targetFile",
-            "label": "Path to manifest file to test (relative to repo root or working directory, if set)",
-            "type": "string",
-            "required": false,
-            "defaultValue": "",
-            "helpMarkDown": "Path to manifest file to test (relative to repo root or working directory, if set)",
-            "visibleRule": "testType = app"
         },
 
         {
@@ -74,7 +64,7 @@
             "type": "string",
             "required": false,
             "defaultValue": "",
-            "helpMarkDown": "Path to manifest file to test (relative to repo root or working directory, if set)",
+            "helpMarkDown": "Relative path to Dockerfile (relative to repo root or working directory, if set)",
             "visibleRule": "testType = container"
         },
 
@@ -83,7 +73,7 @@
             "label": "The testing severity threshold",
             "type": "pickList",
             "required": false,
-            "defaultValue": "",
+            "defaultValue": "low",
             "options": {
               "low": "Low (default)",
               "medium": "Medium",
@@ -93,22 +83,12 @@
             "groupName": "additionalSettings"
         },
         {
-            "name": "organization",
-            "label": "Organization name (or ID) in Snyk",
-            "type": "string",
-            "required": false,
-            "defaultValue": "",
-            "helpMarkDown": "Organization name (or ID) in Snyk",
-            "groupName": "additionalSettings"
-        },
-        {
             "name": "monitorOnBuild",
             "label": "Run the Snyk monitor after test?",
             "type": "boolean",
             "required": true,
             "defaultValue": "true",
-            "helpMarkDown": "Select true if you want to run the monitor the dependency tree within Snyk.",
-            "groupName": "additionalSettings"
+            "helpMarkDown": "Select true if you want to run the monitor the dependency tree within Snyk."
         },
         {
             "name": "failOnIssues",
@@ -116,9 +96,18 @@
             "type": "boolean",
             "required": true,
             "defaultValue": "true",
-            "helpMarkDown": "Fail build if Snyk finds issues",
-            "groupName": "additionalSettings"
+            "helpMarkDown": "Fail build if Snyk finds issues"
         },
+        {
+            "name": "targetFile",
+            "label": "Path to manifest file to test",
+            "type": "string",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "Relative path to manifest file to test (relative to repo root or working directory, if set)",
+            "visibleRule": "testType = app"
+        },
+
         {
             "name": "projectName",
             "label": "Project name in Snyk",
@@ -126,6 +115,15 @@
             "required": false,
             "defaultValue": "",
             "helpMarkDown": "What you want to call (or already have called) this project in Snyk",
+            "groupName": "additionalSettings"
+        },
+        {
+            "name": "organization",
+            "label": "Organization name (or ID) in Snyk",
+            "type": "string",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "Organization name (or ID) in Snyk",
             "groupName": "additionalSettings"
         },
 
