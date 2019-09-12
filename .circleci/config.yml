@@ -10,6 +10,9 @@ jobs:
     steps:
       - checkout
       - run: echo "test"
+      - run: pwd
+      - run: cd snykScan
+      - run: pwd
       - run: ls -la
       - run: npm install
       - run: npm test
