@@ -4,6 +4,9 @@ jobs:
   build:
     docker:
       - image: circleci/node:lts
+      - working_directory: ~/repo
     steps:
       - checkout
       - run: echo "test"
+      - run: npm install
+      - run: npm test
