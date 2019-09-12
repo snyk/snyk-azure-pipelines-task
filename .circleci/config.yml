@@ -12,8 +12,8 @@ jobs:
       - run: echo "test"
       - run: pwd
       - run:
-        cd snykTask
-        pwd
-        ls -la
-        npm install
-        npm test
+          cd snykTask
+          pwd
+          ls -la
+          npm install
+          npm test
