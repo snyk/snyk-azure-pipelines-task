@@ -18,4 +18,6 @@ jobs:
             pwd
             ls -la
             npm install
+            npm run eslint
+            npm run format:check
             npm test
