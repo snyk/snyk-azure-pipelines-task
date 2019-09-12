@@ -29,24 +29,38 @@ jobs:
 workflows:
   version: 2
 
-  workflow_test:
+  build-and-deploy:
     jobs:
-      - build:
-          name: wf_build
-          filters:
-            branches:
-              ignore:
-                - master
-                - develop
+      - build
+      - deploy-pre-dev:
+          requires:
+            - build
+#          filters:
+#            branches:
+#              only: feat/initial-implementation
 
-      - build:
-          name: wf_build
-          filters:
-            branches:
-              ignore:
-                - master
-                - develop
+#  workflow_test:
+#    jobs:
+#      - build
+#      - deploy-pre-dev
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              ignore:
+#                - master
+#                - develop
 
+#  workflow_test:
+#    jobs:
+#      - build:
+#          name: wf_build
+#          filters:
+#            branches:
+#              ignore:
+#                - master
+#                - develop
+#
 #      - deploy-pre-dev:
 #          name: wf_deploy_pre_dev
 #          requires:
