@@ -41,12 +41,12 @@ workflows:
                 - master
                 - develop
 
-      - deploy-pre-dev:
-          name: wf_deploy_pre_dev
-          requires:
-            - wf_build
-          filters:
-            branches:
-              ignore:
-                - master
-                - develop
+#      - deploy-pre-dev:
+#          name: wf_deploy_pre_dev
+#          requires:
+#            - wf_build
+#          filters:
+#            branches:
+#              ignore:
+#                - master
+#                - develop
