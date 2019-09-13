@@ -25,6 +25,7 @@ jobs:
       - checkout
       - azure-cli/install
       - run: which az
+      - run: az extension add --name azure-devops
       - run:
           name: Test
           command: |
