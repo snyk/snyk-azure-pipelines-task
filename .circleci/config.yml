@@ -30,6 +30,7 @@ jobs:
           name: Publish to test Azure
           command: |
             cd snykTask
+            npm install -g typescript
             npm install
             tsc
             npm prune --production
