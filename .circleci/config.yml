@@ -27,10 +27,13 @@ jobs:
       - run: which az
       - run: az extension add --name azure-devops
       - run:
-          name: Test
+          name: Publish to test Azure
           command: |
             cd snykTask
-            node -v
+            npm install
+            tsc
+            npm prune --production
+            cd ..
             export AZURE_DEVOPS_EXT_PAT=$AZ_TEST_TOKEN
             az devops --help
             sudo npm install -g tfx-cli
