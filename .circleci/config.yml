@@ -33,6 +33,11 @@ jobs:
             node -v
             export AZURE_DEVOPS_EXT_PAT=$AZ_TEST_TOKEN
             az devops --help
+            sudo npm install -g tfx-cli
+            which tfx
+            az devops extension uninstall --publisher-name $AZ_TEST_PUB_NAME --extension-name $AZ_EXTENSION_NAME --organization $AZ_TEST_ORG --yes
+            tfx extension publish --manifest-globs vss-extension.json --rev-version --share-with $AZ_TEST_SHARE_WITH_ORG --token $AZURE_DEVOPS_EXT_PAT
+            az devops extension install --publisher-name $AZ_TEST_PUB_NAME --extension-name $AZ_EXTENSION_NAME --organization $AZ_TEST_ORG
             az devops extension list --organization $AZ_TEST_ORG --output table
 
 orbs:
