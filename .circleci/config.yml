@@ -16,13 +16,12 @@ jobs:
             npm install
             npm run eslint
             npm run format:check
-            npm test
 
   test:
     docker:
       - image: circleci/node:lts
     steps:
-      - checkout
+#      - checkout
       - run:
           name: Test
           command: npm test
@@ -37,4 +36,4 @@ workflows:
             - build
           filters:
             branches:
-              ignore: master
+              only: feat/initial-implementation
