@@ -23,7 +23,6 @@ jobs:
       - image: circleci/node:lts
     steps:
       - checkout
-      -
       - run:
           name: Test
           command: |
@@ -33,7 +32,6 @@ jobs:
             npm install
             export AZURE_DEVOPS_EXT_PAT=$AZ_TEST_TOKEN
             az devops login --organization $AZ_TEST_ORG
-
 
 workflows:
   version: 2
@@ -46,6 +44,4 @@ workflows:
           filters:
             branches:
               only: feat/initial-implementation
-              ignore:
-                - master
-                - develop
+
