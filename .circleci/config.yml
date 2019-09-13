@@ -20,7 +20,7 @@ jobs:
 
   deploy-test:
     docker:
-      - image: circleci/node:lts
+      # - image: circleci/node:lts
       - image: circleci/azure-cli@1.1.0
     steps:
       - checkout
