@@ -20,22 +20,26 @@ jobs:
 
   deploy-test:
     docker:
-      # - image: circleci/node:lts
-      - image: circleci/azure-cli@1.1.0
+      - image: circleci/node:lts
     steps:
       - checkout
-      - run:
-          name: Test
-          command: |
-            cd snykTask
-            pwd
-            ls -la
-            which node
-            node -v
-            which az
-            az devops --help
+      - azure-cli/install
+      - run: which az
+      # - run:
+      #     name: Test
+      #     command: |
+      #       cd snykTask
+      #       pwd
+      #       ls -la
+      #       which node
+      #       node -v
+      #       which az
+      #       az devops --help
             # export AZURE_DEVOPS_EXT_PAT=$AZ_TEST_TOKEN
             # az devops login --organization $AZ_TEST_ORG
+
+orbs:
+  azure-cli: circleci/azure-cli@1.0.0
 
 workflows:
   version: 2
