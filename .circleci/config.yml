@@ -31,6 +31,7 @@ jobs:
           command: |
             cd snykTask
             node -v
+            export AZURE_DEVOPS_EXT_PAT=$AZ_TEST_TOKEN
             az devops --help
             az devops extension list --organization $AZ_TEST_ORG --output table
 
