@@ -21,6 +21,7 @@ jobs:
   deploy-test:
     docker:
       - image: circleci/node:lts
+      - image: circleci/azure-cli@1.1.0
     steps:
       - checkout
       - run:
@@ -29,9 +30,12 @@ jobs:
             cd snykTask
             pwd
             ls -la
-            npm install
-            export AZURE_DEVOPS_EXT_PAT=$AZ_TEST_TOKEN
-            az devops login --organization $AZ_TEST_ORG
+            which node
+            node -v
+            which az
+            az devops --help
+            # export AZURE_DEVOPS_EXT_PAT=$AZ_TEST_TOKEN
+            # az devops login --organization $AZ_TEST_ORG
 
 workflows:
   version: 2
