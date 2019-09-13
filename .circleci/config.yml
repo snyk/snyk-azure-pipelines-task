@@ -25,18 +25,15 @@ jobs:
       - checkout
       - azure-cli/install
       - run: which az
-      # - run:
-      #     name: Test
-      #     command: |
-      #       cd snykTask
-      #       pwd
-      #       ls -la
-      #       which node
-      #       node -v
-      #       which az
-      #       az devops --help
-            # export AZURE_DEVOPS_EXT_PAT=$AZ_TEST_TOKEN
-            # az devops login --organization $AZ_TEST_ORG
+      - run:
+          name: Test
+          command: |
+            cd snykTask
+            node -v
+            az devops --help
+            export AZURE_DEVOPS_EXT_PAT=$AZ_TEST_TOKEN
+            az devops login --organization $AZ_TEST_ORG
+            az devops extension list --organization $AZ_TEST_ORG --output table
 
 orbs:
   azure-cli: circleci/azure-cli@1.0.0
