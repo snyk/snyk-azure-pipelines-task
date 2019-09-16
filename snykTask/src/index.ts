@@ -89,10 +89,7 @@ async function showDirectoryListing(options: tr.IExecOptions) {
   console.log(`lsExitCode: ${lsExitCode}\n`);
 }
 
-async function installSnyk(
-  options: tr.IExecOptions,
-  useSudo: boolean
-) {
+async function installSnyk(options: tr.IExecOptions, useSudo: boolean) {
   const installSnykToolRunner: tr.ToolRunner = buildToolRunner("npm", useSudo)
     .arg("install")
     .arg("-g")
@@ -200,11 +197,7 @@ async function run() {
 
     await authorizeSnyk(authTokenToUse, options, useSudo);
 
-    const snykTestExitCode = await runSnykTest(
-      taskArgs,
-      options,
-      useSudo
-    );
+    const snykTestExitCode = await runSnykTest(taskArgs, options, useSudo);
 
     if (
       taskArgs.failOnIssues &&

@@ -34,9 +34,9 @@ class TaskArgs {
       this.targetFile.toLowerCase().includes("dockerfile")
     ) {
       return this.targetFile;
+    } else {
+      return "";
     }
-
-    return this.targetFile || "";
   }
 }
 
