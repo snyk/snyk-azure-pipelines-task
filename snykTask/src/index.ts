@@ -4,29 +4,9 @@ import { TaskArgs, getAuthToken } from "./task-args";
 
 // import { loadPartialConfig } from '@babel/core';
 
-enum InstallMethod {
-  NPM,
-  NPMWithSudo,
-  Binary
-}
-
 const CLI_EXIT_CODE_SUCCESS = 0;
 const CLI_EXIT_CODE_ISSUES_FOUND = 1;
 const CLI_EXIT_CODE_INVALID_USE = 2;
-
-// I can't Mock the getPlatform stuff: https://github.com/microsoft/azure-pipelines-task-lib/issues/530
-function chooseInstallMethod(p: tl.Platform): InstallMethod {
-  if (p === tl.Platform.Linux) {
-    return InstallMethod.NPMWithSudo;
-  } else if (p === tl.Platform.Windows) {
-    return InstallMethod.NPM;
-  } else if (p === tl.Platform.MacOS) {
-    return InstallMethod.NPM;
-  } else {
-    // this is not possible but is required because JavaScript
-    return InstallMethod.NPM;
-  }
-}
 
 function buildToolRunner(tool: string, requiresSudo: boolean): tr.ToolRunner {
   if (requiresSudo) {
@@ -110,7 +90,6 @@ async function showDirectoryListing(options: tr.IExecOptions) {
 }
 
 async function installSnyk(
-  taskArgs: TaskArgs,
   options: tr.IExecOptions,
   useSudo: boolean
 ) {
@@ -142,9 +121,9 @@ async function authorizeSnyk(
 async function runSnykTest(
   taskArgs: TaskArgs,
   options: tr.IExecOptions,
-  fileArg: string,
   useSudo: boolean
 ): Promise<number> {
+  const fileArg = taskArgs.getFileParameter();
   const snykTestToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
     .arg("test")
     .argIf(
@@ -166,9 +145,9 @@ async function runSnykTest(
 async function runSnykMonitor(
   taskArgs: TaskArgs,
   options: tr.IExecOptions,
-  fileArg: string,
   useSudo: boolean
 ) {
+  const fileArg = taskArgs.getFileParameter();
   const snykMonitorToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
     .arg("monitor")
     .argIf(taskArgs.dockerImageName, `--docker`)
@@ -206,25 +185,24 @@ async function run() {
       showDirectoryListing(options);
     }
 
-    let installMethod = InstallMethod.NPMWithSudo;
-    if (!isTest) {
-      const platform: tl.Platform = tl.getPlatform();
-      installMethod = chooseInstallMethod(platform);
+    let useSudo = true;
+    try {
+      const p: tl.Platform = tl.getPlatform();
+      useSudo = p === tl.Platform.Linux; // we need to use sudo for Linux
+    } catch (Error) {
+      // this occurs during tests as tl.getPlatform() is not mocked
+      // https://github.com/microsoft/azure-pipelines-task-lib/issues/530
+      console.log("Warning: Error caught calling tl.getPlatform()");
     }
-    console.log(`installMethod: ${installMethod}\n`);
-
-    const useSudo = installMethod === InstallMethod.NPMWithSudo;
     console.log(`useSudo: ${useSudo}`);
 
-    await installSnyk(taskArgs, options, useSudo);
+    await installSnyk(options, useSudo);
 
     await authorizeSnyk(authTokenToUse, options, useSudo);
 
-    const fileArg = taskArgs.getFileParameter();
     const snykTestExitCode = await runSnykTest(
       taskArgs,
       options,
-      fileArg,
       useSudo
     );
 
@@ -246,7 +224,7 @@ async function run() {
     }
 
     if (taskArgs.monitorOnBuild && snykTestExitCode === CLI_EXIT_CODE_SUCCESS) {
-      runSnykMonitor(taskArgs, options, fileArg, useSudo);
+      runSnykMonitor(taskArgs, options, useSudo);
     }
   } catch (err) {
     console.log("exception caught!");

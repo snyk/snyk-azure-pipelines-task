@@ -72,9 +72,6 @@ export function getAuthToken(isTest: boolean) {
         const authTokenFromServiceConnection =
           endpointAuthorization.parameters["apitoken"];
         authTokenToUse = authTokenFromServiceConnection;
-        console.log(
-          `authTokenFromServiceConnection: ${authTokenFromServiceConnection}\n`
-        );
       }
     }
   }
