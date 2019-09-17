@@ -168,11 +168,13 @@ async function run() {
     const taskArgs: TaskArgs = parseInputArgs(taskDebug);
     const authTokenToUse = getAuthToken();
     if (!authTokenToUse) {
-      console.log("auth token is not set. Setup SnykAuth service connection and specify serviceConnectionEndpoint input parameter.");
+      console.log(
+        "auth token is not set. Setup SnykAuth service connection and specify serviceConnectionEndpoint input parameter."
+      );
 
       tl.setResult(
-          tl.TaskResult.Failed,
-          "auth token is not set. Setup SnykAuth service connection and specify serviceConnectionEndpoint input parameter."
+        tl.TaskResult.Failed,
+        "auth token is not set. Setup SnykAuth service connection and specify serviceConnectionEndpoint input parameter."
       );
       return;
     }

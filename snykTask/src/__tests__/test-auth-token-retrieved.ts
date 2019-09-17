@@ -77,8 +77,8 @@ test("test auth token pulled from authToken if both authToken set and serviceCon
 
   // defined not inline here so I can call toHaveBeenCalledTimes on it
   const mockFnGetEndpointAuthorization = jest
-      .fn()
-      .mockReturnValue(mockEndpointAuthorization);
+    .fn()
+    .mockReturnValue(mockEndpointAuthorization);
 
   jest.doMock("azure-pipelines-task-lib/task", () => {
     return {
@@ -111,8 +111,8 @@ test("test auth token returns empty string if both authToken set and serviceConn
 
   // defined not inline here so I can call toHaveBeenCalledTimes on it
   const mockFnGetEndpointAuthorization = jest
-      .fn()
-      .mockReturnValue(mockEndpointAuthorization);
+    .fn()
+    .mockReturnValue(mockEndpointAuthorization);
 
   jest.doMock("azure-pipelines-task-lib/task", () => {
     return {

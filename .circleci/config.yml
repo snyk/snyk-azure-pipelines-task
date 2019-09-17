@@ -14,6 +14,7 @@ jobs:
             pwd
             ls -la
             npm install
+            npm run build
             npm run eslint
             npm run format:check
             npm test
@@ -32,13 +33,11 @@ jobs:
             cd snykTask
             sudo npm install -g typescript
             npm install
-            tsc
+            npm run build
             npm prune --production
             cd ..
             export AZURE_DEVOPS_EXT_PAT=$AZ_TEST_TOKEN
-            az devops --help
             sudo npm install -g tfx-cli
-            which tfx
             az devops extension uninstall --publisher-name $AZ_TEST_PUB_NAME --extension-name $AZ_TEST_EXTENSION_ID --organization $AZ_TEST_ORG --yes
             tfx extension publish --manifest-globs vss-extension.json --rev-version --share-with $AZ_TEST_SHARE_WITH_ORG --token $AZURE_DEVOPS_EXT_PAT
             az devops extension install --publisher-name $AZ_TEST_PUB_NAME --extension-name $AZ_TEST_EXTENSION_ID --organization $AZ_TEST_ORG
@@ -57,5 +56,6 @@ workflows:
             - build
           filters:
             branches:
-              only: feat/initial-implementation
-
+              ignore:
+                - master
+                - develop

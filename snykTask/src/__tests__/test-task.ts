@@ -352,10 +352,10 @@ test("test that if you set targetFile that we use it ", () => {
 
 test("test that the task fails appropriately if no auth token is set", () => {
   const testMockConfigPath = getFullPathToTestConfig(
-      "_test-mock-config-no-auth-token.js"
+    "_test-mock-config-no-auth-token.js"
   );
   const mockTestRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
-      testMockConfigPath
+    testMockConfigPath
   );
 
   mockTestRunner.run();
@@ -364,6 +364,6 @@ test("test that the task fails appropriately if no auth token is set", () => {
   expect(mockTestRunner.warningIssues.length).toBe(0);
   expect(mockTestRunner.errorIssues.length).toBe(1);
   expect(mockTestRunner.errorIssues[0]).toBe(
-      "auth token is not set. Setup SnykAuth service connection and specify serviceConnectionEndpoint input parameter."
+    "auth token is not set. Setup SnykAuth service connection and specify serviceConnectionEndpoint input parameter."
   );
 });

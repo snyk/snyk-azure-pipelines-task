@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "pretest": "tsc",
     "test:mocha": "mocha tests/_suite.js",
     "test": "jest",
