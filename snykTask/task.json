@@ -50,20 +50,6 @@
         },
 
         {
-            "name": "severityThreshold",
-            "label": "Testing severity threshold",
-            "type": "pickList",
-            "required": false,
-            "defaultValue": "low",
-            "options": {
-              "low": "Low (default)",
-              "medium": "Medium",
-              "high": "High"
-            },
-            "helpMarkDown": "The testing severity threshold. Leave blank for no threshold."
-        },
-
-        {
             "name": "dockerImageName",
             "label": "Container Image Name",
             "type": "string",
@@ -83,6 +69,30 @@
         },
 
         {
+            "name": "targetFile",
+            "label": "Custom path to manifest file to test",
+            "type": "string",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "Relative path to manifest file to test (relative to repo root or working directory, if set)",
+            "visibleRule": "testType = app"
+        },
+
+        {
+            "name": "severityThreshold",
+            "label": "Testing severity threshold",
+            "type": "pickList",
+            "required": false,
+            "defaultValue": "low",
+            "options": {
+                "low": "Low (default)",
+                "medium": "Medium",
+                "high": "High"
+            },
+            "helpMarkDown": "The testing severity threshold. Leave blank for no threshold."
+        },
+
+        {
             "name": "monitorOnBuild",
             "label": "Run the Snyk monitor after test?",
             "type": "boolean",
@@ -97,15 +107,6 @@
             "required": true,
             "defaultValue": "true",
             "helpMarkDown": "Fail build if Snyk finds issues"
-        },
-        {
-            "name": "targetFile",
-            "label": "Custom path to manifest file to test",
-            "type": "string",
-            "required": false,
-            "defaultValue": "",
-            "helpMarkDown": "Relative path to manifest file to test (relative to repo root or working directory, if set)",
-            "visibleRule": "testType = app"
         },
 
         {
