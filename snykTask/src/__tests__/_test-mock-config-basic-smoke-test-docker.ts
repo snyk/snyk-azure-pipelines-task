@@ -7,7 +7,7 @@ const tmr: tmrm.TaskMockRunner = new tmrm.TaskMockRunner(taskPath);
 
 tmr.setInput("stepDisplayName", "some stepDisplayName");
 tmr.setInput("authToken", "some-authToken");
-tmr.setInput("serviceConnectionEndpoint", "mySnykServiceConnectionEndpoint");
+// tmr.setInput("serviceConnectionEndpoint", "mySnykServiceConnectionEndpoint");
 tmr.setInput("projectName", "some-projectName");
 tmr.setInput("testDirectory", "some/dir");
 // tmr.setInput("targetFile", "some/dir/pom.xml");

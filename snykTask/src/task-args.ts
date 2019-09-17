@@ -40,26 +40,16 @@ class TaskArgs {
   }
 }
 
-export function getAuthToken(isTest: boolean) {
-  let authTokenToUse = "";
-
+export function getAuthToken() {
   const serviceConnectionEndpoint = tl.getInput(
     "serviceConnectionEndpoint",
     false
   );
-  console.log(`serviceConnectionEndpoint: ${serviceConnectionEndpoint}\n`);
 
-  // very kludgy thing to make the tests work but have it still work in Azure with the service connection
   const authToken = tl.getInput("authToken", false);
-  if (isTest) {
-    // use authToken field
-    authTokenToUse = authToken;
-  } else if (authToken && !serviceConnectionEndpoint) {
-    // use authToken field
-    console.log(
-      "authToken is set and serviceConnectionEndpoint is not... using authToken"
-    );
-    authTokenToUse = authToken;
+
+  if (authToken && !serviceConnectionEndpoint) {
+    return authToken;
   } else {
     // pull token from the service connection and fail if it is not set
     if (serviceConnectionEndpoint) {
@@ -71,11 +61,11 @@ export function getAuthToken(isTest: boolean) {
       if (endpointAuthorization) {
         const authTokenFromServiceConnection =
           endpointAuthorization.parameters["apitoken"];
-        authTokenToUse = authTokenFromServiceConnection;
+        return authTokenFromServiceConnection;
       }
     }
   }
-  return authTokenToUse;
+  return "";
 }
 
 export { TaskArgs };

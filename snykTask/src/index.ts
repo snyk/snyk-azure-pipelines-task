@@ -166,11 +166,16 @@ async function run() {
     console.log(`currentWorkingDirectory: ${currentWorkingDirectory}\n`);
 
     const taskArgs: TaskArgs = parseInputArgs(taskDebug);
+    const authTokenToUse = getAuthToken();
+    if (!authTokenToUse) {
+      console.log("auth token is not set. Setup SnykAuth service connection and specify serviceConnectionEndpoint input parameter.");
 
-    // Just used for testing
-    const isTest: boolean = tl.getInput("isTest", false) === "true";
-
-    const authTokenToUse = getAuthToken(isTest);
+      tl.setResult(
+          tl.TaskResult.Failed,
+          "auth token is not set. Setup SnykAuth service connection and specify serviceConnectionEndpoint input parameter."
+      );
+      return;
+    }
 
     const options = {
       cwd: taskArgs.testDirectory,

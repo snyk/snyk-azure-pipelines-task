@@ -6,16 +6,16 @@ const taskPath = path.join(__dirname, "..", "index.js");
 const tmr: tmrm.TaskMockRunner = new tmrm.TaskMockRunner(taskPath);
 
 tmr.setInput("stepDisplayName", "some stepDisplayName");
-tmr.setInput("authToken", "some-authToken");
+// tmr.setInput("authToken", "some-authToken");
 // tmr.setInput("serviceConnectionEndpoint", "mySnykServiceConnectionEndpoint");
-// tmr.setInput("projectName", "someProjectName");
+tmr.setInput("projectName", "some-projectName");
 tmr.setInput("testDirectory", "some/dir");
-tmr.setInput("targetFile", "some/dir/pom.xml");
+// tmr.setInput("targetFile", "some/dir/pom.xml");
 tmr.setInput("organization", "some-snyk-org");
 tmr.setInput("severityThreshold", "");
 tmr.setInput("failOnIssues", "true");
 tmr.setInput("monitorOnBuild", "true");
-// tmr.setInput("additionalArguments", "--someAdditionalArgs");
+tmr.setInput("additionalArguments", "--someAdditionalArgs");
 tmr.setInput("isTest", "true");
 tmr.setInput("testType", "app");
 
@@ -54,11 +54,11 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/sudo snyk test --file=some/dir/pom.xml": {
+    "/usr/bin/sudo snyk test --someAdditionalArgs": {
       code: 0,
       stdout: "No issues found"
     },
-    "/usr/bin/sudo snyk monitor --file=some/dir/pom.xml --org=some-snyk-org": {
+    "/usr/bin/sudo snyk monitor --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs": {
       code: 0,
       stdout: "No issues found"
     }
