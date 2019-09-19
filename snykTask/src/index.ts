@@ -227,17 +227,21 @@ async function run() {
     }
 
     if (taskArgs.monitorOnBuild && snykTestExitCode === CLI_EXIT_CODE_SUCCESS) {
-      const snykMonitorExitCode = await runSnykMonitor(taskArgs, options, useSudo);
+      const snykMonitorExitCode = await runSnykMonitor(
+        taskArgs,
+        options,
+        useSudo
+      );
       if (snykMonitorExitCode !== SNYK_MONITOR_EXIT_CODE_SUCCESS) {
         if (snykMonitorExitCode === SNYK_MONITOR_EXIT_INVALID_FILE_OR_IMAGE) {
           tl.setResult(
-              tl.TaskResult.Failed,
-              "failing task because `snyk monitor` had an error - unknown file or image"
+            tl.TaskResult.Failed,
+            "failing task because `snyk monitor` had an error - unknown file or image"
           );
         } else {
           tl.setResult(
-              tl.TaskResult.Failed,
-              "failing task because `snyk monitor` had an error"
+            tl.TaskResult.Failed,
+            "failing task because `snyk monitor` had an error"
           );
         }
         return;
