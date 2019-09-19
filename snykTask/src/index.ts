@@ -7,6 +7,8 @@ import { TaskArgs, getAuthToken } from "./task-args";
 const CLI_EXIT_CODE_SUCCESS = 0;
 const CLI_EXIT_CODE_ISSUES_FOUND = 1;
 const CLI_EXIT_CODE_INVALID_USE = 2;
+const SNYK_MONITOR_EXIT_CODE_SUCCESS = 0;
+const SNYK_MONITOR_EXIT_INVALID_FILE_OR_IMAGE = 2;
 
 function buildToolRunner(tool: string, requiresSudo: boolean): tr.ToolRunner {
   if (requiresSudo) {
@@ -143,7 +145,7 @@ async function runSnykMonitor(
   taskArgs: TaskArgs,
   options: tr.IExecOptions,
   useSudo: boolean
-) {
+): Promise<number> {
   const fileArg = taskArgs.getFileParameter();
   const snykMonitorToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
     .arg("monitor")
@@ -156,6 +158,7 @@ async function runSnykMonitor(
 
   const snykMonitorExitCode = await snykMonitorToolRunner.exec(options);
   console.log(`snykMonitorExitCode: ${snykMonitorExitCode}\n`);
+  return snykMonitorExitCode;
 }
 
 async function run() {
@@ -224,7 +227,21 @@ async function run() {
     }
 
     if (taskArgs.monitorOnBuild && snykTestExitCode === CLI_EXIT_CODE_SUCCESS) {
-      runSnykMonitor(taskArgs, options, useSudo);
+      const snykMonitorExitCode = await runSnykMonitor(taskArgs, options, useSudo);
+      if (snykMonitorExitCode !== SNYK_MONITOR_EXIT_CODE_SUCCESS) {
+        if (snykMonitorExitCode === SNYK_MONITOR_EXIT_INVALID_FILE_OR_IMAGE) {
+          tl.setResult(
+              tl.TaskResult.Failed,
+              "failing task because `snyk monitor` had an error - unknown file or image"
+          );
+        } else {
+          tl.setResult(
+              tl.TaskResult.Failed,
+              "failing task because `snyk monitor` had an error"
+          );
+        }
+        return;
+      }
     }
   } catch (err) {
     console.log("exception caught!");

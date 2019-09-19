@@ -367,3 +367,41 @@ test("test that the task fails appropriately if no auth token is set", () => {
     "auth token is not set. Setup SnykAuth service connection and specify serviceConnectionEndpoint input parameter."
   );
 });
+
+test("if snyk monitor fails we get an appropriate message - unknown file", () => {
+  const testMockConfigPath = getFullPathToTestConfig(
+      "_test-mock-config-snyk-monitor-fails-because-unknown-file.ts"
+  );
+  console.log(`testMockConfigPath: ${testMockConfigPath}`);
+  const testMockRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
+      testMockConfigPath
+  );
+
+  testMockRunner.run();
+
+  expect(testMockRunner.succeeded).toBe(false);
+  expect(testMockRunner.warningIssues.length).toBe(0);
+  expect(testMockRunner.errorIssues.length).toBe(1);
+  expect(testMockRunner.errorIssues[0]).toBe(
+      "failing task because `snyk monitor` had an error - unknown file or image"
+  );
+});
+
+test("if snyk monitor fails we get an appropriate message - other error file", () => {
+  const testMockConfigPath = getFullPathToTestConfig(
+      "_test-mock-config-snyk-monitor-fails-because-unknown-error.ts"
+  );
+  console.log(`testMockConfigPath: ${testMockConfigPath}`);
+  const testMockRunner: ttm.MockTestRunner = new ttm.MockTestRunner(
+      testMockConfigPath
+  );
+
+  testMockRunner.run();
+
+  expect(testMockRunner.succeeded).toBe(false);
+  expect(testMockRunner.warningIssues.length).toBe(0);
+  expect(testMockRunner.errorIssues.length).toBe(1);
+  expect(testMockRunner.errorIssues[0]).toBe(
+      "failing task because `snyk monitor` had an error"
+  );
+});
