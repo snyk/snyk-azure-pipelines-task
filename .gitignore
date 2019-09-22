@@ -1,0 +1,15 @@
+snykTask/dist
+node_modules
+.azure-pipeline-jobs
+cycle.sh
+.ops.md
+.DS_Store
+.idea
+.taskkey
+/.mocha_tests/
+snykTask/coverage
+package-lock.json
+*.vsix
+.eslintcache
+.circleci
+.ops
