@@ -13,15 +13,13 @@ jobs:
             cd snykTask
             pwd
             ls -la
+            node -v
             npm install
+            npm list --depth=0
             npm run build
             npm run eslint
             npm run format:check
             npm test
-
-
-orbs:
-  azure-cli: circleci/azure-cli@1.0.0
 
 workflows:
   version: 2
