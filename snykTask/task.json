@@ -27,7 +27,7 @@
     "inputs": [
         {
             "name": "serviceConnectionEndpoint",
-            "type": "connectedService:Snyk",
+            "type": "connectedService:SnykAuth",
             "label": "Snyk API token",
             "required": true,
             "defaultValue": "",
