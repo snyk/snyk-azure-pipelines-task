@@ -94,7 +94,7 @@
 
         {
             "name": "monitorOnBuild",
-            "label": "Run the Snyk monitor after test?",
+            "label": "Run Snyk monitor after test?",
             "type": "boolean",
             "required": true,
             "defaultValue": "true",
