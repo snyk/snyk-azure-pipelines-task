@@ -21,10 +21,6 @@ jobs:
             npm run format:check
             npm test
 
-
-orbs:
-  azure-cli: circleci/azure-cli@1.0.0
-
 workflows:
   version: 2
   build_and_test:
