@@ -234,7 +234,7 @@ test("snyk monitor is not called if monitorOnBuild is false", () => {
 });
 
 // if failOnIssues is false and snyk test finds issues, then the task should not fail
-test("if failOnIssues is false and snyk test finds issues, then the task should not fail", () => {
+test("if failOnIssues is false and snyk test finds issues, then the task should not fail and snyk monitor should run", () => {
   const testMockConfigPath = getFullPathToTestConfig(
     "_test-mock-config-no-fail-task-if-snyk-finds-issues-but-failOnIssues-is-false.js"
   );
@@ -248,6 +248,12 @@ test("if failOnIssues is false and snyk test finds issues, then the task should 
   expect(testMockRunner.succeeded).toBe(true); // 'should have succeeded'
   expect(testMockRunner.warningIssues.length).toBe(0); // "should have no warnings");
   expect(testMockRunner.errorIssues.length).toBe(0); // "should have no errors");
+
+  expect(
+    testMockRunner.cmdlines[
+      "/usr/bin/sudo snyk monitor --project-name=someProjectName"
+    ]
+  ).toBe(true);
 });
 
 // if failOnIssues is true and snyk test finds issues, then the task should fail
@@ -299,7 +305,7 @@ test("if snyk test fails then snyk monitor should not run", () => {
 
 // make sure that if snyk test fails for a reason other than issues being found that the error messaging indicates
 // this and that snyk monitor does not run.
-test("if snyk test fails then snyk monitor should not run", () => {
+test("if snyk test fails then snyk monitor should not run if snyk test fails for reasons other than issues found", () => {
   const testMockConfigPath = getFullPathToTestConfig(
     "_test-mock-config-snyk-test-fails-for-reasons-other-than-issues-found.ts"
   );

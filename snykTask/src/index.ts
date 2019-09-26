@@ -217,6 +217,7 @@ async function run() {
         tl.TaskResult.Failed,
         "failing task because `snyk test` found issues"
       );
+      return;
     }
 
     if (snykTestExitCode >= CLI_EXIT_CODE_INVALID_USE) {
@@ -224,9 +225,10 @@ async function run() {
         tl.TaskResult.Failed,
         "failing task because `snyk test` was improperly used or had other errors"
       );
+      return;
     }
 
-    if (taskArgs.monitorOnBuild && snykTestExitCode === CLI_EXIT_CODE_SUCCESS) {
+    if (taskArgs.monitorOnBuild) {
       const snykMonitorExitCode = await runSnykMonitor(
         taskArgs,
         options,

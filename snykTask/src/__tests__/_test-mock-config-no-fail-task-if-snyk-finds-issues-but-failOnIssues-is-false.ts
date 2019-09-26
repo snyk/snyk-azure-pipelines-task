@@ -54,7 +54,7 @@ const answers: ma.TaskLibAnswers = {
       code: 1,
       stdout: "Issues found"
     },
-    "/usr/bin/sudo snyk monitor": {
+    "/usr/bin/sudo snyk monitor --project-name=someProjectName": {
       code: 0,
       stdout: "No issues found"
     }
