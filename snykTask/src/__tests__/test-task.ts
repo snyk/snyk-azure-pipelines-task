@@ -250,9 +250,9 @@ test("if failOnIssues is false and snyk test finds issues, then the task should 
   expect(testMockRunner.errorIssues.length).toBe(0); // "should have no errors");
 
   expect(
-      testMockRunner.cmdlines[
-          "/usr/bin/sudo snyk monitor --project-name=someProjectName"
-          ]
+    testMockRunner.cmdlines[
+      "/usr/bin/sudo snyk monitor --project-name=someProjectName"
+    ]
   ).toBe(true);
 });
 
