@@ -1,5 +1,4 @@
 import * as path from "path";
-// import * as assert from "assert";
 import * as ttm from "azure-pipelines-task-lib/mock-test";
 import * as fs from "fs";
 
@@ -20,11 +19,6 @@ function getFullPathToTestConfig(testConfigFilename: string): string {
 
   return fullPath;
 }
-
-// test('getFullPathToTestConfig works right', () => {
-//     expect(getFullPathToTestConfig('someTestConfig.js').endsWith('someTestConfig.js')).toBe(true);
-//     expect(getFullPathToTestConfig('someTestConfig.ts').endsWith('someTestConfig.js')).toBe(true);
-// });
 
 test("basic smoke test - inputs are ok", () => {
   const testMockConfigPath = getFullPathToTestConfig(
