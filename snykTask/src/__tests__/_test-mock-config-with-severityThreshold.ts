@@ -34,11 +34,11 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "(directory listing)"
     },
-    "/usr/bin/npm install -g snyk": {
+    "/usr/bin/npm install -g snyk snyk-to-html": {
       code: 0,
       stdout: "Ok"
     },
-    "/usr/bin/sudo npm install -g snyk": {
+    "/usr/bin/sudo npm install -g snyk snyk-to-html": {
       code: 0,
       stdout: "Ok"
     },
@@ -50,7 +50,11 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/sudo snyk test --severity-threshold=high": {
+    "/usr/bin/sudo snyk test --severity-threshold=high --json > null/report.json": {
+      code: 0,
+      stdout: "No issues found"
+    },
+    "/usr/bin/sudo snyk-to-html -i null/report.json -o null/report.html": {
       code: 0,
       stdout: "No issues found"
     },

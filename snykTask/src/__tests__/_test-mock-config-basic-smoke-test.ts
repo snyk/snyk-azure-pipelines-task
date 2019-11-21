@@ -1,16 +1,14 @@
 import * as ma from "azure-pipelines-task-lib/mock-answer";
-import * as tmrm from "azure-pipelines-task-lib/mock-run";
+import * as mockRun from "azure-pipelines-task-lib/mock-run";
 import * as path from "path";
 
 const taskPath = path.join(__dirname, "..", "index.js");
-const tmr: tmrm.TaskMockRunner = new tmrm.TaskMockRunner(taskPath);
+const tmr: mockRun.TaskMockRunner = new mockRun.TaskMockRunner(taskPath);
 
 tmr.setInput("stepDisplayName", "some stepDisplayName");
 tmr.setInput("authToken", "some-authToken");
-// tmr.setInput("serviceConnectionEndpoint", "mySnykServiceConnectionEndpoint");
 tmr.setInput("projectName", "some-projectName");
 tmr.setInput("testDirectory", "some/dir");
-// tmr.setInput("targetFile", "some/dir/pom.xml");
 tmr.setInput("organization", "some-snyk-org");
 tmr.setInput("severityThreshold", "");
 tmr.setInput("failOnIssues", "true");
@@ -26,9 +24,6 @@ const answers: ma.TaskLibAnswers = {
     snyk: "/usr/bin/snyk",
     sudo: "/usr/bin/sudo"
   },
-  // getEndpointAuthorization: {
-  //   mySnykServiceConnectionEndpoint: "myFakeTokenFromServiceConnectionEndpoint"
-  // },
   exec: {
     "/bin/ls -la": {
       code: 0,
@@ -38,11 +33,11 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "(directory listing)"
     },
-    "/usr/bin/npm install -g snyk": {
+    "/usr/bin/npm install -g snyk snyk-to-html": {
       code: 0,
       stdout: "Ok"
     },
-    "/usr/bin/sudo npm install -g snyk": {
+    "/usr/bin/sudo npm install -g snyk snyk-to-html": {
       code: 0,
       stdout: "Ok"
     },
@@ -54,7 +49,11 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/sudo snyk test --someAdditionalArgs": {
+    "/usr/bin/sudo snyk test --someAdditionalArgs --json > null/report.json": {
+      code: 0,
+      stdout: "No issues found"
+    },
+    "/usr/bin/sudo snyk-to-html -i null/report.json -o null/report.html": {
       code: 0,
       stdout: "No issues found"
     },

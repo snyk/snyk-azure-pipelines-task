@@ -7,7 +7,7 @@
     "build": "tsc",
     "pretest": "tsc",
     "test:mocha": "mocha tests/_suite.js",
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "eslint": "eslint --cache '{src,test,scripts,public/js/{!(build)}}/**/*.{js,ts}'",
     "format:check": "prettier --check '{src,test,scripts,public/js/{!(build)}}/**/*.{js,ts}'",
     "format": "prettier --write '{src,test,scripts,public/js/{!(build)}}/**/*.{js,ts}'"
@@ -15,7 +15,7 @@
   "author": "snyk.io",
   "license": "MIT",
   "dependencies": {
-    "azure-pipelines-task-lib": "2.8.0"
+    "azure-pipelines-task-lib": "2.9.3"
   },
   "devDependencies": {
     "@types/jest": "^24.0.18",
@@ -29,6 +29,7 @@
     "eslint-plugin-jest": "^22.15.2",
     "jest": "^24.9.0",
     "prettier": "^1.18.2",
+    "sync-request": "^6.1.0",
     "ts-jest": "^24.0.2",
     "typescript": "^3.5.3"
   }

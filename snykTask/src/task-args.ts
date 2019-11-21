@@ -1,22 +1,22 @@
 import * as tl from "azure-pipelines-task-lib";
 
 class TaskArgs {
-  testType: string = "";
+  testType: string | undefined = "";
 
-  targetFile: string = "";
+  targetFile: string | undefined = "";
 
-  dockerImageName: string = "";
-  dockerfilePath: string = "";
+  dockerImageName: string | undefined = "";
+  dockerfilePath: string | undefined = "";
 
-  severityThreshold: string = "";
+  severityThreshold: string | undefined = "";
 
-  organization: string = "";
+  organization: string | undefined = "";
   monitorOnBuild: boolean = true;
   failOnIssues: boolean = true;
-  projectName: string = "";
+  projectName: string | undefined = "";
 
-  testDirectory: string = "";
-  additionalArguments: string = "";
+  testDirectory: string | undefined = "";
+  additionalArguments: string | undefined = "";
 
   getFileParameter() {
     if (this.targetFile && !this.dockerImageName) {

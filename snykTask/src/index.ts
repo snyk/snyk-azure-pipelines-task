@@ -14,6 +14,9 @@ const CLI_EXIT_CODE_ISSUES_FOUND = 1;
 const CLI_EXIT_CODE_INVALID_USE = 2;
 const SNYK_MONITOR_EXIT_CODE_SUCCESS = 0;
 const SNYK_MONITOR_EXIT_INVALID_FILE_OR_IMAGE = 2;
+const JSON_REPORT_FILE_NAME = "report.json";
+const HTML_REPORT_FILE_NAME = "report.html";
+const HTML_ATTACHMENT_TYPE = "HTML_ATTACHMENT_TYPE";
 
 const isDebugMode = () => {
   const taskDebug = true;
@@ -97,7 +100,8 @@ async function installSnyk(options: tr.IExecOptions, useSudo: boolean) {
   const installSnykToolRunner: tr.ToolRunner = buildToolRunner("npm", useSudo)
     .arg("install")
     .arg("-g")
-    .arg("snyk");
+    .arg("snyk")
+    .arg("snyk-to-html");
 
   const installSnykExitCode = await installSnykToolRunner.exec(options);
   if (isDebugMode())
@@ -123,7 +127,8 @@ async function authorizeSnyk(
 async function runSnykTest(
   taskArgs: TaskArgs,
   options: tr.IExecOptions,
-  useSudo: boolean
+  useSudo: boolean,
+  workDir: string
 ) {
   const fileArg = taskArgs.getFileParameter();
   const snykTestToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
@@ -136,7 +141,8 @@ async function runSnykTest(
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
     .argIf(fileArg, `--file=${fileArg}`)
 
-    .argIf(taskArgs.additionalArguments, taskArgs.additionalArguments);
+    .argIf(taskArgs.additionalArguments, taskArgs.additionalArguments)
+    .arg(`--json > ${workDir}/${JSON_REPORT_FILE_NAME}`);
 
   const snykTestExitCode = await snykTestToolRunner.exec(options);
   if (isDebugMode()) console.log(`snykTestExitCode: ${snykTestExitCode}\n`);
@@ -152,6 +158,25 @@ async function runSnykTest(
   if (snykTestExitCode >= CLI_EXIT_CODE_INVALID_USE) {
     const errorMsg =
       "failing task because `snyk test` was improperly used or had other errors";
+    throw new SnykError(errorMsg);
+  }
+}
+
+async function runSnykToHTML(
+  taskArgs: TaskArgs,
+  options: tr.IExecOptions,
+  useSudo: boolean,
+  workDir: string
+) {
+  const snykToHTMLToolRunner: tr.ToolRunner = buildToolRunner("snyk-to-html", useSudo)
+    .arg(`-i ${workDir}/${JSON_REPORT_FILE_NAME}`)
+    .arg(`-o ${workDir}/${HTML_REPORT_FILE_NAME}`);
+  const snykToHTMLExitCode = await snykToHTMLToolRunner.exec(options);
+  if (isDebugMode()) console.log(`snykToHTMLExitCode: ${snykToHTMLExitCode}\n`);
+
+  if (snykToHTMLExitCode != CLI_EXIT_CODE_SUCCESS) {
+    const errorMsg =
+      "failing task because `snyk-to-html` failed to generate the report";
     throw new SnykError(errorMsg);
   }
 }
@@ -187,17 +212,16 @@ async function runSnykMonitor(
 }
 
 const isSudoMode = (): boolean => {
-  let useSudo = true;
-  try {
-    const p: tl.Platform = tl.getPlatform();
-    useSudo = p === tl.Platform.Linux; // we need to use sudo for Linux
-  } catch (Error) {
-    // this occurs during tests as tl.getPlatform() is not mocked
-    // https://github.com/microsoft/azure-pipelines-task-lib/issues/530
-    console.log("Warning: Error caught calling tl.getPlatform()");
-  }
-  return useSudo;
+  const p: tl.Platform = tl.getPlatform();
+  if ( typeof p !== "number") return true;
+
+  return p === tl.Platform.Linux;
 };
+
+const attachReport = (file: string, workDir: string) => {
+  if (isDebugMode()) console.log('file exists... attaching file');
+  tl.addAttachment(HTML_ATTACHMENT_TYPE, file, `${workDir}/${file}`);
+}
 
 async function run() {
   try {
@@ -228,7 +252,9 @@ async function run() {
 
     await installSnyk(options, useSudo);
     await authorizeSnyk(authTokenToUse, options, useSudo);
-    await runSnykTest(taskArgs, options, useSudo);
+    await runSnykTest(taskArgs, options, useSudo, currentWorkingDirectory);
+    await runSnykToHTML(taskArgs, options, useSudo, currentWorkingDirectory);
+    attachReport(HTML_REPORT_FILE_NAME, currentWorkingDirectory);
     if (taskArgs.monitorOnBuild)
       await runSnykMonitor(taskArgs, options, useSudo);
   } catch (err) {
@@ -242,5 +268,3 @@ async function run() {
 }
 
 run();
-
-export { isSudoMode };

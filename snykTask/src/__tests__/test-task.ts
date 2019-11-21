@@ -21,6 +21,8 @@ function getFullPathToTestConfig(testConfigFilename: string): string {
 }
 
 test("basic smoke test - inputs are ok", () => {
+  const fileName = "report.html";
+  const workDir = null;
   const testMockConfigPath = getFullPathToTestConfig(
     "_test-mock-config-basic-smoke-test.js"
   );
@@ -30,23 +32,27 @@ test("basic smoke test - inputs are ok", () => {
 
   mockTestRunner.run();
 
-  expect(mockTestRunner.succeeded).toBe(true); // 'should have succeeded'
-  expect(mockTestRunner.warningIssues.length).toBe(0); // "should have no warnings");
-  expect(mockTestRunner.errorIssues.length).toBe(0); // "should have no errors");
-
+  expect(
+    mockTestRunner.cmdlines["/usr/bin/sudo npm install -g snyk snyk-to-html"]
+  ).toBe(true);
   expect(
     mockTestRunner.cmdlines["/usr/bin/sudo snyk auth some-authToken"]
   ).toBe(true);
-
   expect(
-    mockTestRunner.cmdlines["/usr/bin/sudo snyk test --someAdditionalArgs"]
+    mockTestRunner.cmdlines["/usr/bin/sudo snyk test --someAdditionalArgs --json > null/report.json"]
   ).toBe(true);
-
+  expect(
+    mockTestRunner.cmdlines["/usr/bin/sudo snyk-to-html -i null/report.json -o null/report.html"]
+  ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
       "/usr/bin/sudo snyk monitor --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs"
     ]
   ).toBe(true);
+  
+  expect(mockTestRunner.succeeded).toBe(true); // 'should have succeeded'
+  expect(mockTestRunner.warningIssues.length).toBe(0); // "should have no warnings");
+  expect(mockTestRunner.errorIssues.length).toBe(0); // "should have no errors");
 });
 
 test("basic smoke test for container test - inputs are ok", () => {
@@ -59,25 +65,25 @@ test("basic smoke test for container test - inputs are ok", () => {
 
   mockTestRunner.run();
 
-  expect(mockTestRunner.succeeded).toBe(true); // 'should have succeeded'
-  expect(mockTestRunner.warningIssues.length).toBe(0); // "should have no warnings");
-  expect(mockTestRunner.errorIssues.length).toBe(0); // "should have no errors");
-
   expect(
     mockTestRunner.cmdlines["/usr/bin/sudo snyk auth some-authToken"]
   ).toBe(true);
-
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/sudo snyk test --docker myImage --file=Dockerfile --someAdditionalArgs"
+      "/usr/bin/sudo snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json > null/report.json"
     ]
   ).toBe(true);
-
+  expect(
+    mockTestRunner.cmdlines["/usr/bin/sudo snyk-to-html -i null/report.json -o null/report.html"]
+  ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
       "/usr/bin/sudo snyk monitor --docker myImage --file=Dockerfile --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs"
     ]
   ).toBe(true);
+  expect(mockTestRunner.succeeded).toBe(true); // 'should have succeeded'
+  expect(mockTestRunner.warningIssues.length).toBe(0); // "should have no warnings");
+  expect(mockTestRunner.errorIssues.length).toBe(0); // "should have no errors");
 });
 
 // test that it doesn't fail if the projectName input is not specified
@@ -125,13 +131,12 @@ test("doesn't fail if severityThreshold is specified", () => {
 
   testMockRunner.run();
 
+  expect(
+    testMockRunner.cmdlines["/usr/bin/sudo snyk test --severity-threshold=high --json > null/report.json"]
+  ).toBe(true);
   expect(testMockRunner.succeeded).toBe(true); // 'should have succeeded'
   expect(testMockRunner.warningIssues.length).toBe(0); // "should have no warnings");
   expect(testMockRunner.errorIssues.length).toBe(0); // "should have no errors");
-
-  expect(
-    testMockRunner.cmdlines["/usr/bin/sudo snyk test --severity-threshold=high"]
-  ).toBe(true);
 });
 
 // test that it doesn't fail if the severityThreshold is null
@@ -336,18 +341,17 @@ test("test that if you set targetFile that we use it ", () => {
 
   mockTestRunner.run();
 
-  expect(mockTestRunner.succeeded).toBe(true); // 'should have succeeded'
-  expect(mockTestRunner.warningIssues.length).toBe(0); // "should have no warnings");
-  expect(mockTestRunner.errorIssues.length).toBe(0); // "should have no errors");
-
   expect(
-    mockTestRunner.cmdlines["/usr/bin/sudo snyk test --file=some/dir/pom.xml"]
+    mockTestRunner.cmdlines["/usr/bin/sudo snyk test --file=some/dir/pom.xml --json > null/report.json"]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
       "/usr/bin/sudo snyk monitor --file=some/dir/pom.xml --org=some-snyk-org"
     ]
   ).toBe(true);
+  expect(mockTestRunner.succeeded).toBe(true); // 'should have succeeded'
+  expect(mockTestRunner.warningIssues.length).toBe(0); // "should have no warnings");
+  expect(mockTestRunner.errorIssues.length).toBe(0); // "should have no errors");
 });
 
 test("test that the task fails appropriately if no auth token is set", () => {
