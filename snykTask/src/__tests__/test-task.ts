@@ -31,7 +31,7 @@ test("basic smoke test - inputs are ok", () => {
   );
 
   mockTestRunner.run();
-  
+
   expect(
     mockTestRunner.cmdlines["/usr/bin/sudo npm install -g snyk snyk-to-html"]
   ).toBe(true);
@@ -39,14 +39,16 @@ test("basic smoke test - inputs are ok", () => {
     mockTestRunner.cmdlines["/usr/bin/sudo snyk auth some-authToken"]
   ).toBe(true);
   expect(
-    mockTestRunner.cmdlines["/usr/bin/sudo snyk test --someAdditionalArgs --json | /usr/bin/sudo snyk-to-html"]
+    mockTestRunner.cmdlines[
+      "/usr/bin/sudo snyk test --someAdditionalArgs --json | /usr/bin/sudo snyk-to-html"
+    ]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
       "/usr/bin/sudo snyk monitor --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs"
     ]
   ).toBe(true);
-  
+
   expect(mockTestRunner.succeeded).toBe(true); // 'should have succeeded'
   expect(mockTestRunner.warningIssues.length).toBe(0); // "should have no warnings");
   expect(mockTestRunner.errorIssues.length).toBe(0); // "should have no errors");
@@ -126,7 +128,9 @@ test("doesn't fail if severityThreshold is specified", () => {
   testMockRunner.run();
 
   expect(
-    testMockRunner.cmdlines["/usr/bin/sudo snyk test --severity-threshold=high --json | /usr/bin/sudo snyk-to-html"]
+    testMockRunner.cmdlines[
+      "/usr/bin/sudo snyk test --severity-threshold=high --json | /usr/bin/sudo snyk-to-html"
+    ]
   ).toBe(true);
   expect(testMockRunner.succeeded).toBe(true); // 'should have succeeded'
   expect(testMockRunner.warningIssues.length).toBe(0); // "should have no warnings");
@@ -336,7 +340,9 @@ test("test that if you set targetFile that we use it ", () => {
   mockTestRunner.run();
 
   expect(
-    mockTestRunner.cmdlines["/usr/bin/sudo snyk test --file=some/dir/pom.xml --json | /usr/bin/sudo snyk-to-html"]
+    mockTestRunner.cmdlines[
+      "/usr/bin/sudo snyk test --file=some/dir/pom.xml --json | /usr/bin/sudo snyk-to-html"
+    ]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[

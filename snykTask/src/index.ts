@@ -1,8 +1,8 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import * as tr from "azure-pipelines-task-lib/toolrunner";
 import { TaskArgs, getAuthToken } from "./task-args";
-import * as fs from 'fs';
-import stream = require('stream');
+import * as fs from "fs";
+import stream = require("stream");
 
 class SnykError extends Error {
   constructor(message?: string) {
@@ -12,8 +12,8 @@ class SnykError extends Error {
 }
 
 interface SnykOutput {
-  code: number,
-  message: string
+  code: number;
+  message: string;
 }
 
 const CLI_EXIT_CODE_SUCCESS = 0;
@@ -102,7 +102,10 @@ async function showDirectoryListing(options: tr.IExecOptions) {
   console.log(`lsExitCode: ${lsExitCode}\n`);
 }
 
-async function installSnyk(options: tr.IExecOptions, useSudo: boolean): Promise<SnykOutput>  {
+async function installSnyk(
+  options: tr.IExecOptions,
+  useSudo: boolean
+): Promise<SnykOutput> {
   const installSnykToolRunner: tr.ToolRunner = buildToolRunner("npm", useSudo)
     .arg("install")
     .arg("-g")
@@ -111,7 +114,10 @@ async function installSnyk(options: tr.IExecOptions, useSudo: boolean): Promise<
   const installSnykExitCode = await installSnykToolRunner.exec(options);
   if (isDebugMode())
     console.log(`installSnykExitCode: ${installSnykExitCode}\n`);
-  const snykOutput: SnykOutput = {code: installSnykExitCode, message: "Not possible install snyk and snky-to-html packages"};
+  const snykOutput: SnykOutput = {
+    code: installSnykExitCode,
+    message: "Not possible install snyk and snky-to-html packages"
+  };
 
   return snykOutput;
 }
@@ -120,7 +126,7 @@ async function authorizeSnyk(
   snykToken: string,
   options: tr.IExecOptions,
   useSudo: boolean
-): Promise<SnykOutput>  {
+): Promise<SnykOutput> {
   // TODO: play with setVariable as an option to use instead of running `snyk auth`
   // tl.setVariable('SNYK_TOKEN', authToken, true);
   const snykAuthToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
@@ -128,7 +134,10 @@ async function authorizeSnyk(
     .arg(snykToken);
   const snykAuthExitCode = await snykAuthToolRunner.exec(options);
   if (isDebugMode()) console.log(`snykAuthExitCode: ${snykAuthExitCode}\n`);
-  const snykOutput: SnykOutput = {code: snykAuthExitCode, message: "Invalid token - Snyk does not authorized the user"};
+  const snykOutput: SnykOutput = {
+    code: snykAuthExitCode,
+    message: "Invalid token - Snyk does not authorized the user"
+  };
 
   return snykOutput;
 }
@@ -142,7 +151,10 @@ async function runSnykTest(
   let errorMsg = "";
   let code = 0;
   const fileArg = taskArgs.getFileParameter();
-  const snykToHTMLToolRunner: tr.ToolRunner = buildToolRunner("snyk-to-html", useSudo)
+  const snykToHTMLToolRunner: tr.ToolRunner = buildToolRunner(
+    "snyk-to-html",
+    useSudo
+  );
   const snykTestToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
     .arg("test")
     .argIf(
@@ -169,7 +181,7 @@ async function runSnykTest(
     errorMsg =
       "failing task because `snyk test` was improperly used or had other errors";
   }
-  const snykOutput: SnykOutput = {code: code, message: errorMsg};
+  const snykOutput: SnykOutput = { code: code, message: errorMsg };
 
   return snykOutput;
 }
@@ -201,37 +213,44 @@ async function runSnykMonitor(
       errorMsg =
         "failing task because `snyk monitor` had an error - unknown file or image";
   }
-  const snykOutput: SnykOutput = {code: snykMonitorExitCode, message: errorMsg};
+  const snykOutput: SnykOutput = {
+    code: snykMonitorExitCode,
+    message: errorMsg
+  };
 
   return snykOutput;
 }
 
 const isSudoMode = (): boolean => {
   const p: tl.Platform = tl.getPlatform();
-  if ( typeof p !== "number") return true;
+  if (typeof p !== "number") return true;
 
   return p === tl.Platform.Linux;
 };
 
 const attachReport = (file: string, workDir: string) => {
   if (fs.existsSync(`${workDir}/${file}`)) {
-    console.log('file exists... attaching file');
-    if (isDebugMode()) console.log(fs.readFileSync(`${workDir}/${file}`,'utf8'));
+    console.log("file exists... attaching file");
+    if (isDebugMode())
+      console.log(fs.readFileSync(`${workDir}/${file}`, "utf8"));
     tl.addAttachment(HTML_ATTACHMENT_TYPE, file, `${workDir}/${file}`);
   }
-}
+};
 
-const optionsToExecuteSnykTest = (workDir: string, taskArgs: TaskArgs): tr.IExecOptions => {
+const optionsToExecuteSnykTest = (
+  workDir: string,
+  taskArgs: TaskArgs
+): tr.IExecOptions => {
   const jsonFilePath = `${workDir}/${HTML_REPORT_FILE_NAME}`;
   const stream: stream.Writable = fs.createWriteStream(jsonFilePath);
-  
+
   return {
     cwd: taskArgs.testDirectory,
     failOnStdErr: false,
     ignoreReturnCode: true,
     outStream: stream
   } as tr.IExecOptions;
-}
+};
 
 const optionsToExecuteCmd = (taskArgs: TaskArgs): tr.IExecOptions => {
   return {
@@ -239,7 +258,7 @@ const optionsToExecuteCmd = (taskArgs: TaskArgs): tr.IExecOptions => {
     failOnStdErr: false,
     ignoreReturnCode: true
   } as tr.IExecOptions;
-}
+};
 
 async function run() {
   try {
@@ -260,36 +279,57 @@ async function run() {
     const useSudo = isSudoMode();
     if (isDebugMode()) console.log(`useSudo: ${useSudo}`);
 
-    const installSnykResult = await installSnyk(optionsToExecuteCmd(taskArgs), useSudo);
-    if (installSnykResult.code !== CLI_EXIT_CODE_SUCCESS) throw new SnykError(installSnykResult.message);
+    const installSnykResult = await installSnyk(
+      optionsToExecuteCmd(taskArgs),
+      useSudo
+    );
+    if (installSnykResult.code !== CLI_EXIT_CODE_SUCCESS)
+      throw new SnykError(installSnykResult.message);
 
-    const authorizeSnykResult = await authorizeSnyk(authTokenToUse, optionsToExecuteCmd(taskArgs), useSudo);
-    if (authorizeSnykResult.code !== CLI_EXIT_CODE_SUCCESS) throw new SnykError(authorizeSnykResult.message);
-    
+    const authorizeSnykResult = await authorizeSnyk(
+      authTokenToUse,
+      optionsToExecuteCmd(taskArgs),
+      useSudo
+    );
+    if (authorizeSnykResult.code !== CLI_EXIT_CODE_SUCCESS)
+      throw new SnykError(authorizeSnykResult.message);
+
     let optionsToExeSnykTest = optionsToExecuteCmd(taskArgs);
     if (fs.existsSync(currentWorkingDirectory)) {
       console.log("Set Execute Snyk Test with file out stream");
-      optionsToExeSnykTest = optionsToExecuteSnykTest(currentWorkingDirectory, taskArgs);
+      optionsToExeSnykTest = optionsToExecuteSnykTest(
+        currentWorkingDirectory,
+        taskArgs
+      );
     }
-      
+
     const snykTestResult = await runSnykTest(
       taskArgs,
       optionsToExeSnykTest,
       useSudo,
       currentWorkingDirectory
     );
-    if (snykTestResult.code >= CLI_EXIT_CODE_INVALID_USE) throw new SnykError(snykTestResult.message);
-    if ((snykTestResult.code === CLI_EXIT_CODE_ISSUES_FOUND && taskArgs.failOnIssues)) 
+    if (snykTestResult.code >= CLI_EXIT_CODE_INVALID_USE)
+      throw new SnykError(snykTestResult.message);
+    if (
+      snykTestResult.code === CLI_EXIT_CODE_ISSUES_FOUND &&
+      taskArgs.failOnIssues
+    )
       throw new SnykError(snykTestResult.message);
     if (isDebugMode()) showDirectoryListing(optionsToExecuteCmd(taskArgs));
-    
+
     attachReport(HTML_REPORT_FILE_NAME, currentWorkingDirectory);
-    
+
     if (taskArgs.monitorOnBuild) {
-      const snykMonitorResult = await runSnykMonitor(taskArgs, optionsToExecuteCmd(taskArgs), useSudo);
-      if (snykMonitorResult.code !== CLI_EXIT_CODE_SUCCESS) throw new SnykError(snykMonitorResult.message);
+      const snykMonitorResult = await runSnykMonitor(
+        taskArgs,
+        optionsToExecuteCmd(taskArgs),
+        useSudo
+      );
+      if (snykMonitorResult.code !== CLI_EXIT_CODE_SUCCESS)
+        throw new SnykError(snykMonitorResult.message);
     }
-    
+
     tl.setResult(tl.TaskResult.Succeeded, "Snyk Scan completed");
   } catch (err) {
     console.error("\n\n***************************");
