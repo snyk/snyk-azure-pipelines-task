@@ -31,7 +31,7 @@ test("basic smoke test - inputs are ok", () => {
   );
 
   mockTestRunner.run();
-
+  
   expect(
     mockTestRunner.cmdlines["/usr/bin/sudo npm install -g snyk snyk-to-html"]
   ).toBe(true);
@@ -39,10 +39,7 @@ test("basic smoke test - inputs are ok", () => {
     mockTestRunner.cmdlines["/usr/bin/sudo snyk auth some-authToken"]
   ).toBe(true);
   expect(
-    mockTestRunner.cmdlines["/usr/bin/sudo snyk test --someAdditionalArgs --json > null/report.json"]
-  ).toBe(true);
-  expect(
-    mockTestRunner.cmdlines["/usr/bin/sudo snyk-to-html -i null/report.json -o null/report.html"]
+    mockTestRunner.cmdlines["/usr/bin/sudo snyk test --someAdditionalArgs --json | /usr/bin/sudo snyk-to-html"]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
@@ -70,11 +67,8 @@ test("basic smoke test for container test - inputs are ok", () => {
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/sudo snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json > null/report.json"
+      "/usr/bin/sudo snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json | /usr/bin/sudo snyk-to-html"
     ]
-  ).toBe(true);
-  expect(
-    mockTestRunner.cmdlines["/usr/bin/sudo snyk-to-html -i null/report.json -o null/report.html"]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
@@ -132,7 +126,7 @@ test("doesn't fail if severityThreshold is specified", () => {
   testMockRunner.run();
 
   expect(
-    testMockRunner.cmdlines["/usr/bin/sudo snyk test --severity-threshold=high --json > null/report.json"]
+    testMockRunner.cmdlines["/usr/bin/sudo snyk test --severity-threshold=high --json | /usr/bin/sudo snyk-to-html"]
   ).toBe(true);
   expect(testMockRunner.succeeded).toBe(true); // 'should have succeeded'
   expect(testMockRunner.warningIssues.length).toBe(0); // "should have no warnings");
@@ -342,7 +336,7 @@ test("test that if you set targetFile that we use it ", () => {
   mockTestRunner.run();
 
   expect(
-    mockTestRunner.cmdlines["/usr/bin/sudo snyk test --file=some/dir/pom.xml --json > null/report.json"]
+    mockTestRunner.cmdlines["/usr/bin/sudo snyk test --file=some/dir/pom.xml --json | /usr/bin/sudo snyk-to-html"]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[

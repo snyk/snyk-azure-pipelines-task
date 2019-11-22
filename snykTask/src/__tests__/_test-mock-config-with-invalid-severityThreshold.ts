@@ -9,12 +9,10 @@ tmr.setInput("stepDisplayName", "some stepDisplayName");
 tmr.setInput("authToken", "some-authToken");
 tmr.setInput("projectName", "someProjectName");
 tmr.setInput("testDirectory", "some/dir");
-// tmr.setInput("targetFile", "some/dir/pom.xml");
 tmr.setInput("organization", "some-snyk-org");
 tmr.setInput("severityThreshold", "invalidValue");
 tmr.setInput("failOnIssues", "true");
 tmr.setInput("monitorOnBuild", "true");
-// tmr.setInput('additionalArguments', '');
 tmr.setInput("isTest", "true");
 tmr.setInput("testType", "app");
 
@@ -50,11 +48,7 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/sudo snyk test --severity-threshold=invalidValue --json > null/report.json": {
-      code: 0,
-      stdout: "No issues found"
-    },
-    "/usr/bin/sudo snyk-to-html -i null/report.json -o null/report.html": {
+    "/usr/bin/sudo snyk test --severity-threshold=invalidValue --json | /usr/bin/sudo snyk-to-html": {
       code: 0,
       stdout: "No issues found"
     },
@@ -62,9 +56,6 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "No issues found"
     }
-
-    // "ls":  "/bin/ls",
-    // "npm": "/usr/bin/npm"
   }
 };
 
