@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<head>
+	<script src="../lib/VSS.SDK.min.js"></script>
+	<script type="text/javascript">
+		VSS.init( { 
+			usePlatformScripts: true, 
+			moduleLoaderConfig: { 
+				paths: { 
+					"enhancer": "scripts" 
+				} 
+			}
+		});
+		
+		VSS.ready(function() {
+				VSS.require(["scripts/snyk-report"], function () { });
+		});      
+	</script>
+</head>
+
+<body>
+		<script type="text/javascript">VSS.init();</script>
+		<div style="overflow: hidden; padding-top: 56.25%; position: relative;">
+			<iframe id="iframeID" style='border: 0; height: 100%; left: 0; position: absolute; top: 0; width: 100%;' role='presentation'  />
+		</div>
+    <div style="width:100%; height:100%; overflow: scroll" id="snyk-report"></div>
+</body>
+</html>

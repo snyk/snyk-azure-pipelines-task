@@ -2,14 +2,14 @@ import * as path from "path";
 import * as ttm from "azure-pipelines-task-lib/mock-test";
 import * as fs from "fs";
 
-function getFullPathToTestConfig(testConfigFilename: string): string {
+const getFullPathToTestConfig = (testConfigFilename: string): string => {
   let modifiedTestConfigFilename = testConfigFilename;
   if (testConfigFilename.endsWith(".ts")) {
     modifiedTestConfigFilename = testConfigFilename.replace(".ts", ".js");
   }
   const fullPath = path.join(
     __filename,
-    "../../../dist/__tests__",
+    "../../../dist/__tests__/",
     modifiedTestConfigFilename
   );
 
@@ -18,11 +18,9 @@ function getFullPathToTestConfig(testConfigFilename: string): string {
   expect(exists).toBe(true); // verify that the test-mock-config file exists
 
   return fullPath;
-}
+};
 
 test("basic smoke test - inputs are ok", () => {
-  const fileName = "report.html";
-  const workDir = null;
   const testMockConfigPath = getFullPathToTestConfig(
     "_test-mock-config-basic-smoke-test.js"
   );

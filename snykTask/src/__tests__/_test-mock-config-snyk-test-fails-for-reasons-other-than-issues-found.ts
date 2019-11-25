@@ -9,7 +9,6 @@ tmr.setInput("stepDisplayName", "some stepDisplayName");
 tmr.setInput("authToken", "some-authToken");
 tmr.setInput("projectName", "someProjectName");
 tmr.setInput("testDirectory", "some/dir");
-// tmr.setInput("targetFile", "some/dir/pom.xml");
 tmr.setInput("organization", "some-snyk-org");
 tmr.setInput("severityThreshold", "");
 tmr.setInput("failOnIssues", "true");

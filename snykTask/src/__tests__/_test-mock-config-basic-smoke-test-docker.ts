@@ -26,9 +26,6 @@ const answers: ma.TaskLibAnswers = {
     snyk: "/usr/bin/snyk",
     sudo: "/usr/bin/sudo"
   },
-  // getEndpointAuthorization: {
-  //   mySnykServiceConnectionEndpoint: "myFakeTokenFromServiceConnectionEndpoint"
-  // },
   exec: {
     "/bin/ls -la": {
       code: 0,
