@@ -29,8 +29,8 @@ const regexForRunSnykTest = /\[command\]\/usr\/bin\/sudo snyk test --severity-th
 const regexForRunSnykToHTML = /\[command\]\/bin\/cat \/home\/vsts\/work\/1\/s\/report\.json \| \/usr\/bin\/sudo snyk-to-html/g;
 
 const isDebugMode = () => {
-  const taskDebug = true;
-  // taskDebug = tl.getBoolInput("debug-task", false);
+  let taskDebug = true;
+  taskDebug = tl.getBoolInput("debug-task", false);
 
   return taskDebug;
 };
