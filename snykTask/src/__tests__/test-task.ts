@@ -41,7 +41,11 @@ test("basic smoke test - inputs are ok", () => {
       "/usr/bin/sudo snyk test --someAdditionalArgs --json"
     ]
   ).toBe(true);
-  expect(mockTestRunner.cmdlines["null null/report.json | /usr/bin/sudo snyk-to-html"]).toBe(true);
+  expect(
+    mockTestRunner.cmdlines[
+      "null null/report.json | /usr/bin/sudo snyk-to-html"
+    ]
+  ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
       "/usr/bin/sudo snyk monitor --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs"
@@ -71,7 +75,11 @@ test("basic smoke test for container test - inputs are ok", () => {
       "/usr/bin/sudo snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json"
     ]
   ).toBe(true);
-  expect(mockTestRunner.cmdlines["null null/report.json | /usr/bin/sudo snyk-to-html"]).toBe(true);
+  expect(
+    mockTestRunner.cmdlines[
+      "null null/report.json | /usr/bin/sudo snyk-to-html"
+    ]
+  ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
       "/usr/bin/sudo snyk monitor --docker myImage --file=Dockerfile --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs"
