@@ -17,7 +17,7 @@ tmr.setInput("additionalArguments", "");
 tmr.setInput("isTest", "true");
 tmr.setInput("testType", "app");
 
-const answers2: ma.TaskLibAnswers = {
+const answers: ma.TaskLibAnswers = {
   which: {
     ls: "/bin/ls",
     npm: "/usr/bin/npm",
@@ -60,6 +60,6 @@ const answers2: ma.TaskLibAnswers = {
   }
 };
 
-tmr.setAnswers(answers2);
+tmr.setAnswers(answers);
 
 tmr.run();

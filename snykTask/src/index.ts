@@ -203,6 +203,7 @@ async function runSnykMonitor(
     .argIf(taskArgs.additionalArguments, taskArgs.additionalArguments);
 
   const snykMonitorExitCode = await snykMonitorToolRunner.exec(options);
+
   if (isDebugMode())
     console.log(`snykMonitorExitCode: ${snykMonitorExitCode}\n`);
 
@@ -237,7 +238,7 @@ const attachReport = (file: string, workDir: string) => {
   }
 };
 
-const optionsToExecuteSnykTest = (
+const getOptionsToExecuteSnykTest = (
   workDir: string,
   taskArgs: TaskArgs
 ): tr.IExecOptions => {
@@ -252,7 +253,7 @@ const optionsToExecuteSnykTest = (
   } as tr.IExecOptions;
 };
 
-const optionsToExecuteCmd = (taskArgs: TaskArgs): tr.IExecOptions => {
+const getOptionsToExecuteCmd = (taskArgs: TaskArgs): tr.IExecOptions => {
   return {
     cwd: taskArgs.testDirectory,
     failOnStdErr: false,
@@ -274,13 +275,13 @@ async function run() {
       throw new SnykError(errorMsg);
     }
 
-    if (isDebugMode()) showDirectoryListing(optionsToExecuteCmd(taskArgs));
+    if (isDebugMode()) showDirectoryListing(getOptionsToExecuteCmd(taskArgs));
 
     const useSudo = isSudoMode();
     if (isDebugMode()) console.log(`useSudo: ${useSudo}`);
 
     const installSnykResult = await installSnyk(
-      optionsToExecuteCmd(taskArgs),
+      getOptionsToExecuteCmd(taskArgs),
       useSudo
     );
     if (installSnykResult.code !== CLI_EXIT_CODE_SUCCESS)
@@ -288,16 +289,16 @@ async function run() {
 
     const authorizeSnykResult = await authorizeSnyk(
       authTokenToUse,
-      optionsToExecuteCmd(taskArgs),
+      getOptionsToExecuteCmd(taskArgs),
       useSudo
     );
     if (authorizeSnykResult.code !== CLI_EXIT_CODE_SUCCESS)
       throw new SnykError(authorizeSnykResult.message);
 
-    let optionsToExeSnykTest = optionsToExecuteCmd(taskArgs);
+    let optionsToExeSnykTest = getOptionsToExecuteCmd(taskArgs);
     if (fs.existsSync(currentWorkingDirectory)) {
       console.log("Set Execute Snyk Test with file out stream");
-      optionsToExeSnykTest = optionsToExecuteSnykTest(
+      optionsToExeSnykTest = getOptionsToExecuteSnykTest(
         currentWorkingDirectory,
         taskArgs
       );
@@ -316,14 +317,14 @@ async function run() {
       taskArgs.failOnIssues
     )
       throw new SnykError(snykTestResult.message);
-    if (isDebugMode()) showDirectoryListing(optionsToExecuteCmd(taskArgs));
+    if (isDebugMode()) showDirectoryListing(getOptionsToExecuteCmd(taskArgs));
 
     attachReport(HTML_REPORT_FILE_NAME, currentWorkingDirectory);
 
     if (taskArgs.monitorOnBuild) {
       const snykMonitorResult = await runSnykMonitor(
         taskArgs,
-        optionsToExecuteCmd(taskArgs),
+        getOptionsToExecuteCmd(taskArgs),
         useSudo
       );
       if (snykMonitorResult.code !== CLI_EXIT_CODE_SUCCESS)

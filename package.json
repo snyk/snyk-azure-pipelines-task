@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run compile_task && npm run compile_enhancer",
     "compile_task": "tsc -b snykTask/tsconfig.json",
-    "compile_enhancer": "tsc -b snykTask/src/enhancer/tsconfig.json",
+    "compile_enhancer": "tsc -b ui/enhancer/tsconfig.json",
     "pretest": "npm run build",
     "test:mocha": "mocha tests/_suite.js",
     "test": "jest --detectOpenHandles",
