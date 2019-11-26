@@ -51,7 +51,11 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/sudo snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json | /usr/bin/sudo snyk-to-html": {
+    "/usr/bin/sudo snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json": {
+      code: 0,
+      stdout: "No issues found"
+    },
+    "null null/report.json | /usr/bin/sudo snyk-to-html": {
       code: 0,
       stdout: "No issues found"
     },

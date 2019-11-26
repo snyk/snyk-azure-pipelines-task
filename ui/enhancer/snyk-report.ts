@@ -43,7 +43,7 @@ export class SnykReportTab extends Controls.BaseControl {
 								attachmentName
 							)
 							.then((content) => {
-								const data = new TextDecoder("utf-8").decode(new Uint16Array(content));
+								const data = new TextDecoder("utf-8").decode((new DataView(content)));
 								const iframe: HTMLIFrameElement = (document.getElementById('iframeID') as HTMLIFrameElement);
 								const iframeCW = iframe.contentWindow;
 

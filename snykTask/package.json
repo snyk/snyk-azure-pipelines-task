@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "azure-pipelines-task-lib": "2.9.3"
+    "azure-pipelines-task-lib": "2.9.3",
+    "replace-in-file": "^4.2.0"
   }
 }

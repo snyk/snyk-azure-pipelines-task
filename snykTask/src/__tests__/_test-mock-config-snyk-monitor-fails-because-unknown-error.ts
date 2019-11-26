@@ -49,9 +49,13 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/sudo snyk test --json | /usr/bin/sudo snyk-to-html": {
+    "/usr/bin/sudo snyk test --json": {
       code: 0,
       stdout: "Ok"
+    },
+    "null null/report.json | /usr/bin/sudo snyk-to-html": {
+      code: 0,
+      stdout: "No issues found"
     },
     "/usr/bin/sudo snyk monitor --org=some-snyk-org --project-name=someProjectName": {
       code: 3,
