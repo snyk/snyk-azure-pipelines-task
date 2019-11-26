@@ -10,7 +10,6 @@ jobs:
       - run:
           name: Build and test
           command: |
-            cd snykTask
             pwd
             ls -la
             node -v
