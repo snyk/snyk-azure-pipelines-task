@@ -24,13 +24,14 @@ const SNYK_MONITOR_EXIT_CODE_SUCCESS = 0;
 const SNYK_MONITOR_EXIT_INVALID_FILE_OR_IMAGE = 2;
 const JSON_REPORT_FILE_NAME = "report.json";
 const HTML_REPORT_FILE_NAME = "report.html";
+const JSON_ATTACHMENT_TYPE = "JSON_ATTACHMENT_TYPE";
 const HTML_ATTACHMENT_TYPE = "HTML_ATTACHMENT_TYPE";
 const regexForRunSnykTest = /\[command\]\/usr\/bin\/sudo snyk test --severity-threshold=low --json/g;
 const regexForRunSnykToHTML = /\[command\]\/bin\/cat \/home\/vsts\/work\/1\/s\/report\.json \| \/usr\/bin\/sudo snyk-to-html/g;
 
 const isDebugMode = () => {
-  let taskDebug = true;
-  taskDebug = tl.getBoolInput("debug-task", false);
+  const taskDebug = true;
+  // taskDebug = tl.getBoolInput("debug-task", false);
 
   return taskDebug;
 };
@@ -212,7 +213,9 @@ const runSnykToHTML = async (
       taskArgs
     );
   }
-  console.log("[command]null null/report.json | /usr/bin/sudo snyk-to-html");
+  console.log(
+    `[command]/bin/cat ${workDir}/report.json | /usr/bin/sudo snyk-to-html`
+  );
   const snykToHTMLToolRunner: tr.ToolRunner = buildToolRunner(
     "snyk-to-html",
     useSudo
@@ -272,10 +275,14 @@ const isSudoMode = (): boolean => {
   return p === tl.Platform.Linux;
 };
 
-const attachReport = (file: string, workDir: string) => {
+const attachReport = (
+  file: string,
+  workDir: string,
+  attachmentType: string
+) => {
   if (fs.existsSync(`${workDir}/${file}`)) {
     console.log(`${file} file exists... attaching file`);
-    tl.addAttachment(HTML_ATTACHMENT_TYPE, file, `${workDir}/${file}`);
+    tl.addAttachment(attachmentType, file, `${workDir}/${file}`);
   }
 };
 
@@ -317,9 +324,21 @@ async function removeFirstLineFrom(workDir: string, file: string, regex) {
   }
 }
 
-const handleSnykTestError = (args, snykTestResult) => {
-  if (snykTestResult.code >= CLI_EXIT_CODE_INVALID_USE)
-    throw new SnykError(snykTestResult.message);
+const handleSnykTestError = (args, snykTestResult, workDir) => {
+  if (snykTestResult.code >= CLI_EXIT_CODE_INVALID_USE) {
+    let errorMsg = snykTestResult.message;
+    const filePath = `${workDir}/${JSON_REPORT_FILE_NAME}`;
+    if (fs.existsSync(filePath)) {
+      const snykErrorResponse = fs.readFileSync(filePath, "utf8");
+      if (isDebugMode()) console.log(snykErrorResponse);
+
+      const snykErrorJSONResponse = JSON.parse(snykErrorResponse);
+      if (!snykErrorJSONResponse["ok"])
+        errorMsg = snykErrorJSONResponse["error"];
+    }
+    throw new SnykError(errorMsg);
+  }
+
   if (snykTestResult.code === CLI_EXIT_CODE_ISSUES_FOUND && args.failOnIssues)
     throw new SnykError(snykTestResult.message);
 };
@@ -361,8 +380,8 @@ async function run() {
     const snykTestResult = await runSnykTest(taskArgs, useSudo, currentDir);
     await runSnykToHTML(taskArgs, currentDir, useSudo);
     if (isDebugMode()) showDirectoryListing(getOptionsToExecuteCmd(taskArgs));
-    attachReport(HTML_REPORT_FILE_NAME, currentDir);
-    handleSnykTestError(taskArgs, snykTestResult);
+    attachReport(HTML_REPORT_FILE_NAME, currentDir, HTML_ATTACHMENT_TYPE);
+    handleSnykTestError(taskArgs, snykTestResult, currentDir);
 
     if (taskArgs.monitorOnBuild) {
       const snykMonitorResult = await runSnykMonitor(taskArgs, useSudo);
