@@ -28,6 +28,11 @@
       "addressable": true,
       "packagePath": "scripts"
 		},
+		{
+      "path": "images",
+      "addressable": true,
+      "packagePath": "img"
+		},
 		{                                                                                                                                 
       "path": "ui/snyk-report-tab.html", 
 			"addressable": true 

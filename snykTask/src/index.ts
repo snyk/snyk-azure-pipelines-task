@@ -22,12 +22,9 @@ const CLI_EXIT_CODE_ISSUES_FOUND = 1;
 const CLI_EXIT_CODE_INVALID_USE = 2;
 const SNYK_MONITOR_EXIT_CODE_SUCCESS = 0;
 const SNYK_MONITOR_EXIT_INVALID_FILE_OR_IMAGE = 2;
-const JSON_REPORT_FILE_NAME = "report.json";
-const HTML_REPORT_FILE_NAME = "report.html";
 const JSON_ATTACHMENT_TYPE = "JSON_ATTACHMENT_TYPE";
 const HTML_ATTACHMENT_TYPE = "HTML_ATTACHMENT_TYPE";
-const regexForRunSnykTest = /\[command\]\/usr\/bin\/sudo snyk test --severity-threshold=low --json/g;
-const regexForRunSnykToHTML = /\[command\]\/bin\/cat \/home\/vsts\/work\/1\/s\/report\.json \| \/usr\/bin\/sudo snyk-to-html/g;
+const regexForRemoveCommandLine = /\[command\].*/g;
 
 const isDebugMode = () => {
   const taskDebug = true;
@@ -152,7 +149,8 @@ async function authorizeSnyk(
 async function runSnykTest(
   taskArgs: TaskArgs,
   useSudo: boolean,
-  workDir: string
+  workDir: string,
+  fileName: string
 ): Promise<SnykOutput> {
   let errorMsg = "";
   let code = 0;
@@ -172,7 +170,7 @@ async function runSnykTest(
   let options = getOptionsToExecuteCmd(taskArgs);
   if (fs.existsSync(workDir)) {
     console.log("Set Execute Snyk Test with file out stream");
-    options = getOptionsToWriteFile(JSON_REPORT_FILE_NAME, workDir, taskArgs);
+    options = getOptionsToWriteFile(fileName, workDir, taskArgs);
   }
 
   console.log("[command]/usr/bin/sudo snyk test (args) --json");
@@ -190,11 +188,7 @@ async function runSnykTest(
       "failing task because `snyk test` was improperly used or had other errors";
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
-  await removeFirstLineFrom(
-    workDir,
-    JSON_REPORT_FILE_NAME,
-    regexForRunSnykTest
-  );
+  await removeFirstLineFrom(workDir, fileName, regexForRemoveCommandLine);
 
   return snykOutput;
 }
@@ -202,13 +196,15 @@ async function runSnykTest(
 const runSnykToHTML = async (
   taskArgs: TaskArgs,
   workDir: string,
+  reportHTMLFileName: string,
+  reportJSONFileName: string,
   useSudo: boolean
 ) => {
   let optionsToExeSnykToHTML = getOptionsToExecuteCmd(taskArgs);
   if (fs.existsSync(workDir)) {
     console.log("Set Execute Snyk-To-HTML with file out stream");
     optionsToExeSnykToHTML = getOptionsToWriteFile(
-      HTML_REPORT_FILE_NAME,
+      reportHTMLFileName,
       workDir,
       taskArgs
     );
@@ -221,14 +217,14 @@ const runSnykToHTML = async (
     useSudo
   );
   const catTRunner: tr.ToolRunner = buildToolRunner("cat", false)
-    .arg(`${workDir}/${JSON_REPORT_FILE_NAME}`)
+    .arg(`${workDir}/${reportJSONFileName}`)
     .pipeExecOutputToTool(snykToHTMLToolRunner);
 
   await catTRunner.exec(optionsToExeSnykToHTML);
   await removeFirstLineFrom(
     workDir,
-    HTML_REPORT_FILE_NAME,
-    regexForRunSnykToHTML
+    reportHTMLFileName,
+    regexForRemoveCommandLine
   );
 };
 
@@ -319,15 +315,13 @@ async function removeFirstLineFrom(workDir: string, file: string, regex) {
     };
     console.log(`Removing first line from ${file}`);
     await replace(options);
-    // if (isDebugMode())
-    //   console.log(fs.readFileSync(`${workDir}/${file}`, "utf8"));
   }
 }
 
-const handleSnykTestError = (args, snykTestResult, workDir) => {
+const handleSnykTestError = (args, snykTestResult, workDir, fileName) => {
   if (snykTestResult.code >= CLI_EXIT_CODE_INVALID_USE) {
     let errorMsg = snykTestResult.message;
-    const filePath = `${workDir}/${JSON_REPORT_FILE_NAME}`;
+    const filePath = `${workDir}/${fileName}`;
     if (fs.existsSync(filePath)) {
       const snykErrorResponse = fs.readFileSync(filePath, "utf8");
       if (isDebugMode()) console.log(snykErrorResponse);
@@ -361,6 +355,15 @@ const handleSnykInstallError = installSnykResult => {
 async function run() {
   try {
     const currentDir: string = tl.cwd();
+    let fileName = "report";
+    if (fs.existsSync(currentDir))
+      fileName = `report-${new Date()
+        .toISOString()
+        .split(".")[0]
+        .replace(/:/g, "-")}`;
+    const jsonReportName = `${fileName}.json`;
+    const htmlReportName = `${fileName}.html`;
+
     if (isDebugMode()) console.log(`currentWorkingDirectory: ${currentDir}\n`);
 
     const taskArgs: TaskArgs = parseInputArgs();
@@ -377,11 +380,23 @@ async function run() {
     handleSnykInstallError(await installSnyk(taskArgs, useSudo));
     handleSnykAuthError(await authorizeSnyk(taskArgs, authTokenToUse, useSudo));
 
-    const snykTestResult = await runSnykTest(taskArgs, useSudo, currentDir);
-    await runSnykToHTML(taskArgs, currentDir, useSudo);
+    const snykTestResult = await runSnykTest(
+      taskArgs,
+      useSudo,
+      currentDir,
+      jsonReportName
+    );
+    await runSnykToHTML(
+      taskArgs,
+      currentDir,
+      htmlReportName,
+      jsonReportName,
+      useSudo
+    );
     if (isDebugMode()) showDirectoryListing(getOptionsToExecuteCmd(taskArgs));
-    attachReport(HTML_REPORT_FILE_NAME, currentDir, HTML_ATTACHMENT_TYPE);
-    handleSnykTestError(taskArgs, snykTestResult, currentDir);
+    attachReport(jsonReportName, currentDir, JSON_ATTACHMENT_TYPE);
+    attachReport(htmlReportName, currentDir, HTML_ATTACHMENT_TYPE);
+    handleSnykTestError(taskArgs, snykTestResult, currentDir, jsonReportName);
 
     if (taskArgs.monitorOnBuild) {
       const snykMonitorResult = await runSnykMonitor(taskArgs, useSudo);
