@@ -202,7 +202,8 @@ const runSnykToHTML = async (
 ) => {
   let optionsToExeSnykToHTML = getOptionsToExecuteCmd(taskArgs);
   if (fs.existsSync(workDir)) {
-    console.log("Set Execute Snyk-To-HTML with file out stream");
+    if (isDebugMode())
+      console.log("Set Execute snyk-to-html with file out stream");
     optionsToExeSnykToHTML = getOptionsToWriteFile(
       reportHTMLFileName,
       workDir,
@@ -313,7 +314,7 @@ async function removeFirstLineFrom(workDir: string, file: string, regex) {
       from: regex,
       to: ""
     };
-    console.log(`Removing first line from ${file}`);
+    if (isDebugMode()) console.log(`Removing first line from ${file}`);
     await replace(options);
   }
 }

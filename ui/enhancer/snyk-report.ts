@@ -88,7 +88,7 @@ export class SnykReportTab extends Controls.BaseControl {
 			if (json["vulnerabilities"] && json["vulnerabilities"].length > 0) {
 				$(reportItem).addClass("failed");
 				img.src = "../img/report-failed.png";
-				spanText = `${spanText} | Found issues`;
+				spanText = `${spanText} | Found ${json["vulnerabilities"].length} issues`;
 			}
 			else {
 				$(reportItem).addClass("passed");
