@@ -210,6 +210,8 @@ const runSnykToHTML = async (
       taskArgs
     );
   }
+  let code = 0;
+  let errorMsg = "";
   console.log(
     `[command]/bin/cat ${workDir}/report.json | /usr/bin/sudo snyk-to-html`
   );
@@ -221,12 +223,20 @@ const runSnykToHTML = async (
     .arg(`${workDir}/${reportJSONFileName}`)
     .pipeExecOutputToTool(snykToHTMLToolRunner);
 
-  await catTRunner.exec(optionsToExeSnykToHTML);
+  const snykToHTMLExitCode = await catTRunner.exec(optionsToExeSnykToHTML);
+  if (snykToHTMLExitCode >= CLI_EXIT_CODE_INVALID_USE) {
+    code = snykToHTMLExitCode;
+    errorMsg =
+      "failing task because `snyk test` was improperly used or had other errors";
+  }
+  const snykOutput: SnykOutput = { code: code, message: errorMsg };
   await removeFirstLineFrom(
     workDir,
     reportHTMLFileName,
     regexForRemoveCommandLine
   );
+
+  return snykOutput;
 };
 
 async function runSnykMonitor(
@@ -338,6 +348,11 @@ const handleSnykTestError = (args, snykTestResult, workDir, fileName) => {
     throw new SnykError(snykTestResult.message);
 };
 
+const handleSnykToHTMLError = snykToHTMLResult => {
+  if (snykToHTMLResult.code !== CLI_EXIT_CODE_SUCCESS)
+    throw new SnykError(snykToHTMLResult.message);
+};
+
 const handleSnykMonitorError = snykMonitorResult => {
   if (snykMonitorResult.code !== CLI_EXIT_CODE_SUCCESS)
     throw new SnykError(snykMonitorResult.message);
@@ -387,13 +402,15 @@ async function run() {
       currentDir,
       jsonReportName
     );
-    await runSnykToHTML(
+    const snykToHTMLResult = await runSnykToHTML(
       taskArgs,
       currentDir,
       htmlReportName,
       jsonReportName,
       useSudo
     );
+    handleSnykToHTMLError(snykToHTMLResult);
+
     if (isDebugMode()) showDirectoryListing(getOptionsToExecuteCmd(taskArgs));
     attachReport(jsonReportName, currentDir, JSON_ATTACHMENT_TYPE);
     attachReport(htmlReportName, currentDir, HTML_ATTACHMENT_TYPE);
