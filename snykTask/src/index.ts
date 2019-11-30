@@ -199,7 +199,7 @@ const runSnykToHTML = async (
   reportHTMLFileName: string,
   reportJSONFileName: string,
   useSudo: boolean
-) => {
+): Promise<SnykOutput> => {
   let optionsToExeSnykToHTML = getOptionsToExecuteCmd(taskArgs);
   if (fs.existsSync(workDir)) {
     if (isDebugMode())
