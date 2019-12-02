@@ -1,4 +1,5 @@
 snykTask/dist
+scripts/dist
 node_modules
 .azure-pipeline-jobs
 cycle.sh

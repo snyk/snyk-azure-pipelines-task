@@ -1,12 +1,12 @@
 module.exports = {
     "roots": [
-        "<rootDir>/src"
+        "<rootDir>/snykTask/src/"
     ],
     "transform": {
         "^.+\\.tsx?$": "ts-jest"
     },
     "testPathIgnorePatterns": [
         "/node_modules/",
-        "src/__tests__/_test-mock-config-*"
+        "snykTask/src/__tests__/_test-mock-config-*"
     ]
 }

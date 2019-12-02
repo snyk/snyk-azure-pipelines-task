@@ -1,82 +1,115 @@
 {
-    "manifestVersion": 1,
-    "id": "snyk-security-scan-dev",
-    "name": "Snyk Security Scan (Dev)",
-    "version": "0.1.3",
-    "publisher": "jeff-snyk-test",
-    "targets": [
-        {
-            "id": "Microsoft.VisualStudio.Services"
-        }
-    ],
-    "description": "Snyk scan for open source vulnerabilities",
-    "categories": [
-        "Azure Pipelines"
-    ],
-    "icons": {
-        "default": "images/extension-icon.png"
+	"manifestVersion": 1,
+	"id": "snyk-security-scan-dev",
+	"name": "Snyk Security Scan (Dev)",
+	"version": "0.1.3",
+	"publisher": "jeff-snyk-test",
+	"targets": [
+		{
+			"id": "Microsoft.VisualStudio.Services"
+		}
+	],
+	"description": "Snyk scan for open source vulnerabilities",
+	"categories": [
+		"Azure Pipelines"
+	],
+	"icons": {
+		"default": "images/extension-icon.png"
+	},
+	"scopes": [
+		 "vso.build_execute"
+ 	],
+	"files": [
+		{
+			"path": "snykTask"
+		},
+		{
+      "path": "scripts/dist",
+      "addressable": true,
+      "packagePath": "scripts"
+		},
+		{
+      "path": "images",
+      "addressable": true,
+      "packagePath": "img"
+		},
+		{                                                                                                                                 
+      "path": "ui/snyk-report-tab.html", 
+			"addressable": true 
     },
-    "files": [
-        {
-            "path": "snykTask"
-        }
-    ],
-    "content": {
-        "details": {
-            "path": "marketplace.md"
-        }
+    {
+      "path": "node_modules/vss-web-extension-sdk/lib",
+      "addressable": true,
+      "packagePath": "lib"
+		}
+	],
+	"content": {
+		"details": {
+			"path": "marketplace.md"
+		}
+	},
+	"links": {
+		"home": {
+			"uri": "https://snyk.io/"
+		},
+		"support": {
+			"uri": "https://support.snyk.io/"
+		}
+	},
+	"contributions": [
+		{
+			"id": "custom-build-release-task",
+			"type": "ms.vss-distributed-task.task",
+			"targets": [
+				"ms.vss-distributed-task.tasks"
+			],
+			"properties": {
+				"name": "snykTask"
+			}
+		},
+    {                                                                                                                                 
+      "id": "snyk-report-tab",                                                                                                        
+      "type": "ms.vss-build-web.build-results-tab",                                                                                   
+      "description": "Snyk Report",                                                                                                   
+      "targets": [                                                                                                                    
+        "ms.vss-build-web.build-results-view"                                                                                         
+      ],                                                                                                                              
+      "properties": {                                                                                                                 
+        "name": "Snyk Report",                                                                                                        
+        "uri": "ui/snyk-report-tab.html"                                                                                                 
+      }                                                                                                                               
     },
-    "links": {
-        "home": {
-            "uri": "https://snyk.io/"
-        },
-        "support": {
-            "uri": "https://support.snyk.io/"
-        }
-    },
-    "contributions": [
-        {
-            "id": "custom-build-release-task",
-            "type": "ms.vss-distributed-task.task",
-            "targets": [
-                "ms.vss-distributed-task.tasks"
-            ],
-            "properties": {
-                "name": "snykTask"
-            }
-        },
-
-        {
-            "id": "snyk-service-connection-endpoint",
-            "description": "Snyk.io",
-            "type": "ms.vss-endpoint.service-endpoint-type",
-            "targets": [
-                "ms.vss-endpoint.endpoint-types"
-            ],
-            "properties": {
-                "name": "SnykAuth",
-                "displayName": "Snyk Authentication",
-                "url": "https://snyk.io/",
-                "authenticationSchemes": [
-                    {
-                        "type": "ms.vss-endpoint.endpoint-auth-scheme-token",
-                        "inputDescriptors": [
-                            {
-                                "id": "apitoken",
-                                "name": "Snyk API Token",
-                                "description": "Log into your <a href=\"https://snyk.io/account/\">Snyk account</a> to get either your <a href=\"https://snyk.io/account/\">Personal API Token</a> or <a href=\"https://snyk.io/docs/service-accounts/\">Service Account</a> token.",
-                                "inputMode": "textbox",
-                                "isConfidential": true,
-                                "validation": {
-                                    "isRequired": true,
-                                    "dataType": "guid"
-                                }
-                            }
-                        ]
-                    }
-                ],
-                "helpMarkDown": "Log into your <a href=\"https://snyk.io/account/\">Snyk account</a> to get either your <a href=\"https://snyk.io/account/\">Personal API Token</a> or <a href=\"https://snyk.io/docs/service-accounts/\">Service Account</a> token."
-            }
-        }
-    ]
+		{
+			"id": "snyk-service-connection-endpoint",
+			"description": "Snyk.io",
+			"type": "ms.vss-endpoint.service-endpoint-type",
+			"targets": [
+				"ms.vss-endpoint.endpoint-types"
+			],
+			"properties": {
+				"name": "SnykAuth",
+				"displayName": "Snyk Authentication",
+				"url": "https://snyk.io/",
+				"authenticationSchemes": [
+					{
+						"type": "ms.vss-endpoint.endpoint-auth-scheme-token",
+						"inputDescriptors": [
+							{
+								"id": "apitoken",
+								"name": "Snyk API Token",
+								"description": "Log into your <a href=\"https://snyk.io/account/\">Snyk account</a> to get either your <a href=\"https://snyk.io/account/\">Personal API Token</a> or <a href=\"https://snyk.io/docs/service-accounts/\">Service Account</a> token.",
+								"inputMode": "textbox",
+								"isConfidential": true,
+								"validation": {
+									"isRequired": true,
+									"dataType": "guid"
+								}
+							}
+						]
+					}
+				],
+				"helpMarkDown": "Log into your <a href=\"https://snyk.io/account/\">Snyk account</a> to get either your <a href=\"https://snyk.io/account/\">Personal API Token</a> or <a href=\"https://snyk.io/docs/service-accounts/\">Service Account</a> token."
+			}
+		}
+	]
 }

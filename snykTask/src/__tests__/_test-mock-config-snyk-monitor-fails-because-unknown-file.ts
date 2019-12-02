@@ -9,7 +9,6 @@ tmr.setInput("stepDisplayName", "some stepDisplayName");
 tmr.setInput("authToken", "some-authToken");
 tmr.setInput("projectName", "someProjectName");
 tmr.setInput("testDirectory", "some/dir");
-// tmr.setInput("targetFile", "some/dir/pom.xml");
 tmr.setInput("organization", "some-snyk-org");
 tmr.setInput("severityThreshold", "");
 tmr.setInput("failOnIssues", "true");
@@ -34,11 +33,11 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "(directory listing)"
     },
-    "/usr/bin/npm install -g snyk": {
+    "/usr/bin/npm install -g snyk snyk-to-html": {
       code: 0,
       stdout: "Ok"
     },
-    "/usr/bin/sudo npm install -g snyk": {
+    "/usr/bin/sudo npm install -g snyk snyk-to-html": {
       code: 0,
       stdout: "Ok"
     },
@@ -50,9 +49,13 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/sudo snyk test": {
+    "/usr/bin/sudo snyk test --json": {
       code: 0,
       stdout: "Ok"
+    },
+    "null null/report.json | /usr/bin/sudo snyk-to-html": {
+      code: 0,
+      stdout: "No issues found"
     },
     "/usr/bin/sudo snyk monitor --org=some-snyk-org --project-name=someProjectName": {
       code: 2,
