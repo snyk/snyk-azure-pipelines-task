@@ -27,8 +27,7 @@ const HTML_ATTACHMENT_TYPE = "HTML_ATTACHMENT_TYPE";
 const regexForRemoveCommandLine = /\[command\].*/g;
 
 const isDebugMode = () => {
-  const taskDebug = true;
-  // taskDebug = tl.getBoolInput("debug-task", false);
+  const taskDebug = false;
 
   return taskDebug;
 };
