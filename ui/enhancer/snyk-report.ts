@@ -79,9 +79,12 @@ export class SnykReportTab extends Controls.BaseControl {
 	private improveReportDisplayName = (attachmentName:string, json: string, reportItem: HTMLElement):void => {
 		const img: HTMLImageElement = document.createElement("img");
 		const span: HTMLElement = document.createElement("span");
-		let spanText: string = `Snyk Test for images (${this.formatReportName(attachmentName)})`;
+		let spanText: string = "";
 
 		if (json) {
+			if (json["docker"] && json["docker"]["baseImage"])
+				spanText = `Snyk Test for ${json["docker"]["baseImage"]} (${this.formatReportName(attachmentName)})`;
+
 			if (json["packageManager"]) 
 				spanText = `Snyk Test for ${json["packageManager"]} (${this.formatReportName(attachmentName)})`;
 

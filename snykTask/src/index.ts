@@ -26,12 +26,7 @@ const JSON_ATTACHMENT_TYPE = "JSON_ATTACHMENT_TYPE";
 const HTML_ATTACHMENT_TYPE = "HTML_ATTACHMENT_TYPE";
 const regexForRemoveCommandLine = /\[command\].*/g;
 
-const isDebugMode = () => {
-  const taskDebug = true;
-  // taskDebug = tl.getBoolInput("debug-task", false);
-
-  return taskDebug;
-};
+const isDebugMode = () => tl.getBoolInput("debug", false);
 
 function buildToolRunner(tool: string, requiresSudo: boolean): tr.ToolRunner {
   const toolPath = requiresSudo ? tl.which("sudo") : tl.which(tool);
