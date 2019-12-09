@@ -1,0 +1,155 @@
+{
+    "id": "826d5fe9-3983-4643-b918-487964d7cc87",
+    "name": "SnykSecurityScan",
+    "friendlyName": "Snyk Security Scan",
+    "description": "Azure Pipelines Task for Snyk",
+    "helpMarkDown": "",
+    "category": "Utility",
+    "author": "Snyk",
+    "version": {
+        "Major": 0,
+        "Minor": 2,
+        "Patch": 0
+    },
+    "instanceNameFormat": "Snyk scan for open source vulnerabilities",
+    "groups": [
+        {
+            "name": "additionalSettings",
+            "displayName": "Additional Settings",
+            "isExpanded": true
+        },
+        {
+            "name": "advanced",
+            "displayName": "Advanced",
+            "isExpanded": false
+        }
+    ],
+    "inputs": [
+        {
+            "name": "serviceConnectionEndpoint",
+            "type": "connectedService:SnykAuth",
+            "label": "Snyk API token",
+            "required": true,
+            "defaultValue": "",
+            "helpMarkDown": "Choose your Snyk service connection from your Azure DevOps project settings."
+        },
+        {
+            "name": "testType",
+            "type": "pickList",
+            "label": "What do you want to test?",
+            "defaultValue": "app",
+            "required": true,
+            "helpMarkDown": "What do you want to test?",
+            "options": {
+                "app": "Application",
+                "container": "Container Image"
+            },
+            "properties": {
+                "EditableOptions": "False"
+            }
+        },
+
+        {
+            "name": "dockerImageName",
+            "label": "Container Image Name",
+            "type": "string",
+            "required": true,
+            "defaultValue": "",
+            "helpMarkDown": "The image name if scanning a container image",
+            "visibleRule": "testType = container"
+        },
+        {
+            "name": "dockerfilePath",
+            "label": "Path to Dockerfile",
+            "type": "string",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "Relative path to Dockerfile (relative to repo root or working directory, if set)",
+            "visibleRule": "testType = container"
+        },
+
+        {
+            "name": "targetFile",
+            "label": "Custom path to manifest file to test",
+            "type": "string",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "Relative path to manifest file to test (relative to repo root or working directory, if set)",
+            "visibleRule": "testType = app"
+        },
+
+        {
+            "name": "severityThreshold",
+            "label": "Testing severity threshold",
+            "type": "pickList",
+            "required": false,
+            "defaultValue": "low",
+            "options": {
+                "low": "Low (default)",
+                "medium": "Medium",
+                "high": "High"
+            },
+            "helpMarkDown": "The testing severity threshold. Leave blank for no threshold."
+        },
+
+        {
+            "name": "monitorOnBuild",
+            "label": "Run Snyk monitor after test?",
+            "type": "boolean",
+            "required": true,
+            "defaultValue": "true",
+            "helpMarkDown": "Select true if you want to run the monitor the dependency tree within Snyk."
+        },
+        {
+            "name": "failOnIssues",
+            "label": "Fail build if Snyk finds issues",
+            "type": "boolean",
+            "required": true,
+            "defaultValue": "true",
+            "helpMarkDown": "Fail build if Snyk finds issues"
+        },
+
+        {
+            "name": "projectName",
+            "label": "Project name in Snyk",
+            "type": "string",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "What you want to call (or already have called) this project in Snyk",
+            "groupName": "additionalSettings"
+        },
+        {
+            "name": "organization",
+            "label": "Organization name (or ID) in Snyk",
+            "type": "string",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "Organization name (or ID) in Snyk",
+            "groupName": "additionalSettings"
+        },
+
+        {
+            "name": "testDirectory",
+            "label": "Test (Working) Directory",
+            "type": "filePath",
+            "required": false,
+            "defaultValue": "$(Build.SourcesDirectory)",
+            "helpMarkDown": "Test (Working) Directory",
+            "groupName": "advanced"
+        },
+        {
+            "name": "additionalArguments",
+            "label": "Additional command-line args for Snyk CLI (advanced)",
+            "type": "string",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "Additional command-line args for Snyk CLI (advanced)",
+            "groupName": "advanced"
+        }
+    ],
+    "execution": {
+        "Node": {
+            "target": "./dist/index.js"
+        }
+    }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "snyk-azure-pipelines-task",
+  "version": "0.2.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run compile_task && npm run compile_enhancer",
+    "compile_task": "tsc -b snykTask/tsconfig.json",
+    "compile_enhancer": "tsc -b ui/enhancer/tsconfig.json",
+    "pretest": "npm run build",
+    "test:mocha": "mocha tests/_suite.js",
+    "test": "jest --detectOpenHandles",
+    "eslint": "eslint --cache 'snykTask/{src,test,public/js/{!(build)}}/**/*.{js,ts}'",
+    "format:check": "prettier --check 'snykTask/{src,test,public/js/{!(build)}}/**/*.{js,ts}'",
+    "format": "prettier --write 'snykTask/{src,test,scripts,public/js/{!(build)}}/**/*.{js,ts}'"
+  },
+  "author": "snyk.io",
+  "license": "MIT",
+  "dependencies": {
+    "azure-pipelines-task-lib": "2.9.3",
+    "jquery": "^3.4.1",
+    "replace-in-file": "^4.2.0",
+    "request": "^2.88.0",
+    "vss-web-extension-sdk": "^5.141.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.18",
+    "@types/node": "^12.7.1",
+    "@types/q": "^1.5.2",
+    "@typescript-eslint/eslint-plugin": "^2.0.0",
+    "@typescript-eslint/parser": "^2.0.0",
+    "eslint": "^6.2.2",
+    "eslint-config-prettier": "^6.1.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jest": "^22.15.2",
+    "jest": "^24.9.0",
+    "prettier": "^1.18.2",
+    "sync-request": "^6.1.0",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.5.3"
+  }
+}
