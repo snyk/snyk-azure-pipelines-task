@@ -54,7 +54,7 @@ const answers: ma.TaskLibAnswers = {
       code: 1,
       stdout: "Issues found"
     },
-    "null null/report.json | /usr/bin/sudo snyk-to-html": {
+    "/usr/bin/sudo snyk-to-html -i null/report.json": {
       code: 0,
       stdout: "No issues found"
     },
