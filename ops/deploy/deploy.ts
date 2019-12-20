@@ -212,7 +212,6 @@ export async function publishExtension(
     --override '${overrideJson}' \
     --json`;
 
-  // TODO: make sure the token doesn't get exposed here
   const res: ExecCommandResult = await runCommand(command, workingDirectory);
 
   console.log(res.exitCode);
