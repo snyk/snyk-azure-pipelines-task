@@ -14,3 +14,4 @@ package-lock.json
 .eslintcache
 .circleci
 .ops
+ops/deploy/dist
