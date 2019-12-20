@@ -91,14 +91,12 @@ export class JsonFileUpdater {
   }
 
   updateFile() {
-    const jsonObj = JSON.parse(fs.readFileSync(this.filepath, "utf8"));
-
-    Object.keys(this.updates).forEach(k => (jsonObj[k] = this.updates[k]));
-
-    const jsonStr: string = JSON.stringify(jsonObj, null, 2);
-
-    // TODO: skip writing the file if there are no updates in the update object
-    fs.writeFileSync(this.filepath, jsonStr);
+    if (Object.keys(this.updates).length > 0) {
+      const jsonObj = JSON.parse(fs.readFileSync(this.filepath, "utf8"));
+      Object.keys(this.updates).forEach(k => (jsonObj[k] = this.updates[k]));
+      const jsonStr: string = JSON.stringify(jsonObj, null, 2);
+      fs.writeFileSync(this.filepath, jsonStr);
+    }
   }
 }
 

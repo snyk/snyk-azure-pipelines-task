@@ -1,10 +1,8 @@
 import deploy, {
   ExtensionPublishArgs,
   getEnvValueOrPanic,
-  VSSExtensionOverrideJson,
-  JsonFileUpdater
+  VSSExtensionOverrideJson
 } from "../deploy";
-const fs = require("fs");
 
 test("test getEnvValueOrPanic works", () => {
   process.env = Object.assign(process.env, { EXTENSION_ID: "test-value" });
@@ -156,34 +154,4 @@ test("test override json builder", () => {
   expect(jsonObj5.version).toBe("1.2.3");
   expect(jsonObj5.id).toBe("test-extension-id");
   expect(jsonObj5.publisher).toBe("test-publisher");
-});
-
-test("test JsonFileUpdater", () => {
-  const mockFs = require("mock-fs");
-  mockFs({
-    "mock-json-file.json": `{
-            "name": "test-name",
-            "otherField": "test-otherField"
-        }`
-  });
-
-  const updates = {
-    name: "new-name",
-    version: {
-      Major: 0,
-      Minor: 0,
-      Patch: 20
-    }
-  };
-
-  JsonFileUpdater.build()
-    .setJsonFile("mock-json-file.json")
-    .withUpdates(updates)
-    .updateFile();
-
-  const jsonObjAfterUpdate = JSON.parse(
-    fs.readFileSync("mock-json-file.json", "utf8")
-  );
-  expect(jsonObjAfterUpdate.name).toBe("new-name");
-  expect(jsonObjAfterUpdate.otherField).toBe("test-otherField");
 });
