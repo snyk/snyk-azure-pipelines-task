@@ -1,4 +1,4 @@
-import { InputArgs, parseInputParameters, Command, DeployTarget } from "../cli-args";
+import { parseInputParameters, Command, DeployTarget } from "../cli-args";
 
 class FakeExitError extends Error {
   constructor(message?: string) {
@@ -53,7 +53,7 @@ test('deploy to custom target fails if --config-file not set', () => {
   expect(() => {
     const inputArgs = ["deploy",
     "--target", "custom"];
-    const parsedArgs = parseInputParameters(inputArgs);
+    parseInputParameters(inputArgs);
   }).toThrow(FakeExitError);
 });
 

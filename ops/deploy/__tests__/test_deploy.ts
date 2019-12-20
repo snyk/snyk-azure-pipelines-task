@@ -1,5 +1,4 @@
-import deploy, {ExtensionPublishArgs, getEnvValueOrPanic, VSSExtensionOverrideJson, JsonFileUpdater, publishExtension} from "../deploy";
-
+import deploy, { ExtensionPublishArgs, getEnvValueOrPanic, VSSExtensionOverrideJson, JsonFileUpdater } from "../deploy";
 const fs = require("fs");
 
 test("test getEnvValueOrPanic works", () => {

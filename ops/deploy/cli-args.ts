@@ -1,5 +1,4 @@
 const yargs = require("yargs");
-const fs = require("fs");
 
 enum Command {
   VersionCheck,
@@ -22,9 +21,9 @@ interface InputArgs {
 const parseInputParameters = (inputArgs): InputArgs => {
   const scriptName = "deploy";
   const usageMsg = "Usage: $0 <command>";
-  const testCommandUsage = "test <chart-directory> [options]";
-  const testCommandDescription = "Check images in your charts for vulnerabilities";
-  const scriptExample = "$0 test . --output=snyk-out.json";
+  // const testCommandUsage = "test <chart-directory> [options]";
+  // const testCommandDescription = "Check images in your charts for vulnerabilities";
+  // const scriptExample = "$0 test . --output=snyk-out.json";
 
   const argv = yargs(inputArgs)
   .version()
