@@ -42,9 +42,7 @@ test("basic smoke test - inputs are ok", () => {
     ]
   ).toBe(true);
   expect(
-    mockTestRunner.cmdlines[
-      "null null/report.json | /usr/bin/sudo snyk-to-html"
-    ]
+    mockTestRunner.cmdlines["/usr/bin/sudo snyk-to-html -i null/report.json"]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
@@ -76,9 +74,7 @@ test("basic smoke test for container test - inputs are ok", () => {
     ]
   ).toBe(true);
   expect(
-    mockTestRunner.cmdlines[
-      "null null/report.json | /usr/bin/sudo snyk-to-html"
-    ]
+    mockTestRunner.cmdlines["/usr/bin/sudo snyk-to-html -i null/report.json"]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[

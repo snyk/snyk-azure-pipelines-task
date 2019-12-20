@@ -28,8 +28,11 @@ const regexForRemoveCommandLine = /\[command\].*/g;
 
 const isDebugMode = () => tl.getBoolInput("debug", false);
 
+const getToolPath = (tool: string, requiresSudo: boolean): string =>
+  requiresSudo ? tl.which("sudo") : tl.which(tool);
+
 function buildToolRunner(tool: string, requiresSudo: boolean): tr.ToolRunner {
-  const toolPath = requiresSudo ? tl.which("sudo") : tl.which(tool);
+  const toolPath: string = getToolPath(tool, requiresSudo);
   let toolRunner = tl.tool(toolPath);
 
   if (requiresSudo) toolRunner = toolRunner.arg(tool);
@@ -168,7 +171,8 @@ async function runSnykTest(
     options = getOptionsToWriteFile(fileName, workDir, taskArgs);
   }
 
-  console.log("[command]/usr/bin/sudo snyk test (args) --json");
+  const command = `[command]${getToolPath("snyk", useSudo)} snyk test...`;
+  console.log(command);
   const snykTestExitCode = await snykTestToolRunner.exec(options);
   if (isDebugMode()) console.log(`snykTestExitCode: ${snykTestExitCode}\n`);
 
@@ -207,18 +211,21 @@ const runSnykToHTML = async (
   }
   let code = 0;
   let errorMsg = "";
-  console.log(
-    `[command]/bin/cat ${workDir}/report.json | /usr/bin/sudo snyk-to-html`
-  );
+  const filePath = `${workDir}/${reportJSONFileName}`;
+  const command = `[command]${getToolPath(
+    "snyk-to-html",
+    useSudo
+  )} snyk-to-html -i ${filePath}`;
+  console.log(command);
   const snykToHTMLToolRunner: tr.ToolRunner = buildToolRunner(
     "snyk-to-html",
     useSudo
+  )
+    .arg("-i")
+    .arg(filePath);
+  const snykToHTMLExitCode = await snykToHTMLToolRunner.exec(
+    optionsToExeSnykToHTML
   );
-  const catTRunner: tr.ToolRunner = buildToolRunner("cat", false)
-    .arg(`${workDir}/${reportJSONFileName}`)
-    .pipeExecOutputToTool(snykToHTMLToolRunner);
-
-  const snykToHTMLExitCode = await catTRunner.exec(optionsToExeSnykToHTML);
   if (snykToHTMLExitCode >= CLI_EXIT_CODE_INVALID_USE) {
     code = snykToHTMLExitCode;
     errorMsg =
