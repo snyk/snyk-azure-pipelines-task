@@ -138,6 +138,6 @@ test("fail if --new-version is set and target is not custom", () => {
         "1.2.3"
       ];
       parseInputParameters(inputArgs);
-    }).toThrow(FakeExitError); // TODO: this works just as well if I just use toThrow(Error)
+    }).toThrow(FakeExitError);
   }
 });
