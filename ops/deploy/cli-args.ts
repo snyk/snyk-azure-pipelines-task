@@ -6,16 +6,16 @@ enum Command {
 }
 
 enum DeployTarget {
-    Prod,
-    Dev,
-    Custom
+  Prod,
+  Dev,
+  Custom
 }
 
 interface InputArgs {
-  command: Command,
-  target: DeployTarget,
-  configFile: string,
-  newVersion: string
+  command: Command;
+  target: DeployTarget;
+  configFile: string;
+  newVersion: string;
 }
 
 const parseInputParameters = (inputArgs): InputArgs => {
@@ -26,50 +26,54 @@ const parseInputParameters = (inputArgs): InputArgs => {
   // const scriptExample = "$0 test . --output=snyk-out.json";
 
   const argv = yargs(inputArgs)
-  .version()
-  .scriptName(scriptName)
-  .usage(usageMsg)
-  .command("version-check", "Checks that all the versions match")
-  .command('deploy [options]', 'Deploys to specified target', y => {
-    y.option('target', {
-      description: 'the deployment target',
-      type: 'string',
-      demandOption: true,
-      choices: ['dev', 'prod', 'custom']
+    .version()
+    .scriptName(scriptName)
+    .usage(usageMsg)
+    .command("version-check", "Checks that all the versions match")
+    .command("deploy [options]", "Deploys to specified target", y => {
+      y.option("target", {
+        description: "the deployment target",
+        type: "string",
+        demandOption: true,
+        choices: ["dev", "prod", "custom"]
+      })
+        .option("config-file", {
+          description:
+            "Config JSON file specifying custom deployment arguments",
+          type: "string"
+        })
+        .option("new-version", {
+          description:
+            "New version to release; only valid with --target=custom",
+          type: "string"
+        })
+        .check(argsToCheck => {
+          if (argsToCheck.target === "custom" && !argsToCheck.configFile) {
+            throw new Error("--config-file is required for target `custom`");
+          }
+
+          if (argsToCheck.target !== "custom" && argsToCheck.configFile) {
+            throw new Error(
+              "--config-file isonly allowed with target `custom`"
+            );
+          }
+
+          if (argsToCheck.target !== "custom" && argsToCheck.newVersion) {
+            throw new Error(
+              "--new-version is only allowed with target `custom`"
+            );
+          }
+
+          return true;
+        });
     })
-    .option('config-file', {
-      description: 'Config JSON file specifying custom deployment arguments',
-      type: 'string'
-    })
-    .option('new-version', {
-      description: 'New version to release; only valid with --target=custom',
-      type: 'string'
-    })
-    .check(argsToCheck => {
-      if (argsToCheck.target === 'custom' && !argsToCheck.configFile) {
-        throw new Error("--config-file is required for target `custom`");
-      }
-
-      if (argsToCheck.target !== 'custom' && argsToCheck.configFile) {
-        throw new Error("--config-file isonly allowed with target `custom`");
-      }
-
-      if (argsToCheck.target !== 'custom' && argsToCheck.newVersion) {
-        throw new Error("--new-version is only allowed with target `custom`");
-      }
-
-      return true;
-
-    });
-  })
-  .demandCommand(1)
-  .help("help")
-  .alias("help", "h")
-  .example("$0 version-check")
-  .example("$0 deploy --target=dev")
-  .example("$0 deploy --target=prod")
-  .example("$0 deploy --target=custom --config-file=custom-args.json")
-  .argv;
+    .demandCommand(1)
+    .help("help")
+    .alias("help", "h")
+    .example("$0 version-check")
+    .example("$0 deploy --target=dev")
+    .example("$0 deploy --target=prod")
+    .example("$0 deploy --target=custom --config-file=custom-args.json").argv;
 
   console.log("argv:", argv);
 
