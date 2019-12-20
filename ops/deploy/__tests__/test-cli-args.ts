@@ -1,4 +1,4 @@
-import { IArgs, parseInputParameters, Command, DeployTarget } from "../cli-args";
+import { InputArgs, parseInputParameters, Command, DeployTarget } from "../cli-args";
 
 class FakeExitError extends Error {
   constructor(message?: string) {

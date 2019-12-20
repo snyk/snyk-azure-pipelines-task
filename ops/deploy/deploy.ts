@@ -3,7 +3,7 @@ const path = require('path');
 import * as myAz from "./azure-devops";
 import * as ExtensionManagementInterfaces from 'azure-devops-node-api/interfaces/ExtensionManagementInterfaces';
 
-import {Command, DeployTarget, IArgs, parseInputParameters} from "./cli-args";
+import {Command, DeployTarget, InputArgs, parseInputParameters} from "./cli-args";
 import {ChildProcess, exec, ExecException} from "child_process";
 
 function checkVersionsMatch(): boolean {
@@ -26,28 +26,28 @@ function checkVersionsMatch(): boolean {
         versionFromExtensionFile === versionFromTaskFile);
 }
 
-export interface IExecCommandResult {
+export interface ExecCommandResult {
     exitCode: number;
     stdout: string;
     stderr: string;
 }
 
-export async function runCommand(fullCommand: string, workingDirectory: string): Promise<IExecCommandResult> {
-    return new Promise<IExecCommandResult>((resolve, reject) => {
+export async function runCommand(fullCommand: string, workingDirectory: string): Promise<ExecCommandResult> {
+    return new Promise<ExecCommandResult>((resolve, reject) => {
         const res: ChildProcess = exec(fullCommand, {cwd: workingDirectory}, (err: ExecException | null, stdout: string, stderr: string) => {
             if (err) {
                 const retValue = {
                     exitCode: err.code,
                     stdout: stdout,
                     stderr: stderr
-                } as IExecCommandResult;
+                } as ExecCommandResult;
                 reject(retValue); // I could also resolve it here and then read the exit code in the calling block
             } else {
                 const retValue = {
                     exitCode: 0,
                     stdout: stdout,
                     stderr: stderr
-                } as IExecCommandResult;
+                } as ExecCommandResult;
                 resolve(retValue);
             }
         });
@@ -73,7 +73,7 @@ export class JsonFileUpdater {
     }
 
     updateFile() {
-        let jsonObj = JSON.parse(fs.readFileSync(this.filepath, "utf8"));
+        const jsonObj = JSON.parse(fs.readFileSync(this.filepath, "utf8"));
 
         Object.keys(this.updates)
             .forEach(k => jsonObj[k] = this.updates[k]);
@@ -193,7 +193,7 @@ export async function publishExtension(target: DeployTarget, workingDirectory: s
     --json`;
 
     // TODO: make sure the token doesn't get exposed here
-    const res: IExecCommandResult = await runCommand(command, workingDirectory);
+    const res: ExecCommandResult = await runCommand(command, workingDirectory);
 
     console.log(res.exitCode);
     console.log(res.stdout);
@@ -280,7 +280,7 @@ async function main() {
 }
 
 export async function mainWithRawArgs(inputArgs: string[], workingDirectory: string, taskRelativePath: string) {
-    const parsedArgs: IArgs = parseInputParameters(inputArgs);
+    const parsedArgs: InputArgs = parseInputParameters(inputArgs);
     console.log(`parsedArgs:`);
     console.log(` - ${parsedArgs.command}`);
     console.log(` - ${parsedArgs.target}`);
@@ -314,7 +314,7 @@ export async function mainWithRawArgs(inputArgs: string[], workingDirectory: str
 
 }
 
-export async function updateOrInstallExtension(parsedArgs: IArgs, workingDirectory: string, taskRelativePath: string, publishArgs: ExtensionPublishArgs): Promise<void> {
+export async function updateOrInstallExtension(parsedArgs: InputArgs, workingDirectory: string, taskRelativePath: string, publishArgs: ExtensionPublishArgs): Promise<void> {
 
     if (!publishArgs.azureDevopsPAT) {
         console.log("Azure token (AZURE_DEVOPS_EXT_PAT) is not set");

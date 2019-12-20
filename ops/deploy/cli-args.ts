@@ -12,14 +12,14 @@ enum DeployTarget {
     Custom
 }
 
-interface IArgs {
+interface InputArgs {
   command: Command,
   target: DeployTarget,
   configFile: string,
   newVersion: string
 }
 
-const parseInputParameters = (inputArgs): IArgs => {
+const parseInputParameters = (inputArgs): InputArgs => {
   const scriptName = "deploy";
   const usageMsg = "Usage: $0 <command>";
   const testCommandUsage = "test <chart-directory> [options]";
@@ -77,13 +77,13 @@ const parseInputParameters = (inputArgs): IArgs => {
   return parseOptions(argv);
 };
 
-const parseOptions = (argv: any): IArgs => {
+const parseOptions = (argv: any): InputArgs => {
   const options = {
     command: Command.VersionCheck,
     target: DeployTarget.Custom,
     configFile: "",
     newVersion: ""
-  } as IArgs;
+  } as InputArgs;
 
   const command = argv._[0];
   if (command === "version-check") {
@@ -117,4 +117,4 @@ const parseOptions = (argv: any): IArgs => {
   return options;
 };
 
-export { IArgs, parseInputParameters, Command, DeployTarget };
+export { InputArgs, parseInputParameters, Command, DeployTarget };

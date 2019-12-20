@@ -9,6 +9,7 @@
     "compile_enhancer": "tsc -b ui/enhancer/tsconfig.json",
     "deploy:compile": "tsc -b ops/deploy/tsconfig.json",
     "deploy:test": "jest --config=ops/deploy/jest.config.js",
+    "deploy:eslint": "eslint --cache 'ops/deploy/**/*.ts'",
     "deploy:run": "node ops/deploy/dist/deploy.js",
     "pretest": "npm run build",
     "test:mocha": "mocha tests/_suite.js",
