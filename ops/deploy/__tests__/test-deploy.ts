@@ -187,7 +187,3 @@ test("test JsonFileUpdater", () => {
   expect(jsonObjAfterUpdate.name).toBe("new-name");
   expect(jsonObjAfterUpdate.otherField).toBe("test-otherField");
 });
-
-test("make sure circleci is picking these tests up", () => {
-  expect(1).toBe(2);
-});
