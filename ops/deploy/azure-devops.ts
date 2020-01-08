@@ -3,29 +3,6 @@ import * as ExtensionManagementApi from "azure-devops-node-api/ExtensionManageme
 import * as ExtensionManagementInterfaces from "azure-devops-node-api/interfaces/ExtensionManagementInterfaces";
 import * as lim from "azure-devops-node-api/interfaces/LocationsInterfaces";
 
-// orig from Azure examples - has eslint issue
-// export async function getApi(serverUrl: string, azureDevOpsToken: string): Promise<nodeApi.WebApi> {
-//   return new Promise<nodeApi.WebApi>(async (resolve, reject) => {
-//       try {
-//           const token = azureDevOpsToken;
-//           const authHandler = nodeApi.getPersonalAccessTokenHandler(token);
-//           const option = undefined;
-//
-//           const vsts: nodeApi.WebApi = new nodeApi.WebApi(serverUrl, authHandler, option);
-//           const connData: lim.ConnectionData = await vsts.connect();
-//           if (connData) {
-//               if (connData.authenticatedUser) {
-//                   console.log(`Hello ${connData.authenticatedUser.providerDisplayName}`);
-//               }
-//           }
-//           resolve(vsts);
-//       }
-//       catch (err) {
-//           reject(err);
-//       }
-//   });
-// }
-
 export async function getApi(
   serverUrl: string,
   azureDevOpsToken: string
@@ -63,7 +40,6 @@ export async function getExtensionInfo(
 ): Promise<ExtensionManagementInterfaces.InstalledExtension> {
   const webApi: nodeApi.WebApi = await getWebApi(serverUrl, azureDevOpsToken);
   const extensionManagementApiObject: ExtensionManagementApi.IExtensionManagementApi = await webApi.getExtensionManagementApi();
-  // console.log('States:', await extensionManagementApiObject.getStates(true, true, true));
 
   // Although this API claims to be "ByName", it actually corresponds to the the `extensionId`. The same weirdness exists when you use the az devops CLI
   return extensionManagementApiObject.getInstalledExtensionByName(
@@ -80,7 +56,6 @@ export async function uninstallExtension(
 ): Promise<void> {
   const webApi: nodeApi.WebApi = await getWebApi(serverUrl, azureDevOpsToken);
   const extensionManagementApiObject: ExtensionManagementApi.IExtensionManagementApi = await webApi.getExtensionManagementApi();
-  // console.log('States:', await extensionManagementApiObject.getStates(true, true, true));
 
   // Although this API claims to be "ByName", it actually corresponds to the the `extensionId`. The same weirdness exists when you use the az devops CLI
   return extensionManagementApiObject.uninstallExtensionByName(
@@ -97,7 +72,6 @@ export async function installExtension(
 ): Promise<ExtensionManagementInterfaces.InstalledExtension> {
   const webApi: nodeApi.WebApi = await getWebApi(serverUrl, azureDevOpsToken);
   const extensionManagementApiObject: ExtensionManagementApi.IExtensionManagementApi = await webApi.getExtensionManagementApi();
-  // console.log('States:', await extensionManagementApiObject.getStates(true, true, true));
 
   // Although this API claims to be "ByName", it actually corresponds to the the `extensionId`. The same weirdness exists when you use the az devops CLI
   return extensionManagementApiObject.installExtensionByName(

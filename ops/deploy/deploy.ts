@@ -140,6 +140,15 @@ export class VSSExtensionOverrideJson {
   }
 }
 
+export const errorIfNewVersionAndTargetNotCustom = (
+  target: DeployTarget,
+  newVersion?: string
+) => {
+  if (newVersion && target !== DeployTarget.Custom) {
+    throw new Error("newVersion is only valid for the Custom deploy target");
+  }
+};
+
 export async function publishExtension(
   target: DeployTarget,
   workingDirectory: string,
@@ -147,22 +156,12 @@ export async function publishExtension(
   publishArgs: ExtensionPublishArgs,
   newVersion?: string
 ): Promise<void> {
-  // only allow newVersion if custom deploy target
-  if (newVersion && target !== DeployTarget.Custom) {
-    throw new Error("newVersion is only valid for the Custom deploy target");
-  }
+  errorIfNewVersionAndTargetNotCustom(target, newVersion);
 
-  // update the task.json if required
-  // for updating the task.json, we need to actually update the file
+  // If we want to update task.json, we need to actually update the file - Azure doesn't have the ability to pass in
+  // overrides like for it does for vss-extension.json changes.
   const taskFileRelativePath = path.join(taskRelativePath, "task.json");
   const taskFilePath = path.join(workingDirectory, taskFileRelativePath);
-
-  // const taskFileUpdates = {
-  //     id: publishArgs.taskId,
-  //     name: publishArgs.taskName,
-  //     friendlyName: publishArgs.taskFriendlyName
-  // };
-
   const taskFileUpdates = {};
 
   if (publishArgs.taskId) {
@@ -222,43 +221,8 @@ export async function publishExtension(
   }
 }
 
-const getAzUrl = (azureOrg: string) => `https://dev.azure.com/${azureOrg}/`;
-
-export async function getExtensionInfo(
-  publishArgs: ExtensionPublishArgs
-): Promise<ExtensionManagementInterfaces.InstalledExtension> {
-  const azUrl = getAzUrl(publishArgs.azureOrg);
-  return myAz.getExtensionInfo(
-    azUrl,
-    publishArgs.azureDevopsPAT,
-    publishArgs.vsMarketplacePublisher,
-    publishArgs.extensionId
-  );
-}
-
-export async function uninstallExtension(
-  publishArgs: ExtensionPublishArgs
-): Promise<void> {
-  const azUrl = getAzUrl(publishArgs.azureOrg);
-  return myAz.uninstallExtension(
-    azUrl,
-    publishArgs.azureDevopsPAT,
-    publishArgs.vsMarketplacePublisher,
-    publishArgs.extensionId
-  );
-}
-
-export async function installExtension(
-  publishArgs: ExtensionPublishArgs
-): Promise<ExtensionManagementInterfaces.InstalledExtension> {
-  const azUrl = getAzUrl(publishArgs.azureOrg);
-  return myAz.installExtension(
-    azUrl,
-    publishArgs.azureDevopsPAT,
-    publishArgs.vsMarketplacePublisher,
-    publishArgs.extensionId
-  );
-}
+export const getAzUrl = (azureOrg: string) =>
+  `https://dev.azure.com/${azureOrg}/`;
 
 export interface ExtensionPublishArgs {
   extensionId: string;
@@ -377,11 +341,18 @@ export async function updateOrInstallExtension(
     process.exit(1);
   }
 
+  const azUrl = getAzUrl(publishArgs.azureOrg);
+
   // uninstall previous - this should be an option
   // TODO: add an option like --install-new-version which, when set, will control whether we call uninstallPreviousVersion() / installNewVersion
-  await uninstallExtension(publishArgs);
+  await myAz.uninstallExtension(
+    azUrl,
+    publishArgs.azureDevopsPAT,
+    publishArgs.vsMarketplacePublisher,
+    publishArgs.extensionId
+  );
 
-  // publish - shell out to call `tfx extsion publish...`
+  // publish - shell out to call `tfx extension publish...`
   await publishExtension(
     parsedArgs.target,
     workingDirectory,
@@ -391,9 +362,12 @@ export async function updateOrInstallExtension(
   );
 
   // install new version - this should be an option
-  await installExtension(publishArgs);
-
-  // await verifyInstalled();
+  await myAz.installExtension(
+    azUrl,
+    publishArgs.azureDevopsPAT,
+    publishArgs.vsMarketplacePublisher,
+    publishArgs.extensionId
+  );
 }
 
 if (require.main === module) {

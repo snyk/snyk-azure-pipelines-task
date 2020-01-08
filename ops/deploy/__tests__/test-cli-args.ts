@@ -91,7 +91,6 @@ test("fail if --config-file is set and target is not custom", () => {
         "dev",
         "--config-file",
         "myconfig.json"
-        // "--new-version", "1.2.3"
       ];
       parseInputParameters(inputArgs);
     }).toThrow(FakeExitError);
@@ -105,7 +104,6 @@ test("fail if --config-file is set and target is not custom", () => {
         "prod",
         "--config-file",
         "myconfig.json"
-        // "--new-version", "1.2.3"
       ];
       parseInputParameters(inputArgs);
     }).toThrow(FakeExitError);
@@ -115,14 +113,7 @@ test("fail if --config-file is set and target is not custom", () => {
 test("fail if --new-version is set and target is not custom", () => {
   {
     expect(() => {
-      const inputArgs = [
-        "deploy",
-        "--target",
-        "dev",
-        // "--config-file", "myconfig.json",
-        "--new-version",
-        "1.2.3"
-      ];
+      const inputArgs = ["deploy", "--target", "dev", "--new-version", "1.2.3"];
       parseInputParameters(inputArgs);
     }).toThrow(FakeExitError);
   }
@@ -133,7 +124,6 @@ test("fail if --new-version is set and target is not custom", () => {
         "deploy",
         "--target",
         "prod",
-        // "--config-file", "myconfig.json",
         "--new-version",
         "1.2.3"
       ];

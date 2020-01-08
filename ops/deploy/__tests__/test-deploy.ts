@@ -1,8 +1,11 @@
 import deploy, {
   ExtensionPublishArgs,
   getEnvValueOrPanic,
-  VSSExtensionOverrideJson
+  VSSExtensionOverrideJson,
+  getAzUrl,
+  errorIfNewVersionAndTargetNotCustom
 } from "../deploy";
+import { DeployTarget } from "../cli-args";
 
 test("test getEnvValueOrPanic works", () => {
   process.env = Object.assign(process.env, { EXTENSION_ID: "test-value" });
@@ -154,4 +157,20 @@ test("test override json builder", () => {
   expect(jsonObj5.version).toBe("1.2.3");
   expect(jsonObj5.id).toBe("test-extension-id");
   expect(jsonObj5.publisher).toBe("test-publisher");
+});
+
+test("test getAzUrl works", () => {
+  expect(getAzUrl("test")).toBe("https://dev.azure.com/test/");
+});
+
+test("test errorIfNewVersionAndTargetNotCustom works", () => {
+  errorIfNewVersionAndTargetNotCustom(DeployTarget.Custom, "0.0.1"); // should not throw error
+
+  expect(() => {
+    errorIfNewVersionAndTargetNotCustom(DeployTarget.Dev, "0.0.1");
+  }).toThrow(Error);
+
+  expect(() => {
+    errorIfNewVersionAndTargetNotCustom(DeployTarget.Dev, "0.0.1");
+  }).toThrow(Error);
 });
