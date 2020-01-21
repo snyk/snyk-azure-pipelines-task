@@ -16,7 +16,7 @@ class TaskArgs {
   projectName: string | undefined = "";
 
   testDirectory: string | undefined = "";
-  additionalArguments: string | undefined = "";
+  additionalArguments: string = "";
 
   getFileParameter() {
     if (this.targetFile && !this.dockerImageName) {
