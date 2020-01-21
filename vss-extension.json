@@ -54,6 +54,9 @@
 		},
 		"support": {
 			"uri": "https://support.snyk.io/"
+		},
+		"privacypolicy": {
+			"uri": "https://snyk.io/policies/privacy/"
 		}
 	},
 	"contributions": [
