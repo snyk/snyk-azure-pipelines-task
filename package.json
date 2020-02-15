@@ -10,15 +10,12 @@
     "eslint": "npm run task:eslint && npm run deploy:eslint",
     "format:check": "npm run task:format:check && npm run deploy:format:check",
     "format": "npm run task:format && npm run deploy:format",
-
     "task:compile": "tsc -b snykTask/tsconfig.json",
     "task:test": "jest --detectOpenHandles",
     "task:eslint": "eslint --cache 'snykTask/{src,test,public/js/{!(build)}}/**/*.{js,ts}'",
     "task:format:check": "prettier --check 'snykTask/{src,test,public/js/{!(build)}}/**/*.{js,ts}'",
     "task:format": "prettier --write 'snykTask/{src,test,scripts,public/js/{!(build)}}/**/*.{js,ts}'",
-
     "enhancer:compile": "tsc -b ui/enhancer/tsconfig.json",
-
     "deploy:compile": "tsc -b ops/deploy/tsconfig.json",
     "deploy:test": "jest --config=ops/deploy/jest.config.js",
     "deploy:eslint": "eslint --cache 'ops/deploy/**/*.ts'",
