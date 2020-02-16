@@ -26,6 +26,7 @@ module.exports = {
       // our types are still imprecisely defined and we don't use noImplicitAny
       // anyway, so for the time being assertions are allowed
       '@typescript-eslint/no-non-null-assertion': 1,
+      '@typescript-eslint/ban-ts-ignore': "off",
 
       '@typescript-eslint/no-var-requires': 0,
       '@typescript-eslint/no-use-before-define': 0,

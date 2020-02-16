@@ -50,7 +50,8 @@ function parseInputArgs(): TaskArgs {
   taskArgs.organization = tl.getInput("organization", false);
   taskArgs.monitorOnBuild = tl.getBoolInput("monitorOnBuild", true);
   taskArgs.failOnIssues = tl.getBoolInput("failOnIssues", true);
-  taskArgs.additionalArguments = tl.getInput("additionalArguments", false);
+  taskArgs.additionalArguments =
+    tl.getInput("additionalArguments", false) || "";
   taskArgs.testDirectory = tl.getInput("testDirectory", false);
   taskArgs.severityThreshold = tl.getInput("severityThreshold", false);
   if (taskArgs.severityThreshold) {
@@ -162,7 +163,7 @@ async function runSnykTest(
     .argIf(taskArgs.dockerImageName, `--docker`)
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
     .argIf(fileArg, `--file=${fileArg}`)
-    .argIf(taskArgs.additionalArguments, taskArgs.additionalArguments)
+    .line(taskArgs.additionalArguments)
     .arg(`--json`);
 
   let options = getOptionsToExecuteCmd(taskArgs);
@@ -255,7 +256,7 @@ async function runSnykMonitor(
     .argIf(fileArg, `--file=${fileArg}`)
     .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
     .argIf(taskArgs.projectName, `--project-name=${taskArgs.projectName}`)
-    .argIf(taskArgs.additionalArguments, taskArgs.additionalArguments);
+    .line(taskArgs.additionalArguments);
 
   const snykMonitorExitCode = await snykMonitorToolRunner.exec(options);
 
