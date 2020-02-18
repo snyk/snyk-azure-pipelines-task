@@ -112,7 +112,8 @@ async function installSnyk(
     .arg("install")
     .arg("-g")
     .arg("snyk")
-    .arg("snyk-to-html");
+    .arg("snyk-to-html")
+    .arg("--quiet");
   const installSnykExitCode = await installSnykToolRunner.exec(options);
   if (isDebugMode())
     console.log(`installSnykExitCode: ${installSnykExitCode}\n`);
