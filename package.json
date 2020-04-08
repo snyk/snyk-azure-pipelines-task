@@ -35,9 +35,14 @@
       "@semantic-release/changelog",
       "@semantic-release/github",
       [
+        "@semantic-release/npm",
+        {
+          "npmPublish": false
+        }
+      ],
+      [
         "@semantic-release/exec",
         {
-          "prepareCmd": "set-version ${nextRelease.version}",
           "publishCmd": "scripts/ci-deploy.sh ${nextRelease.version}"
         }
       ]
