@@ -290,9 +290,13 @@ const attachReport = (
   workDir: string,
   attachmentType: string
 ) => {
-  if (fs.existsSync(`${workDir}/${file}`)) {
+  const filePath = `${workDir}/${file}`;
+  if (fs.existsSync(filePath)) {
     console.log(`${file} file exists... attaching file`);
-    tl.addAttachment(attachmentType, file, `${workDir}/${file}`);
+    tl.addAttachment(attachmentType, file, filePath);
+    if (isDebugMode()) {
+      console.log(fs.readFileSync(filePath, "utf-8"));
+    }
   }
 };
 
@@ -393,7 +397,6 @@ async function run() {
       throw new SnykError(errorMsg);
     }
 
-    if (isDebugMode()) showDirectoryListing(getOptionsToExecuteCmd(taskArgs));
     const useSudo = isSudoMode();
     if (isDebugMode()) console.log(`useSudo: ${useSudo}`);
     handleSnykInstallError(await installSnyk(taskArgs, useSudo));
