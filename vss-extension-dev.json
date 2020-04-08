@@ -1,10 +1,10 @@
 {
 	"manifestVersion": 1,
-	"id": "snyk-security-scan",
-	"name": "Snyk Security Scan",
-	"version": "0.0.0",
-	"publisher": "Snyk",
-	"targets": [
+	"id": "snyk-security-scan-dev",
+	"name": "Snyk Security Scan (Dev)",
+	"version": "0.2.2",
+	"publisher": "agranado-snyk-pub",
+"targets": [
 		{
 			"id": "Microsoft.VisualStudio.Services"
 		}

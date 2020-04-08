@@ -6,7 +6,8 @@
   "scripts": {
     "build": "npm run task:compile && npm run enhancer:compile && npm run deploy:compile",
     "pretest": "npm run build",
-    "test": "npm run task:test && npm run deploy:test",
+    "test": "npm run task:eslint && npm run task:format && npm run task:test",
+    "test:unit": "npm run task:test && npm run deploy:test",
     "eslint": "npm run task:eslint && npm run deploy:eslint",
     "format:check": "npm run task:format:check && npm run deploy:format:check",
     "format": "npm run task:format && npm run deploy:format",
@@ -23,6 +24,25 @@
     "deploy:format": "prettier --write 'ops/deploy/**/*.ts'",
     "deploy:run": "node ops/deploy/dist/deploy.js"
   },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "repositoryUrl": "https://github.com/snyk/snyk-azure-pipelines-task",
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/github",
+      [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "set-version ${nextRelease.version}",
+          "publishCmd": "scripts/ci-deploy.sh ${nextRelease.version}"
+        }
+      ]
+    ]
+  },
   "author": "snyk.io",
   "license": "MIT",
   "dependencies": {
@@ -33,6 +53,8 @@
     "vss-web-extension-sdk": "^5.141.0"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^5.0.1",
+    "@semantic-release/exec": "^5.0.0",
     "@types/jest": "^24.0.18",
     "@types/node": "^12.7.1",
     "@types/q": "^1.5.2",
@@ -46,7 +68,9 @@
     "jest": "^24.9.0",
     "mock-fs": "^4.10.4",
     "prettier": "^1.18.2",
+    "semantic-release": "^17.0.4",
     "sync-request": "^6.1.0",
+    "tfx-cli": "^0.7.11",
     "ts-jest": "^24.0.2",
     "typescript": "^3.5.3"
   }
