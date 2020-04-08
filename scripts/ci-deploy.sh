@@ -27,7 +27,7 @@ PWD=$(pwd)
 echo "PWD: ${PWD}"
 
 echo "Installing tfx-cli globally..."
-npm install -g tfx-cli@0.7.11
+sudo npm install -g tfx-cli@0.7.11
 
 echo "Bulding project..."
 npm install
