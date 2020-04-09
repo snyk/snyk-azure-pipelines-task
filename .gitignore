@@ -10,8 +10,8 @@ cycle.sh
 /.mocha_tests/
 snykTask/coverage
 package-lock.json
-*.vsix
 *.bak
+*.vsix
 .eslintcache
 .circleci
 .ops
