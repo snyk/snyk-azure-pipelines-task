@@ -29,15 +29,10 @@ echo "PWD: ${PWD}"
 echo "Installing tfx-cli globally..."
 sudo npm install -g tfx-cli@0.7.11
 
-echo "Bulding project..."
-npm install
-npm run build
-npm prune --production  # remove devDependencies from node-modules
-cd snykTask
-npm install
-cd ..
-echo "Project built"
+# Build project
+"${PWD}/scripts/ci-build.sh" "prod"
 
+# Deploy project
 if [[ ! -z "${AZ_ORG}" ]]; then
   "${PWD}/scripts/share-dev.sh" ${AZ_EXT_NEW_VERSION} ${AZ_ORG}
 else

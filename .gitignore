@@ -11,6 +11,7 @@ cycle.sh
 snykTask/coverage
 package-lock.json
 *.vsix
+*.bak
 .eslintcache
 .circleci
 .ops
