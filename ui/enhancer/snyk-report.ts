@@ -30,7 +30,7 @@ export class SnykReportTab extends Controls.BaseControl {
 				this.planId = build.orchestrationPlan.planId;
 
 				const reportListElem: HTMLElement = (document.getElementById('reportList') as HTMLElement);
-				
+
 				this.taskClient.getPlanAttachments(
 					this.projectId,
 					BUILD_PHASE,
@@ -85,7 +85,7 @@ export class SnykReportTab extends Controls.BaseControl {
 			if (json["docker"] && json["docker"]["baseImage"])
 				spanText = `Snyk Test for ${json["docker"]["baseImage"]} (${this.formatReportName(attachmentName)})`;
 
-			if (json["packageManager"]) 
+			if (json["packageManager"])
 				spanText = `Snyk Test for ${json["packageManager"]} (${this.formatReportName(attachmentName)})`;
 
 			if (json["vulnerabilities"] && json["vulnerabilities"].length > 0) {
@@ -122,7 +122,7 @@ export class SnykReportTab extends Controls.BaseControl {
 		let reportName = name.split(".")[0];
 		const tmpName = reportName.split("T");
 		return  `${tmpName[0]} ${tmpName[1].replace(/-/g,":")}`;
-	} 
+	}
 
 	private showReport = (index: string | number | symbol, attachmentName: string, timelineId: string, recordId: string): void => {
 		$.each(this.reportList, (index, reportItem) => $(reportItem).removeClass("currentReport"));
@@ -146,17 +146,7 @@ export class SnykReportTab extends Controls.BaseControl {
 	}
 
 	private fillReportIFrameContent = (content: string): void => {
-		const iframe: HTMLIFrameElement = (document.getElementById('iframeID') as HTMLIFrameElement);
-			const iframeCW = iframe.contentWindow;
-
-			if (iframeCW) {
-				iframeCW.document.open();
-				iframeCW.document.write(content);
-				iframeCW.document.close();
-			} else {
-				console.log('iframeCW is null');
-				console.log('iframe', iframe);
-			}
+		(document.getElementById('iframeID') as HTMLDivElement).innerHTML = content;
 	}
 }
 
