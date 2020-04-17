@@ -7,7 +7,7 @@
 			overflow: scroll;
 		}
 		.iframeContainer {
-			overflow: hidden;
+			overflow: scroll;
 			padding-top: 56.25%;
 			position: relative;
 		}
@@ -24,7 +24,7 @@
 		}
 		.report {
 			list-style: none;
-			width: 700px;
+			width: 100%;
 			cursor: pointer;
 			font-variant-numeric: proportional-nums;
 			font-feature-settings: "pnum";
@@ -44,7 +44,7 @@
 			cursor: not-allowed;
 		}
 		.reportImg {
-			width: 30px; 
+			width: 30px;
 			height: 30px;
 			vertical-align: middle;
 		}
@@ -53,18 +53,18 @@
 	<script type="text/javascript">
 		VSS.init( {
 			explicitNotifyLoaded: true,
-			usePlatformScripts: true, 
+			usePlatformScripts: true,
 			usePlatformStyles: true,
-			moduleLoaderConfig: { 
-				paths: { 
-					"enhancer": "scripts" 
-				} 
+			moduleLoaderConfig: {
+				paths: {
+					"enhancer": "scripts"
+				}
 			}
 		});
-		
+
 		VSS.ready(function() {
 				VSS.require(["scripts/snyk-report"], function () { });
-		});      
+		});
 	</script>
 </head>
 
@@ -73,7 +73,7 @@
 		<h2>Reports:</h2>
 		<ul id="reportList" class="list"></ul>
 		<div class="iframeContainer">
-			<iframe id="iframeID" class="iframe" role="presentation" />
+			<div id="iframeID" class="iframe" ></div>
 		</div>
 		<div id="snyk-report" class="container"></div>
 </body>
