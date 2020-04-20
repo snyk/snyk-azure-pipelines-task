@@ -1,9 +1,15 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import * as tr from "azure-pipelines-task-lib/toolrunner";
 import { TaskArgs, getAuthToken } from "./task-args";
+import { getTaskVersion } from "./task-version";
+import {
+  getOptionsToExecuteCmd,
+  getOptionsToExecuteSnykCLICommand,
+  getOptionsToWriteFile
+} from "./task-lib";
 import * as fs from "fs";
-import stream = require("stream");
 const replace = require("replace-in-file");
+import * as path from "path";
 
 class SnykError extends Error {
   constructor(message?: string) {
@@ -26,7 +32,15 @@ const JSON_ATTACHMENT_TYPE = "JSON_ATTACHMENT_TYPE";
 const HTML_ATTACHMENT_TYPE = "HTML_ATTACHMENT_TYPE";
 const regexForRemoveCommandLine = /\[command\].*/g;
 
+const taskNameForAnalytics = "snyk-azure-pipelines-task";
+const taskJsonPath = path.join(__dirname, "..", "task.json");
+const taskVersion = getTaskVersion(taskJsonPath);
+
 const isDebugMode = () => tl.getBoolInput("debug", false);
+
+if (isDebugMode()) {
+  console.log(`taskNameForAnalytics: ${taskNameForAnalytics}`);
+}
 
 const getToolPath = (tool: string, requiresSudo: boolean): string =>
   requiresSudo ? tl.which("sudo") : tl.which(tool);
@@ -131,7 +145,11 @@ async function authorizeSnyk(
 ): Promise<SnykOutput> {
   // TODO: play with setVariable as an option to use instead of running `snyk auth`
   // tl.setVariable('SNYK_TOKEN', authToken, true);
-  const options = getOptionsToExecuteCmd(taskArgs);
+  const options = getOptionsToExecuteSnykCLICommand(
+    taskArgs,
+    taskNameForAnalytics,
+    taskVersion
+  );
   const snykAuthToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
     .arg("auth")
     .arg(snykToken);
@@ -166,10 +184,21 @@ async function runSnykTest(
     .line(taskArgs.additionalArguments)
     .arg(`--json`);
 
-  let options = getOptionsToExecuteCmd(taskArgs);
+  let options = getOptionsToExecuteSnykCLICommand(
+    taskArgs,
+    taskNameForAnalytics,
+    taskVersion
+  );
+
   if (fs.existsSync(workDir)) {
     console.log("Set Execute Snyk Test with file out stream");
-    options = getOptionsToWriteFile(fileName, workDir, taskArgs);
+    options = getOptionsToWriteFile(
+      fileName,
+      workDir,
+      taskArgs,
+      taskNameForAnalytics,
+      taskVersion
+    );
   }
 
   const command = `[command]${getToolPath("snyk", useSudo)} snyk test...`;
@@ -248,7 +277,11 @@ async function runSnykMonitor(
 ): Promise<SnykOutput> {
   let errorMsg = "";
   const fileArg = taskArgs.getFileParameter();
-  const options = getOptionsToExecuteCmd(taskArgs);
+  const options = getOptionsToExecuteSnykCLICommand(
+    taskArgs,
+    taskNameForAnalytics,
+    taskVersion
+  );
   const snykMonitorToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
     .arg("monitor")
     .argIf(taskArgs.dockerImageName, `--docker`)
@@ -298,30 +331,6 @@ const attachReport = (
       console.log(fs.readFileSync(filePath, "utf-8"));
     }
   }
-};
-
-const getOptionsToWriteFile = (
-  file: string,
-  workDir: string,
-  taskArgs: TaskArgs
-): tr.IExecOptions => {
-  const jsonFilePath = `${workDir}/${file}`;
-  const stream: stream.Writable = fs.createWriteStream(jsonFilePath);
-
-  return {
-    cwd: taskArgs.testDirectory,
-    failOnStdErr: false,
-    ignoreReturnCode: true,
-    outStream: stream
-  } as tr.IExecOptions;
-};
-
-const getOptionsToExecuteCmd = (taskArgs: TaskArgs): tr.IExecOptions => {
-  return {
-    cwd: taskArgs.testDirectory,
-    failOnStdErr: false,
-    ignoreReturnCode: true
-  } as tr.IExecOptions;
 };
 
 async function removeFirstLineFrom(workDir: string, file: string, regex) {
@@ -408,6 +417,7 @@ async function run() {
       currentDir,
       jsonReportName
     );
+
     const snykToHTMLResult = await runSnykToHTML(
       taskArgs,
       currentDir,
@@ -415,9 +425,13 @@ async function run() {
       jsonReportName,
       useSudo
     );
+
     handleSnykToHTMLError(snykToHTMLResult);
 
-    if (isDebugMode()) showDirectoryListing(getOptionsToExecuteCmd(taskArgs));
+    if (isDebugMode()) {
+      await showDirectoryListing(getOptionsToExecuteCmd(taskArgs));
+    }
+
     attachReport(jsonReportName, currentDir, JSON_ATTACHMENT_TYPE);
     attachReport(htmlReportName, currentDir, HTML_ATTACHMENT_TYPE);
     handleSnykTestError(taskArgs, snykTestResult, currentDir, jsonReportName);
