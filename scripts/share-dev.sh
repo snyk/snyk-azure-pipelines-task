@@ -31,13 +31,34 @@ if [[ ! $? -eq 0 ]]; then
   fi
 fi
 
+echo "About to deploy to dev environment using:"
+echo "AZ_EXT_NEW_VERSION: ${AZ_EXT_NEW_VERSION}"
+echo "AZ_PUBLISHER: ${AZ_PUBLISHER}"
+echo "AZ_EXTENSION_ID: ${AZ_EXTENSION_ID}"
+echo "AZ_TASK_NAME: ${AZ_TASK_NAME}"
+echo "AZ_TASK_FRIENDLY_NAME: ${AZ_TASK_FRIENDLY_NAME}"
+echo "AZ_ORG: ${AZ_ORG}"
+echo "AZ_DEV_TASK_ID: ${AZ_DEV_TASK_ID}"
+
 # Unistall the extinsion if it has been already installed in this organization
-echo "Uninstall extension..."
-az devops extension uninstall \
+echo "See if the extension is already installed"
+az devops extension show \
   --publisher-name $AZ_PUBLISHER \
   --extension-name $AZ_EXTENSION_ID \
-  --organization "https://dev.azure.com/${AZ_ORG}/" --yes
-echo "Extension uninstalled"
+  --organization "https://dev.azure.com/${AZ_ORG}/"
+
+if [[ $? -eq 0 ]]; then
+  echo "Extension already installed... uninstalling"
+
+  echo "Uninstall extension..."
+  az devops extension uninstall \
+    --publisher-name $AZ_PUBLISHER \
+    --extension-name $AZ_EXTENSION_ID \
+    --organization "https://dev.azure.com/${AZ_ORG}/" --yes
+  echo "Extension uninstalled"
+else
+  echo "Extension not already installed"
+fi
 
 # Updating version in task.json file
 node "${PWD}/scripts/update-task-json-dev.js" ${AZ_EXT_NEW_VERSION}
@@ -46,8 +67,9 @@ node "${PWD}/scripts/update-task-json-dev.js" ${AZ_EXT_NEW_VERSION}
 OVERRIDE_JSON="{ \"name\": \"${AZ_EXTENSION_NAME}\", \"version\": \"${AZ_EXT_NEW_VERSION}\" }"
 
 # Sharing extension
-echo "Sharing extension..."
+echo "Publishing and sharing extension..."
 echo "OVERRIDE_JSON: ${OVERRIDE_JSON}"
+
 tfx extension publish --manifest-globs vss-extension-dev.json \
 --version $AZ_EXT_NEW_VERSION \
 --share-with $AZ_ORG \
@@ -55,7 +77,14 @@ tfx extension publish --manifest-globs vss-extension-dev.json \
 --publisher $AZ_PUBLISHER \
 --override $OVERRIDE_JSON \
 --token $AZURE_DEVOPS_EXT_PAT
-echo "Extension shared"
+
+publish_exit_code=$?
+if [[ publish_exit_code -eq 0 ]]; then
+  echo "Extension published and shared with Azure org"
+else
+  echo "Extension failed to pubish with exit code ${publish_exit_code}"
+  exit ${publish_exit_code}
+fi
 
 # Install extension in the organization after it was shared with the same organization
 echo "Installing extension..."
