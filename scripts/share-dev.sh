@@ -9,7 +9,7 @@
 AZ_EXT_NEW_VERSION="$1"
 AZ_ORG="$2"
 
-# Check if AZ Cli is already installed. If not installed it.
+# Check if the Azure CLI is already installed. If not, install it.
 az -v >/dev/null 2>&1
 if [[ ! $? -eq 0 ]]; then
   echo "Intalling AZ Cli..."
@@ -31,13 +31,14 @@ if [[ ! $? -eq 0 ]]; then
   fi
 fi
 
-# Unistall the extinsion if it has been already installed in this organization
-echo "Uninstall extension..."
-az devops extension uninstall \
-  --publisher-name $AZ_PUBLISHER \
-  --extension-name $AZ_EXTENSION_ID \
-  --organization "https://dev.azure.com/${AZ_ORG}/" --yes
-echo "Extension uninstalled"
+echo "About to deploy to dev environment using:"
+echo "AZ_EXT_NEW_VERSION: ${AZ_EXT_NEW_VERSION}"
+echo "AZ_PUBLISHER: ${AZ_PUBLISHER}"
+echo "AZ_EXTENSION_ID: ${AZ_EXTENSION_ID}"
+echo "AZ_TASK_NAME: ${AZ_TASK_NAME}"
+echo "AZ_TASK_FRIENDLY_NAME: ${AZ_TASK_FRIENDLY_NAME}"
+echo "AZ_ORG: ${AZ_ORG}"
+echo "AZ_DEV_TASK_ID: ${AZ_DEV_TASK_ID}"
 
 # Updating version in task.json file
 node "${PWD}/scripts/update-task-json-dev.js" ${AZ_EXT_NEW_VERSION}
@@ -46,8 +47,9 @@ node "${PWD}/scripts/update-task-json-dev.js" ${AZ_EXT_NEW_VERSION}
 OVERRIDE_JSON="{ \"name\": \"${AZ_EXTENSION_NAME}\", \"version\": \"${AZ_EXT_NEW_VERSION}\" }"
 
 # Sharing extension
-echo "Sharing extension..."
+echo "Publishing and sharing extension..."
 echo "OVERRIDE_JSON: ${OVERRIDE_JSON}"
+
 tfx extension publish --manifest-globs vss-extension-dev.json \
 --version $AZ_EXT_NEW_VERSION \
 --share-with $AZ_ORG \
@@ -55,15 +57,31 @@ tfx extension publish --manifest-globs vss-extension-dev.json \
 --publisher $AZ_PUBLISHER \
 --override $OVERRIDE_JSON \
 --token $AZURE_DEVOPS_EXT_PAT
-echo "Extension shared"
 
-# Install extension in the organization after it was shared with the same organization
-echo "Installing extension..."
-az devops extension install \
+publish_exit_code=$?
+if [[ publish_exit_code -eq 0 ]]; then
+  echo "Extension published and shared with Azure org"
+else
+  echo "Extension failed to pubish with exit code ${publish_exit_code}"
+  exit ${publish_exit_code}
+fi
+
+# echo "See if the extension is installed..."
+az devops extension show \
   --publisher-name $AZ_PUBLISHER \
   --extension-name $AZ_EXTENSION_ID \
   --organization "https://dev.azure.com/${AZ_ORG}/"
 
+if [[ $? -eq 0 ]]; then
+  echo "Extension already installed in org ${AZ_ORG}"
+else
+  echo "Extension not already installed."
+  echo "Installing extension..."
+  az devops extension install \
+    --publisher-name $AZ_PUBLISHER \
+    --extension-name $AZ_EXTENSION_ID \
+    --organization "https://dev.azure.com/${AZ_ORG}/"
+fi
 
 # Updating version in task.json file
 node "${PWD}/scripts/recovery-task-json-dev.js"
