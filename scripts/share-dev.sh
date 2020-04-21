@@ -9,7 +9,7 @@
 AZ_EXT_NEW_VERSION="$1"
 AZ_ORG="$2"
 
-# Check if AZ Cli is already installed. If not installed it.
+# Check if the Azure CLI is already installed. If not, install it.
 az -v >/dev/null 2>&1
 if [[ ! $? -eq 0 ]]; then
   echo "Intalling AZ Cli..."
@@ -40,26 +40,6 @@ echo "AZ_TASK_FRIENDLY_NAME: ${AZ_TASK_FRIENDLY_NAME}"
 echo "AZ_ORG: ${AZ_ORG}"
 echo "AZ_DEV_TASK_ID: ${AZ_DEV_TASK_ID}"
 
-# Unistall the extinsion if it has been already installed in this organization
-echo "See if the extension is already installed"
-az devops extension show \
-  --publisher-name $AZ_PUBLISHER \
-  --extension-name $AZ_EXTENSION_ID \
-  --organization "https://dev.azure.com/${AZ_ORG}/"
-
-if [[ $? -eq 0 ]]; then
-  echo "Extension already installed... uninstalling"
-
-  echo "Uninstall extension..."
-  az devops extension uninstall \
-    --publisher-name $AZ_PUBLISHER \
-    --extension-name $AZ_EXTENSION_ID \
-    --organization "https://dev.azure.com/${AZ_ORG}/" --yes
-  echo "Extension uninstalled"
-else
-  echo "Extension not already installed"
-fi
-
 # Updating version in task.json file
 node "${PWD}/scripts/update-task-json-dev.js" ${AZ_EXT_NEW_VERSION}
 
@@ -86,13 +66,22 @@ else
   exit ${publish_exit_code}
 fi
 
-# Install extension in the organization after it was shared with the same organization
-echo "Installing extension..."
-az devops extension install \
+# echo "See if the extension is installed..."
+az devops extension show \
   --publisher-name $AZ_PUBLISHER \
   --extension-name $AZ_EXTENSION_ID \
   --organization "https://dev.azure.com/${AZ_ORG}/"
 
+if [[ $? -eq 0 ]]; then
+  echo "Extension already installed in org ${AZ_ORG}"
+else
+  echo "Extension not already installed."
+  echo "Installing extension..."
+  az devops extension install \
+    --publisher-name $AZ_PUBLISHER \
+    --extension-name $AZ_EXTENSION_ID \
+    --organization "https://dev.azure.com/${AZ_ORG}/"
+fi
 
 # Updating version in task.json file
 node "${PWD}/scripts/recovery-task-json-dev.js"
