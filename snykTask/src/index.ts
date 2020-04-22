@@ -409,11 +409,12 @@ async function run() {
     const useSudo = isSudoMode();
     if (isDebugMode()) console.log(`useSudo: ${useSudo}`);
     handleSnykInstallError(await installSnyk(taskArgs, useSudo));
-    handleSnykAuthError(await authorizeSnyk(taskArgs, authTokenToUse, useSudo));
+
+    handleSnykAuthError(await authorizeSnyk(taskArgs, authTokenToUse, false));
 
     const snykTestResult = await runSnykTest(
       taskArgs,
-      useSudo,
+      false,
       currentDir,
       jsonReportName
     );
@@ -423,7 +424,7 @@ async function run() {
       currentDir,
       htmlReportName,
       jsonReportName,
-      useSudo
+      false
     );
 
     handleSnykToHTMLError(snykToHTMLResult);
@@ -437,7 +438,7 @@ async function run() {
     handleSnykTestError(taskArgs, snykTestResult, currentDir, jsonReportName);
 
     if (taskArgs.monitorOnBuild) {
-      const snykMonitorResult = await runSnykMonitor(taskArgs, useSudo);
+      const snykMonitorResult = await runSnykMonitor(taskArgs, false);
       handleSnykMonitorError(snykMonitorResult);
     }
 

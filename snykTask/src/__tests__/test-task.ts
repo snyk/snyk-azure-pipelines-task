@@ -33,20 +33,18 @@ test("basic smoke test - inputs are ok", () => {
   expect(
     mockTestRunner.cmdlines["/usr/bin/sudo npm install -g snyk snyk-to-html"]
   ).toBe(true);
+  expect(mockTestRunner.cmdlines["/usr/bin/snyk auth some-authToken"]).toBe(
+    true
+  );
   expect(
-    mockTestRunner.cmdlines["/usr/bin/sudo snyk auth some-authToken"]
+    mockTestRunner.cmdlines["/usr/bin/snyk test --someAdditionalArgs --json"]
+  ).toBe(true);
+  expect(
+    mockTestRunner.cmdlines["/usr/bin/snyk-to-html -i null/report.json"]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/sudo snyk test --someAdditionalArgs --json"
-    ]
-  ).toBe(true);
-  expect(
-    mockTestRunner.cmdlines["/usr/bin/sudo snyk-to-html -i null/report.json"]
-  ).toBe(true);
-  expect(
-    mockTestRunner.cmdlines[
-      "/usr/bin/sudo snyk monitor --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs"
+      "/usr/bin/snyk monitor --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs"
     ]
   ).toBe(true);
 
@@ -65,20 +63,20 @@ test("basic smoke test for container test - inputs are ok", () => {
 
   mockTestRunner.run();
 
-  expect(
-    mockTestRunner.cmdlines["/usr/bin/sudo snyk auth some-authToken"]
-  ).toBe(true);
+  expect(mockTestRunner.cmdlines["/usr/bin/snyk auth some-authToken"]).toBe(
+    true
+  );
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/sudo snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json"
+      "/usr/bin/snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json"
     ]
   ).toBe(true);
   expect(
-    mockTestRunner.cmdlines["/usr/bin/sudo snyk-to-html -i null/report.json"]
+    mockTestRunner.cmdlines["/usr/bin/snyk-to-html -i null/report.json"]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/sudo snyk monitor --docker myImage --file=Dockerfile --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs"
+      "/usr/bin/snyk monitor --docker myImage --file=Dockerfile --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs"
     ]
   ).toBe(true);
   expect(mockTestRunner.succeeded).toBe(true); // 'should have succeeded'
@@ -133,7 +131,7 @@ test("doesn't fail if severityThreshold is specified", () => {
 
   expect(
     testMockRunner.cmdlines[
-      "/usr/bin/sudo snyk test --severity-threshold=high --json"
+      "/usr/bin/snyk test --severity-threshold=high --json"
     ]
   ).toBe(true);
   expect(testMockRunner.succeeded).toBe(true); // 'should have succeeded'
@@ -252,7 +250,7 @@ test("if failOnIssues is false and snyk test finds issues, then the task should 
 
   expect(
     testMockRunner.cmdlines[
-      "/usr/bin/sudo snyk monitor --project-name=someProjectName"
+      "/usr/bin/snyk monitor --project-name=someProjectName"
     ]
   ).toBe(true);
 });
@@ -344,13 +342,11 @@ test("test that if you set targetFile that we use it ", () => {
   mockTestRunner.run();
 
   expect(
-    mockTestRunner.cmdlines[
-      "/usr/bin/sudo snyk test --file=some/dir/pom.xml --json"
-    ]
+    mockTestRunner.cmdlines["/usr/bin/snyk test --file=some/dir/pom.xml --json"]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/sudo snyk monitor --file=some/dir/pom.xml --org=some-snyk-org"
+      "/usr/bin/snyk monitor --file=some/dir/pom.xml --org=some-snyk-org"
     ]
   ).toBe(true);
   expect(mockTestRunner.succeeded).toBe(true); // 'should have succeeded'

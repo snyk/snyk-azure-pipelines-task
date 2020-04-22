@@ -20,7 +20,8 @@ const answers: ma.TaskLibAnswers = {
     ls: "/bin/ls",
     npm: "/usr/bin/npm",
     snyk: "/usr/bin/snyk",
-    sudo: "/usr/bin/sudo"
+    sudo: "/usr/bin/sudo",
+    "snyk-to-html": "/usr/bin/snyk-to-html"
   },
   exec: {
     "/bin/ls -la": {
@@ -43,19 +44,15 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/sudo snyk auth some-authToken": {
-      code: 0,
-      stdout: "Snyk CLI authorized!"
-    },
-    "/usr/bin/sudo snyk test --json": {
+    "/usr/bin/snyk test --json": {
       code: 1,
       stdout: "Issues found"
     },
-    "/usr/bin/sudo snyk-to-html -i null/report.json": {
+    "/usr/bin/snyk-to-html -i null/report.json": {
       code: 0,
       stdout: "No issues found"
     },
-    "/usr/bin/sudo snyk monitor --project-name=someProjectName": {
+    "/usr/bin/snyk monitor --project-name=someProjectName": {
       code: 0,
       stdout: "No issues found"
     }
