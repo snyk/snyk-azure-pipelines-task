@@ -44,10 +44,6 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/sudo snyk auth some-authToken": {
-      code: 0,
-      stdout: "Snyk CLI authorized!"
-    },
     "/usr/bin/sudo snyk test --severity-threshold=invalidValue --json": {
       code: 0,
       stdout: "Ok"

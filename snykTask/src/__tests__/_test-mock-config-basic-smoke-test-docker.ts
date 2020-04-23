@@ -24,7 +24,8 @@ const answers: ma.TaskLibAnswers = {
     ls: "/bin/ls",
     npm: "/usr/bin/npm",
     snyk: "/usr/bin/snyk",
-    sudo: "/usr/bin/sudo"
+    sudo: "/usr/bin/sudo",
+    "snyk-to-html": "/usr/bin/snyk-to-html"
   },
   exec: {
     "/bin/ls -la": {
@@ -47,19 +48,15 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/sudo snyk auth some-authToken": {
-      code: 0,
-      stdout: "Snyk CLI authorized!"
-    },
-    "/usr/bin/sudo snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json": {
+    "/usr/bin/snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json": {
       code: 0,
       stdout: "No issues found"
     },
-    "/usr/bin/sudo snyk-to-html -i null/report.json": {
+    "/usr/bin/snyk-to-html -i null/report.json": {
       code: 0,
       stdout: "No issues found"
     },
-    "/usr/bin/sudo snyk monitor --docker myImage --file=Dockerfile --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs": {
+    "/usr/bin/snyk monitor --docker myImage --file=Dockerfile --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs": {
       code: 0,
       stdout: "No issues found"
     }

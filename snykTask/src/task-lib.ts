@@ -1,5 +1,6 @@
 import { TaskArgs } from "./task-args";
 import * as tr from "azure-pipelines-task-lib/toolrunner";
+import { Platform } from "azure-pipelines-task-lib/task";
 import stream = require("stream");
 import * as fs from "fs";
 
@@ -56,3 +57,14 @@ export const getOptionsToWriteFile = (
     env: envVars
   } as tr.IExecOptions;
 };
+
+export const isSudoMode = (p: Platform): boolean => {
+  if (typeof p !== "number") return true;
+  return p === Platform.Linux;
+};
+
+export const getToolPath = (
+  tool: string,
+  whichFn: (tool: string, check?: boolean) => string,
+  requiresSudo: boolean = false
+): string => (requiresSudo ? whichFn("sudo") : whichFn(tool));
