@@ -5,7 +5,9 @@ import { getTaskVersion } from "./task-version";
 import {
   getOptionsToExecuteCmd,
   getOptionsToExecuteSnykCLICommand,
-  getOptionsToWriteFile
+  getOptionsToWriteFile,
+  isSudoMode,
+  getToolPath
 } from "./task-lib";
 import * as fs from "fs";
 const replace = require("replace-in-file");
@@ -42,14 +44,11 @@ if (isDebugMode()) {
   console.log(`taskNameForAnalytics: ${taskNameForAnalytics}`);
 }
 
-const getToolPath = (tool: string, requiresSudo: boolean = false): string =>
-  requiresSudo ? tl.which("sudo") : tl.which(tool);
-
 function buildToolRunner(
   tool: string,
   requiresSudo: boolean = false
 ): tr.ToolRunner {
-  const toolPath: string = getToolPath(tool, requiresSudo);
+  const toolPath: string = getToolPath(tool, tl.which, requiresSudo);
   let toolRunner = tl.tool(toolPath);
 
   if (requiresSudo) toolRunner = toolRunner.arg(tool);
@@ -202,7 +201,7 @@ async function runSnykTest(
     );
   }
 
-  const command = `[command]${getToolPath("snyk")} snyk test...`;
+  const command = `[command]${getToolPath("snyk", tl.which)} snyk test...`;
   console.log(command);
   const snykTestExitCode = await snykTestToolRunner.exec(options);
   if (isDebugMode()) console.log(`snykTestExitCode: ${snykTestExitCode}\n`);
@@ -243,7 +242,8 @@ const runSnykToHTML = async (
   let errorMsg = "";
   const filePath = `${workDir}/${reportJSONFileName}`;
   const command = `[command]${getToolPath(
-    "snyk-to-html"
+    "snyk-to-html",
+    tl.which
   )} snyk-to-html -i ${filePath}`;
   console.log(command);
   const snykToHTMLToolRunner: tr.ToolRunner = buildToolRunner("snyk-to-html")
@@ -303,13 +303,6 @@ async function runSnykMonitor(taskArgs: TaskArgs): Promise<SnykOutput> {
 
   return snykOutput;
 }
-
-const isSudoMode = (): boolean => {
-  const p: tl.Platform = tl.getPlatform();
-  if (typeof p !== "number") return true;
-
-  return p === tl.Platform.Linux;
-};
 
 const attachReport = (
   file: string,
@@ -399,7 +392,8 @@ async function run() {
       throw new SnykError(errorMsg);
     }
 
-    const useSudo = isSudoMode();
+    const platform: tl.Platform = tl.getPlatform();
+    const useSudo = isSudoMode(platform);
     if (isDebugMode()) console.log(`useSudo: ${useSudo}`);
     handleSnykInstallError(await installSnyk(taskArgs, useSudo));
 
