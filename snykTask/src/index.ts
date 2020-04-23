@@ -1,9 +1,17 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import * as tr from "azure-pipelines-task-lib/toolrunner";
 import { TaskArgs, getAuthToken } from "./task-args";
+import { getTaskVersion } from "./task-version";
+import {
+  getOptionsToExecuteCmd,
+  getOptionsToExecuteSnykCLICommand,
+  getOptionsToWriteFile,
+  isSudoMode,
+  getToolPath
+} from "./task-lib";
 import * as fs from "fs";
-import stream = require("stream");
 const replace = require("replace-in-file");
+import * as path from "path";
 
 class SnykError extends Error {
   constructor(message?: string) {
@@ -26,13 +34,21 @@ const JSON_ATTACHMENT_TYPE = "JSON_ATTACHMENT_TYPE";
 const HTML_ATTACHMENT_TYPE = "HTML_ATTACHMENT_TYPE";
 const regexForRemoveCommandLine = /\[command\].*/g;
 
+const taskNameForAnalytics = "snyk-azure-pipelines-task";
+const taskJsonPath = path.join(__dirname, "..", "task.json");
+const taskVersion = getTaskVersion(taskJsonPath);
+
 const isDebugMode = () => tl.getBoolInput("debug", false);
 
-const getToolPath = (tool: string, requiresSudo: boolean): string =>
-  requiresSudo ? tl.which("sudo") : tl.which(tool);
+if (isDebugMode()) {
+  console.log(`taskNameForAnalytics: ${taskNameForAnalytics}`);
+}
 
-function buildToolRunner(tool: string, requiresSudo: boolean): tr.ToolRunner {
-  const toolPath: string = getToolPath(tool, requiresSudo);
+function buildToolRunner(
+  tool: string,
+  requiresSudo: boolean = false
+): tr.ToolRunner {
+  const toolPath: string = getToolPath(tool, tl.which, requiresSudo);
   let toolRunner = tl.tool(toolPath);
 
   if (requiresSudo) toolRunner = toolRunner.arg(tool);
@@ -126,13 +142,16 @@ async function installSnyk(
 
 async function authorizeSnyk(
   taskArgs: TaskArgs,
-  snykToken: string,
-  useSudo: boolean
+  snykToken: string
 ): Promise<SnykOutput> {
   // TODO: play with setVariable as an option to use instead of running `snyk auth`
   // tl.setVariable('SNYK_TOKEN', authToken, true);
-  const options = getOptionsToExecuteCmd(taskArgs);
-  const snykAuthToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
+  const options = getOptionsToExecuteSnykCLICommand(
+    taskArgs,
+    taskNameForAnalytics,
+    taskVersion
+  );
+  const snykAuthToolRunner: tr.ToolRunner = buildToolRunner("snyk")
     .arg("auth")
     .arg(snykToken);
   const snykAuthExitCode = await snykAuthToolRunner.exec(options);
@@ -147,14 +166,13 @@ async function authorizeSnyk(
 
 async function runSnykTest(
   taskArgs: TaskArgs,
-  useSudo: boolean,
   workDir: string,
   fileName: string
 ): Promise<SnykOutput> {
   let errorMsg = "";
   let code = 0;
   const fileArg = taskArgs.getFileParameter();
-  const snykTestToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
+  const snykTestToolRunner: tr.ToolRunner = buildToolRunner("snyk")
     .arg("test")
     .argIf(
       taskArgs.severityThreshold,
@@ -166,13 +184,24 @@ async function runSnykTest(
     .line(taskArgs.additionalArguments)
     .arg(`--json`);
 
-  let options = getOptionsToExecuteCmd(taskArgs);
+  let options = getOptionsToExecuteSnykCLICommand(
+    taskArgs,
+    taskNameForAnalytics,
+    taskVersion
+  );
+
   if (fs.existsSync(workDir)) {
     console.log("Set Execute Snyk Test with file out stream");
-    options = getOptionsToWriteFile(fileName, workDir, taskArgs);
+    options = getOptionsToWriteFile(
+      fileName,
+      workDir,
+      taskArgs,
+      taskNameForAnalytics,
+      taskVersion
+    );
   }
 
-  const command = `[command]${getToolPath("snyk", useSudo)} snyk test...`;
+  const command = `[command]${getToolPath("snyk", tl.which)} snyk test...`;
   console.log(command);
   const snykTestExitCode = await snykTestToolRunner.exec(options);
   if (isDebugMode()) console.log(`snykTestExitCode: ${snykTestExitCode}\n`);
@@ -197,8 +226,7 @@ const runSnykToHTML = async (
   taskArgs: TaskArgs,
   workDir: string,
   reportHTMLFileName: string,
-  reportJSONFileName: string,
-  useSudo: boolean
+  reportJSONFileName: string
 ): Promise<SnykOutput> => {
   let optionsToExeSnykToHTML = getOptionsToExecuteCmd(taskArgs);
   if (fs.existsSync(workDir)) {
@@ -215,13 +243,10 @@ const runSnykToHTML = async (
   const filePath = `${workDir}/${reportJSONFileName}`;
   const command = `[command]${getToolPath(
     "snyk-to-html",
-    useSudo
+    tl.which
   )} snyk-to-html -i ${filePath}`;
   console.log(command);
-  const snykToHTMLToolRunner: tr.ToolRunner = buildToolRunner(
-    "snyk-to-html",
-    useSudo
-  )
+  const snykToHTMLToolRunner: tr.ToolRunner = buildToolRunner("snyk-to-html")
     .arg("-i")
     .arg(filePath);
   const snykToHTMLExitCode = await snykToHTMLToolRunner.exec(
@@ -242,14 +267,15 @@ const runSnykToHTML = async (
   return snykOutput;
 };
 
-async function runSnykMonitor(
-  taskArgs: TaskArgs,
-  useSudo: boolean
-): Promise<SnykOutput> {
+async function runSnykMonitor(taskArgs: TaskArgs): Promise<SnykOutput> {
   let errorMsg = "";
   const fileArg = taskArgs.getFileParameter();
-  const options = getOptionsToExecuteCmd(taskArgs);
-  const snykMonitorToolRunner: tr.ToolRunner = buildToolRunner("snyk", useSudo)
+  const options = getOptionsToExecuteSnykCLICommand(
+    taskArgs,
+    taskNameForAnalytics,
+    taskVersion
+  );
+  const snykMonitorToolRunner: tr.ToolRunner = buildToolRunner("snyk")
     .arg("monitor")
     .argIf(taskArgs.dockerImageName, `--docker`)
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
@@ -278,13 +304,6 @@ async function runSnykMonitor(
   return snykOutput;
 }
 
-const isSudoMode = (): boolean => {
-  const p: tl.Platform = tl.getPlatform();
-  if (typeof p !== "number") return true;
-
-  return p === tl.Platform.Linux;
-};
-
 const attachReport = (
   file: string,
   workDir: string,
@@ -298,30 +317,6 @@ const attachReport = (
       console.log(fs.readFileSync(filePath, "utf-8"));
     }
   }
-};
-
-const getOptionsToWriteFile = (
-  file: string,
-  workDir: string,
-  taskArgs: TaskArgs
-): tr.IExecOptions => {
-  const jsonFilePath = `${workDir}/${file}`;
-  const stream: stream.Writable = fs.createWriteStream(jsonFilePath);
-
-  return {
-    cwd: taskArgs.testDirectory,
-    failOnStdErr: false,
-    ignoreReturnCode: true,
-    outStream: stream
-  } as tr.IExecOptions;
-};
-
-const getOptionsToExecuteCmd = (taskArgs: TaskArgs): tr.IExecOptions => {
-  return {
-    cwd: taskArgs.testDirectory,
-    failOnStdErr: false,
-    ignoreReturnCode: true
-  } as tr.IExecOptions;
 };
 
 async function removeFirstLineFrom(workDir: string, file: string, regex) {
@@ -397,33 +392,38 @@ async function run() {
       throw new SnykError(errorMsg);
     }
 
-    const useSudo = isSudoMode();
+    const platform: tl.Platform = tl.getPlatform();
+    const useSudo = isSudoMode(platform);
     if (isDebugMode()) console.log(`useSudo: ${useSudo}`);
     handleSnykInstallError(await installSnyk(taskArgs, useSudo));
-    handleSnykAuthError(await authorizeSnyk(taskArgs, authTokenToUse, useSudo));
+
+    handleSnykAuthError(await authorizeSnyk(taskArgs, authTokenToUse));
 
     const snykTestResult = await runSnykTest(
       taskArgs,
-      useSudo,
       currentDir,
       jsonReportName
     );
+
     const snykToHTMLResult = await runSnykToHTML(
       taskArgs,
       currentDir,
       htmlReportName,
-      jsonReportName,
-      useSudo
+      jsonReportName
     );
+
     handleSnykToHTMLError(snykToHTMLResult);
 
-    if (isDebugMode()) showDirectoryListing(getOptionsToExecuteCmd(taskArgs));
+    if (isDebugMode()) {
+      await showDirectoryListing(getOptionsToExecuteCmd(taskArgs));
+    }
+
     attachReport(jsonReportName, currentDir, JSON_ATTACHMENT_TYPE);
     attachReport(htmlReportName, currentDir, HTML_ATTACHMENT_TYPE);
     handleSnykTestError(taskArgs, snykTestResult, currentDir, jsonReportName);
 
     if (taskArgs.monitorOnBuild) {
-      const snykMonitorResult = await runSnykMonitor(taskArgs, useSudo);
+      const snykMonitorResult = await runSnykMonitor(taskArgs);
       handleSnykMonitorError(snykMonitorResult);
     }
 

@@ -26,8 +26,16 @@ fi
 PWD=$(pwd)
 echo "PWD: ${PWD}"
 
-echo "Installing tfx-cli globally..."
-sudo npm install -g tfx-cli@0.7.11
+set +e
+# check if tfx is installed and if not, install it
+tfx version >/dev/null 2>&1
+if [[ ! $? -eq 0 ]]; then
+  echo "Installing tfx-cli globally..."
+  sudo npm install -g tfx-cli@0.7.11
+else
+  echo "tfx-cli already installed"
+fi
+set -e
 
 # Build project
 "${PWD}/scripts/ci-build.sh" "prod"
