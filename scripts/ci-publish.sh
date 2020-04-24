@@ -22,4 +22,10 @@ tfx extension publish --manifest-globs vss-extension.json \
 --override $OVERRIDE_JSON \
 --token $AZURE_DEVOPS_EXT_PAT
 
-echo "Extension published"
+publish_exit_code=$?
+if [[ publish_exit_code -eq 0 ]]; then
+  echo "Extension published"
+else
+  echo "Extension failed to pubish with exit code ${publish_exit_code}"
+  exit ${publish_exit_code}
+fi

@@ -30,12 +30,17 @@ set +e
 # check if tfx is installed and if not, install it
 tfx version >/dev/null 2>&1
 if [[ ! $? -eq 0 ]]; then
-  echo "Installing tfx-cli globally..."
-  sudo npm install -g tfx-cli@0.7.11
+  echo "Check thinks tfx-cli is not installed"
+  # echo "Installing tfx-cli globally..."
+  # sudo npm install -g tfx-cli@0.7.11
 else
-  echo "tfx-cli already installed"
+  echo "Check thinks tfx-cli already installed"
 fi
 set -e
+
+# install regardless of check until check working
+echo "Installing tfx-cli globally..."
+sudo npm install -g tfx-cli@0.7.11
 
 # Build project
 "${PWD}/scripts/ci-build.sh" "prod"
@@ -45,6 +50,5 @@ if [[ ! -z "${AZ_ORG}" ]]; then
   "${PWD}/scripts/share-dev.sh" ${AZ_EXT_NEW_VERSION} ${AZ_ORG}
 else
   "${PWD}/scripts/ci-publish.sh" ${AZ_EXT_NEW_VERSION}
-echo "placeholder for deployment"
 fi
 echo "Extesion deployed!"
