@@ -45,7 +45,7 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/snyk test --file=some/dir/pom.xml --json": {
+    "/usr/bin/snyk test --file=some/dir/pom.xml --json-file-output=report.json": {
       code: 0,
       stdout: "Ok"
     },
