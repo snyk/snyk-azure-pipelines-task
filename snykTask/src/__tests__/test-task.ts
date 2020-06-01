@@ -37,7 +37,9 @@ test("basic smoke test - inputs are ok", () => {
     true
   );
   expect(
-    mockTestRunner.cmdlines["/usr/bin/snyk test --someAdditionalArgs --json"]
+    mockTestRunner.cmdlines[
+      "/usr/bin/snyk test --someAdditionalArgs --json-file-output=report.json"
+    ]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines["/usr/bin/snyk-to-html -i null/report.json"]
@@ -68,7 +70,7 @@ test("basic smoke test for container test - inputs are ok", () => {
   );
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json"
+      "/usr/bin/snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json-file-output=report.json"
     ]
   ).toBe(true);
   expect(
@@ -131,7 +133,7 @@ test("doesn't fail if severityThreshold is specified", () => {
 
   expect(
     testMockRunner.cmdlines[
-      "/usr/bin/snyk test --severity-threshold=high --json"
+      "/usr/bin/snyk test --severity-threshold=high --json-file-output=report.json"
     ]
   ).toBe(true);
   expect(testMockRunner.succeeded).toBe(true); // 'should have succeeded'
@@ -342,7 +344,9 @@ test("test that if you set targetFile that we use it ", () => {
   mockTestRunner.run();
 
   expect(
-    mockTestRunner.cmdlines["/usr/bin/snyk test --file=some/dir/pom.xml --json"]
+    mockTestRunner.cmdlines[
+      "/usr/bin/snyk test --file=some/dir/pom.xml --json-file-output=report.json"
+    ]
   ).toBe(true);
   expect(
     mockTestRunner.cmdlines[

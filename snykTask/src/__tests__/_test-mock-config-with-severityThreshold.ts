@@ -44,7 +44,7 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "Snyk CLI authorized!"
     },
-    "/usr/bin/snyk test --severity-threshold=high --json": {
+    "/usr/bin/snyk test --severity-threshold=high --json-file-output=report.json": {
       code: 0,
       stdout: "Ok"
     },

@@ -182,24 +182,13 @@ async function runSnykTest(
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
     .argIf(fileArg, `--file=${fileArg}`)
     .line(taskArgs.additionalArguments)
-    .arg(`--json`);
+    .arg(`--json-file-output=${fileName}`);
 
-  let options = getOptionsToExecuteSnykCLICommand(
+  const options = getOptionsToExecuteSnykCLICommand(
     taskArgs,
     taskNameForAnalytics,
     taskVersion
   );
-
-  if (fs.existsSync(workDir)) {
-    console.log("Set Execute Snyk Test with file out stream");
-    options = getOptionsToWriteFile(
-      fileName,
-      workDir,
-      taskArgs,
-      taskNameForAnalytics,
-      taskVersion
-    );
-  }
 
   const command = `[command]${getToolPath("snyk", tl.which)} snyk test...`;
   console.log(command);

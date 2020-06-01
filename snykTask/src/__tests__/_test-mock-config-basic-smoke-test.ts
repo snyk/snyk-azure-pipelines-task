@@ -50,6 +50,10 @@ const answers: ma.TaskLibAnswers = {
       code: 0,
       stdout: "No issues found"
     },
+    "/usr/bin/snyk test --someAdditionalArgs --json-file-output=report.json": {
+      code: 0,
+      stdout: "No issues found"
+    },
     "/usr/bin/snyk-to-html -i null/report.json": {
       code: 0,
       stdout: "No issues found"
