@@ -1,8 +1,13 @@
 import { TaskArgs } from "./task-args";
 import * as tr from "azure-pipelines-task-lib/toolrunner";
+import * as tl from "azure-pipelines-task-lib/task";
 import { Platform } from "azure-pipelines-task-lib/task";
 import stream = require("stream");
 import * as fs from "fs";
+import * as path from "path";
+
+export const JSON_ATTACHMENT_TYPE = "JSON_ATTACHMENT_TYPE";
+export const HTML_ATTACHMENT_TYPE = "HTML_ATTACHMENT_TYPE";
 
 export const getOptionsToExecuteCmd = (taskArgs: TaskArgs): tr.IExecOptions => {
   return {
@@ -31,30 +36,19 @@ export const getOptionsToExecuteSnykCLICommand = (
   return options;
 };
 
-export const getOptionsToWriteFile = (
-  file: string,
-  workDir: string,
-  taskArgs: TaskArgs,
-  taskNameForAnalytics?: string,
-  taskVersion?: string
+export const getOptionsForSnykToHtml = (
+  htmlOutputFileFullPath: string,
+  taskArgs: TaskArgs
 ): tr.IExecOptions => {
-  const jsonFilePath = `${workDir}/${file}`;
-  const writableString: stream.Writable = fs.createWriteStream(jsonFilePath);
-
-  const envVars = process.env;
-  if (taskNameForAnalytics) {
-    envVars["SNYK_INTEGRATION_NAME"] = taskNameForAnalytics;
-  }
-  if (taskVersion) {
-    envVars["SNYK_INTEGRATION_VERSION"] = taskVersion;
-  }
+  const writableString: stream.Writable = fs.createWriteStream(
+    htmlOutputFileFullPath
+  );
 
   return {
     cwd: taskArgs.testDirectory,
     failOnStdErr: false,
     ignoreReturnCode: true,
-    outStream: writableString,
-    env: envVars
+    outStream: writableString
   } as tr.IExecOptions;
 };
 
@@ -68,3 +62,20 @@ export const getToolPath = (
   whichFn: (tool: string, check?: boolean) => string,
   requiresSudo: boolean = false
 ): string => (requiresSudo ? whichFn("sudo") : whichFn(tool));
+
+export function formatDate(d: Date): string {
+  return d
+    .toISOString()
+    .split(".")[0]
+    .replace(/:/g, "-");
+}
+
+export function attachReport(filePath: string, attachmentType: string) {
+  if (fs.existsSync(filePath)) {
+    const filename = path.basename(filePath);
+    console.log(`${filePath} exists... attaching file`);
+    tl.addAttachment(attachmentType, filename, filePath);
+  } else {
+    console.log(`${filePath} does not exist... cannot attach`);
+  }
+}

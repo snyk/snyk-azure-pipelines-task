@@ -41,9 +41,9 @@ test("basic smoke test - inputs are ok", () => {
       "/usr/bin/snyk test --someAdditionalArgs --json-file-output=report.json"
     ]
   ).toBe(true);
-  expect(
-    mockTestRunner.cmdlines["/usr/bin/snyk-to-html -i null/report.json"]
-  ).toBe(true);
+  expect(mockTestRunner.cmdlines["/usr/bin/snyk-to-html -i report.json"]).toBe(
+    true
+  );
   expect(
     mockTestRunner.cmdlines[
       "/usr/bin/snyk monitor --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs"
@@ -73,9 +73,9 @@ test("basic smoke test for container test - inputs are ok", () => {
       "/usr/bin/snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json-file-output=report.json"
     ]
   ).toBe(true);
-  expect(
-    mockTestRunner.cmdlines["/usr/bin/snyk-to-html -i null/report.json"]
-  ).toBe(true);
+  expect(mockTestRunner.cmdlines["/usr/bin/snyk-to-html -i report.json"]).toBe(
+    true
+  );
   expect(
     mockTestRunner.cmdlines[
       "/usr/bin/snyk monitor --docker myImage --file=Dockerfile --org=some-snyk-org --project-name=some-projectName --someAdditionalArgs"
@@ -171,10 +171,6 @@ test("fails if severityThreshold is invalid", () => {
   testMockRunner.run();
 
   expect(testMockRunner.succeeded).toBe(false); // 'should have succeeded'
-  console.log("warnings:");
-  console.log(testMockRunner.warningIssues);
-  console.log("errors:");
-  console.log(testMockRunner.errorIssues);
   expect(testMockRunner.warningIssues.length).toBe(0); // "should have no warnings");
   expect(testMockRunner.errorIssues.length).toBe(1); // "should have no errors");
   expect(testMockRunner.errorIssues[0]).toBe(
