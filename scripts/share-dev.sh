@@ -31,6 +31,28 @@ if [[ ! $? -eq 0 ]]; then
   fi
 fi
 
+
+# echo "See if the extension is installed..."
+az devops extension show \
+  --publisher-name $AZ_PUBLISHER \
+  --extension-name $AZ_EXTENSION_ID \
+  --organization "https://dev.azure.com/${AZ_ORG}/"
+
+if [[ $? -eq 0 ]]; then
+  echo "Extension is installed in org ${AZ_ORG}... uninstall it"
+  # Unistall the extinsion if it has been already installed in this organization.
+  # This may not be required it works much more consistently with it.
+  echo "Uninstall extension..."
+  az devops extension uninstall \
+    --publisher-name $AZ_PUBLISHER \
+    --extension-name $AZ_EXTENSION_ID \
+    --organization "https://dev.azure.com/${AZ_ORG}/" --yes
+  echo "Extension uninstalled"
+else
+  echo "Extension not already installed."
+fi
+
+
 echo "About to deploy to dev environment using:"
 echo "AZ_EXT_NEW_VERSION: ${AZ_EXT_NEW_VERSION}"
 echo "AZ_PUBLISHER: ${AZ_PUBLISHER}"

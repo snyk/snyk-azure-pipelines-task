@@ -5,9 +5,13 @@ import { getTaskVersion } from "./task-version";
 import {
   getOptionsToExecuteCmd,
   getOptionsToExecuteSnykCLICommand,
-  getOptionsToWriteFile,
+  getOptionsForSnykToHtml,
   isSudoMode,
-  getToolPath
+  getToolPath,
+  formatDate,
+  attachReport,
+  JSON_ATTACHMENT_TYPE,
+  HTML_ATTACHMENT_TYPE
 } from "./task-lib";
 import * as fs from "fs";
 const replace = require("replace-in-file");
@@ -30,8 +34,6 @@ const CLI_EXIT_CODE_ISSUES_FOUND = 1;
 const CLI_EXIT_CODE_INVALID_USE = 2;
 const SNYK_MONITOR_EXIT_CODE_SUCCESS = 0;
 const SNYK_MONITOR_EXIT_INVALID_FILE_OR_IMAGE = 2;
-const JSON_ATTACHMENT_TYPE = "JSON_ATTACHMENT_TYPE";
-const HTML_ATTACHMENT_TYPE = "HTML_ATTACHMENT_TYPE";
 const regexForRemoveCommandLine = /\[command\].*/g;
 
 const taskNameForAnalytics = "snyk-azure-pipelines-task";
@@ -109,14 +111,15 @@ const logAllTaskArgs = (taskArgs: TaskArgs) => {
   console.log("\n");
 };
 
-async function showDirectoryListing(options: tr.IExecOptions) {
+async function showDirectoryListing(
+  options: tr.IExecOptions,
+  dirToShow?: string
+) {
   const lsPath = tl.which("ls");
-  console.log(`\nlsPath: ${lsPath}\n`);
-
   const lsToolRunner: tr.ToolRunner = tl.tool(lsPath);
   lsToolRunner.arg("-la");
-  const lsExitCode = await lsToolRunner.exec(options);
-  console.log(`lsExitCode: ${lsExitCode}\n`);
+  lsToolRunner.argIf(dirToShow, dirToShow);
+  await lsToolRunner.exec(options);
 }
 
 async function installSnyk(
@@ -166,8 +169,7 @@ async function authorizeSnyk(
 
 async function runSnykTest(
   taskArgs: TaskArgs,
-  workDir: string,
-  fileName: string
+  jsonReportOutputPath: string
 ): Promise<SnykOutput> {
   let errorMsg = "";
   let code = 0;
@@ -182,7 +184,7 @@ async function runSnykTest(
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
     .argIf(fileArg, `--file=${fileArg}`)
     .line(taskArgs.additionalArguments)
-    .arg(`--json-file-output=${fileName}`);
+    .arg(`--json-file-output=${jsonReportOutputPath}`);
 
   const options = getOptionsToExecuteSnykCLICommand(
     taskArgs,
@@ -206,38 +208,33 @@ async function runSnykTest(
       "failing task because `snyk test` was improperly used or had other errors";
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
-  await removeFirstLineFrom(workDir, fileName, regexForRemoveCommandLine);
+  await removeFirstLineFrom(jsonReportOutputPath, regexForRemoveCommandLine);
 
   return snykOutput;
 }
 
 const runSnykToHTML = async (
   taskArgs: TaskArgs,
-  workDir: string,
-  reportHTMLFileName: string,
-  reportJSONFileName: string
+  jsonReportFullPath: string,
+  htmlReportFileFullPath: string
 ): Promise<SnykOutput> => {
-  let optionsToExeSnykToHTML = getOptionsToExecuteCmd(taskArgs);
-  if (fs.existsSync(workDir)) {
-    if (isDebugMode())
-      console.log("Set Execute snyk-to-html with file out stream");
-    optionsToExeSnykToHTML = getOptionsToWriteFile(
-      reportHTMLFileName,
-      workDir,
-      taskArgs
-    );
-  }
+  const optionsToExeSnykToHTML = getOptionsForSnykToHtml(
+    htmlReportFileFullPath,
+    taskArgs
+  );
+
   let code = 0;
   let errorMsg = "";
-  const filePath = `${workDir}/${reportJSONFileName}`;
+
   const command = `[command]${getToolPath(
     "snyk-to-html",
     tl.which
-  )} snyk-to-html -i ${filePath}`;
+  )} -i ${jsonReportFullPath}`;
   console.log(command);
+
   const snykToHTMLToolRunner: tr.ToolRunner = buildToolRunner("snyk-to-html")
     .arg("-i")
-    .arg(filePath);
+    .arg(jsonReportFullPath);
   const snykToHTMLExitCode = await snykToHTMLToolRunner.exec(
     optionsToExeSnykToHTML
   );
@@ -247,11 +244,7 @@ const runSnykToHTML = async (
       "failing task because `snyk test` was improperly used or had other errors";
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
-  await removeFirstLineFrom(
-    workDir,
-    reportHTMLFileName,
-    regexForRemoveCommandLine
-  );
+  await removeFirstLineFrom(htmlReportFileFullPath, regexForRemoveCommandLine);
 
   return snykOutput;
 };
@@ -293,29 +286,14 @@ async function runSnykMonitor(taskArgs: TaskArgs): Promise<SnykOutput> {
   return snykOutput;
 }
 
-const attachReport = (
-  file: string,
-  workDir: string,
-  attachmentType: string
-) => {
-  const filePath = `${workDir}/${file}`;
-  if (fs.existsSync(filePath)) {
-    console.log(`${file} file exists... attaching file`);
-    tl.addAttachment(attachmentType, file, filePath);
-    if (isDebugMode()) {
-      console.log(fs.readFileSync(filePath, "utf-8"));
-    }
-  }
-};
-
-async function removeFirstLineFrom(workDir: string, file: string, regex) {
-  if (fs.existsSync(`${workDir}/${file}`)) {
+async function removeFirstLineFrom(fileFullPath: string, regex) {
+  if (fs.existsSync(fileFullPath)) {
     const options = {
-      files: `${workDir}/${file}`,
+      files: fileFullPath,
       from: regex,
       to: ""
     };
-    if (isDebugMode()) console.log(`Removing first line from ${file}`);
+    if (isDebugMode()) console.log(`Removing first line from ${fileFullPath}`);
     await replace(options);
   }
 }
@@ -361,17 +339,41 @@ const handleSnykInstallError = installSnykResult => {
 
 async function run() {
   try {
-    const currentDir: string = tl.cwd();
-    let fileName = "report";
-    if (fs.existsSync(currentDir))
-      fileName = `report-${new Date()
-        .toISOString()
-        .split(".")[0]
-        .replace(/:/g, "-")}`;
-    const jsonReportName = `${fileName}.json`;
-    const htmlReportName = `${fileName}.html`;
-
+    const currentDir: string = tl.cwd(); // Azure mock framework will return empty string / undefined
     if (isDebugMode()) console.log(`currentWorkingDirectory: ${currentDir}\n`);
+
+    const reportOutputDir = tl.getVariable("Agent.TempDirectory") || ""; // Azure mock framework will return empty string / undefined
+    if (isDebugMode()) console.log(`reportOutputDir: ${reportOutputDir}\n`);
+
+    // Hack for Azure framework mock test
+    // The test that use the Azure mock framework rely on knowing the output path and filename of the reports
+    // in order to verify proper functioning of the task.
+    // But, tl.getVariable() is not mocked and always an empty string (or undefined?) when those tests run. Also, the date/time
+    // becomes part of the report filenames.
+    // So a hack here to make those task-tests work is to set the 'now' timestamp string to "" for the tests and to use the default
+    // directory "" - this way the paths will match those in snykTask/src/__tests__/test-task.ts and snykTask/src/__tests__/_test-mock-config-*.ts.
+    // But when the task runs for real in Azure Pipelines, the paths will have a full path and a timestamp in the filenames.
+
+    let jsonReportName = "report.json";
+    let htmlReportName = "report.html";
+    let jsonReportFullPath = jsonReportName;
+    let htmlReportFullPath = htmlReportName;
+
+    if (reportOutputDir) {
+      const dNowStr = formatDate(new Date());
+      jsonReportName = `report-${dNowStr}.json`;
+      htmlReportName = `report-${dNowStr}.html`;
+      jsonReportFullPath = path.join(reportOutputDir, jsonReportName);
+      htmlReportFullPath = path.join(reportOutputDir, htmlReportName);
+    }
+
+    if (isDebugMode()) {
+      console.log(`reportOutputDir: ${reportOutputDir}`);
+      console.log(`jsonReportName: ${jsonReportName}`);
+      console.log(`htmlReportName: ${htmlReportName}`);
+      console.log(`jsonReportFullPath: ${jsonReportFullPath}`);
+      console.log(`htmlReportFullPath: ${htmlReportFullPath}`);
+    }
 
     const taskArgs: TaskArgs = parseInputArgs();
     const authTokenToUse = getAuthToken();
@@ -385,31 +387,36 @@ async function run() {
     const useSudo = isSudoMode(platform);
     if (isDebugMode()) console.log(`useSudo: ${useSudo}`);
     handleSnykInstallError(await installSnyk(taskArgs, useSudo));
-
     handleSnykAuthError(await authorizeSnyk(taskArgs, authTokenToUse));
 
-    const snykTestResult = await runSnykTest(
-      taskArgs,
-      currentDir,
-      jsonReportName
-    );
+    const snykTestResult = await runSnykTest(taskArgs, jsonReportFullPath);
 
     const snykToHTMLResult = await runSnykToHTML(
       taskArgs,
-      currentDir,
-      htmlReportName,
-      jsonReportName
+      jsonReportFullPath,
+      htmlReportFullPath
     );
 
     handleSnykToHTMLError(snykToHTMLResult);
 
     if (isDebugMode()) {
+      console.log("showing contents of current directory...");
       await showDirectoryListing(getOptionsToExecuteCmd(taskArgs));
+      console.log("showing contents of agent temp directory...");
+      await showDirectoryListing(
+        getOptionsToExecuteCmd(taskArgs),
+        reportOutputDir
+      );
     }
 
-    attachReport(jsonReportName, currentDir, JSON_ATTACHMENT_TYPE);
-    attachReport(htmlReportName, currentDir, HTML_ATTACHMENT_TYPE);
-    handleSnykTestError(taskArgs, snykTestResult, currentDir, jsonReportName);
+    attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
+    attachReport(htmlReportFullPath, HTML_ATTACHMENT_TYPE);
+    handleSnykTestError(
+      taskArgs,
+      snykTestResult,
+      reportOutputDir,
+      jsonReportName
+    );
 
     if (taskArgs.monitorOnBuild) {
       const snykMonitorResult = await runSnykMonitor(taskArgs);
