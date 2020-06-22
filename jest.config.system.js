@@ -7,7 +7,9 @@ module.exports = {
     },
     "testPathIgnorePatterns": [
         "/node_modules/",
-        "snykTask/src/__tests__/_test-mock-config-*",
-        "snykTask/src/__tests__/test-task.ts"
-    ]
+        "snykTask/src/__tests__/_test-mock-config-*"
+    ],
+    testMatch: [
+        '<rootDir>/snykTask/src/__tests__/test-task.ts'
+    ],
 }

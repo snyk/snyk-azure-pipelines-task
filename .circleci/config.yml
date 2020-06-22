@@ -8,10 +8,22 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Test
+          name: Build
           command: |
             ./scripts/ci-build.sh
-            npm test
+      - run:
+          name: Checks
+          command: |
+            npm run test:checks
+      - run:
+          name: Unit Tests
+          command: |
+            npm run test:unit
+      - run:
+          name: System Tests
+          command: |
+            npm run test:system
+
   deploy:
     docker:
       - image: circleci/node:lts
