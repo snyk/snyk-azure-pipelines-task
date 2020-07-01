@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "azure-devops-node-api": "^10.1.1"
+  }
+}

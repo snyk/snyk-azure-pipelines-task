@@ -1,7 +1,11 @@
 const fs = require("fs");
 const path = require("path");
-import * as myAz from "./azure-devops";
-import * as ExtensionManagementInterfaces from "azure-devops-node-api/interfaces/ExtensionManagementInterfaces";
+import { ChildProcess, exec, ExecException } from "child_process";
+
+import {
+  installExtension,
+  uninstallExtension
+} from "./lib/azure-devops/extensions";
 
 import {
   Command,
@@ -9,7 +13,7 @@ import {
   InputArgs,
   parseInputParameters
 } from "./cli-args";
-import { ChildProcess, exec, ExecException } from "child_process";
+import { getWebApi } from "./lib/azure-devops";
 
 function checkVersionsMatch(): boolean {
   const packageJsonFilePath = "package.json";
@@ -342,12 +346,12 @@ export async function updateOrInstallExtension(
   }
 
   const azUrl = getAzUrl(publishArgs.azureOrg);
+  const webApi = await getWebApi(azUrl, publishArgs.azureDevopsPAT);
 
   // uninstall previous - this should be an option
   // TODO: add an option like --install-new-version which, when set, will control whether we call uninstallPreviousVersion() / installNewVersion
-  await myAz.uninstallExtension(
-    azUrl,
-    publishArgs.azureDevopsPAT,
+  await uninstallExtension(
+    webApi,
     publishArgs.vsMarketplacePublisher,
     publishArgs.extensionId
   );
@@ -362,9 +366,8 @@ export async function updateOrInstallExtension(
   );
 
   // install new version - this should be an option
-  await myAz.installExtension(
-    azUrl,
-    publishArgs.azureDevopsPAT,
+  await installExtension(
+    webApi,
     publishArgs.vsMarketplacePublisher,
     publishArgs.extensionId
   );

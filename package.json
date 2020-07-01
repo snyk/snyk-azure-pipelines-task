@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "install_dependencies": "npm install && cd snykTask && npm install",
+    "install_dependencies": "npm install && cd snykTask && npm install && cd .. && cd ops/deploy && npm install",
     "build": "npm run install_dependencies && npm run compile && npm run enhancer:compile && npm run deploy:compile",
     "pretest": "npm run build",
     "test": "npm run test:checks && npm run test:unit && npm run test:system",
@@ -64,7 +64,6 @@
     "@types/q": "^1.5.2",
     "@typescript-eslint/eslint-plugin": "^2.0.0",
     "@typescript-eslint/parser": "^2.0.0",
-    "azure-devops-node-api": "^9.0.1",
     "eslint": "^6.2.2",
     "eslint-config-prettier": "^6.1.0",
     "eslint-plugin-import": "^2.18.2",
