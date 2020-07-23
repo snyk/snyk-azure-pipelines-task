@@ -79,7 +79,10 @@
       ],
       "properties": {
         "name": "Snyk Report",
-        "uri": "ui/snyk-report-tab.html"
+		"uri": "ui/snyk-report-tab.html",
+		"supportsTasks": ["826d5fe9-3983-4643-b918-487964d7cc87", "97c57f20-5370-4b19-a76b-fc925e625ed7"],
+		"supportsMobile": false,
+		"dynamic": true
       }
     },
 		{
