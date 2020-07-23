@@ -1,0 +1,10 @@
+[
+    {
+        "projectName": "goof",
+        "buildDefinitionId": 7
+    },
+    {
+        "projectName": "goof_windows",
+        "buildDefinitionId": 10
+    }
+]

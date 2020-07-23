@@ -1,5 +1,6 @@
 
 const fs = require("fs");
+const { exit } = require("process");
 
 console.log("Replacing version snykTask/task.json file...");
 // Get version from argument
@@ -10,9 +11,24 @@ if (!version.match(/[0-9]+\.[0-9]+\.[0-9]+/)) {
   process.exit();
 }
 
-const taskId = process.env.AZ_DEV_TASK_ID; // don't use the production GUID for dev/test deploys
-const taskName = process.env.AZ_TASK_NAME;
-const taskFriendlyName = process.env.AZ_TASK_FRIENDLY_NAME;
+const taskId = process.env.DEV_AZ_TASK_ID; // don't use the production GUID for dev/test deploys
+const taskName = process.env.DEV_AZ_TASK_NAME;
+const taskFriendlyName = process.env.DEV_AZ_TASK_FRIENDLY_NAME;
+
+if (!taskId) {
+  console.log(`taskId not set! failing`);
+  process.exit(1);
+}
+
+if (!taskName) {
+  console.log(`taskName not set! failing`);
+  process.exit(1);
+}
+
+if (!taskFriendlyName) {
+  console.log(`taskFriendlyName not set! failing`);
+  process.exit(1);
+}
 
 // Break version and create the JSON to be replaced
 const metaVersion = version.split(".");
