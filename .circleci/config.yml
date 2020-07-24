@@ -8,19 +8,93 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Test
+          name: Build
           command: |
             ./scripts/ci-build.sh
-            npm test
+      - run:
+          name: Checks
+          command: |
+            npm run test:checks
+      - run:
+          name: Unit Tests
+          command: |
+            npm run test:unit
+      - run:
+          name: System Tests
+          command: |
+            npm run test:system
+
+  deploy_dev:
+    docker:
+      - image: circleci/node:lts
+        environment:
+          DEV_AZ_EXTENSION_ID: "dev-security-scan-test"
+          DEV_AZ_EXTENSION_NAME: "Dev - Snyk Security Scan"
+          DEV_AZ_TASK_FRIENDLY_NAME: "Dev - Snyk Security Scan"
+          DEV_AZ_TASK_NAME: "DevSnykSecurityScan"
+
+    working_directory: ~/repo
+    steps:
+      - checkout
+
+      - run:
+          name: Build Ops Sub-project
+          command: |
+            npm install
+            npm run deploy:format:check
+            npm run deploy:compile
+
+      - run:
+          name: Build and Deploy to Test Environment
+          command: |
+            echo DEV_AZ_ORG: $DEV_AZ_ORG  # Set in CCI Project Settings
+            echo DEV_AZ_PUBLISHER: $DEV_AZ_PUBLISHER  # Set in CCI Project Settings
+
+            echo DEV_AZ_EXTENSION_ID: $DEV_AZ_EXTENSION_ID
+            echo DEV_AZ_EXTENSION_NAME: $DEV_AZ_EXTENSION_NAME
+            echo DEV_AZ_TASK_FRIENDLY_NAME: $DEV_AZ_TASK_FRIENDLY_NAME
+            echo DEV_AZ_TASK_NAME: $DEV_AZ_TASK_NAME
+
+            npm run deploy:compile
+            NEXT_DEV_VERSION=$(node ./ops/deploy/dist/get-next-dev-ext-version.js)
+            if [[ $? -eq 0 ]]; then
+              echo NEXT_DEV_VERSION: $NEXT_DEV_VERSION
+            else
+              echo "no current version. Setting NEXT_DEV_VERSION to 0.0.1"
+              NEXT_DEV_VERSION=0.0.1
+            fi
+            
+            echo "Deploying to dev with ${NEXT_DEV_VERSION} ${AZ_ORG}"
+            scripts/ci-deploy.sh $NEXT_DEV_VERSION $DEV_AZ_ORG
+
+      - run:
+          name: Launch Test Pipelines
+          command: |
+            node ./ops/deploy/dist/run-test-pipelines.js
+
   deploy:
     docker:
       - image: circleci/node:lts
+        environment:
+          AZ_EXTENSION_ID: "snyk-security-scan"
+          AZ_EXTENSION_NAME: "Snyk Security Scan"
+          AZ_PUBLISHER: "Snyk"
+
     working_directory: ~/repo
     steps:
       - checkout
       - run:
+          name: Setup Env Vars
+          command: |
+            export AZURE_DEVOPS_EXT_PAT=$PROD_AZURE_DEVOPS_EXT_PAT
+            echo AZ_EXTENSION_ID: $AZ_EXTENSION_ID
+            echo AZ_EXTENSION_NAME: $AZ_EXTENSION_NAME
+            echo AZ_PUBLISHER: $AZ_PUBLISHER
+
+      - run:
           name: Build and Deploy
           command: |
+            export AZURE_DEVOPS_EXT_PAT=$PROD_AZURE_DEVOPS_EXT_PAT
             npm install
             npx semantic-release
 
@@ -29,6 +103,12 @@ workflows:
   build_and_test:
     jobs:
       - test
+      - deploy_dev:
+          requires:
+            - test      
+          filters:
+            branches:
+              ignore: master
       - deploy:
           context: nodejs-lib-release
           requires:

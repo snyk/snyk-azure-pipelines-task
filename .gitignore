@@ -13,6 +13,5 @@ package-lock.json
 *.bak
 *.vsix
 .eslintcache
-.circleci
 .ops
 ops/deploy/dist
