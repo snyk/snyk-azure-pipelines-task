@@ -88,15 +88,15 @@ export class SnykReportTab extends Controls.BaseControl {
 			if (json["packageManager"])
 				spanText = `Snyk Test for ${json["packageManager"]} (${this.formatReportName(attachmentName)})`;
 
-			if (json["vulnerabilities"] && json["vulnerabilities"].length > 0) {
+			if (json["uniqueCount"] && json["uniqueCount"] > 0) {
 				$(reportItem).addClass("failed");
 				img.src = "../img/report-failed.png";
-				spanText = `${spanText} | Found ${json["vulnerabilities"].length} issues`;
+				spanText = `${spanText} | Found ${json["uniqueCount"]} issues`;
 			}
 			else {
 				$(reportItem).addClass("passed");
 				img.src = "../img/report-passed.png";
-				spanText = `${spanText} | Not found issues`
+				spanText = `${spanText} | No issues found`
 			}
 		}
 		$(img).addClass("reportImg");
