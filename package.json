@@ -74,7 +74,7 @@
     "semantic-release": "^17.0.4",
     "sync-request": "^6.1.0",
     "tfx-cli": "^0.7.11",
-    "ts-jest": "^24.0.2",
+    "ts-jest": "^25.3.0",
     "typescript": "^3.5.3"
   }
 }
