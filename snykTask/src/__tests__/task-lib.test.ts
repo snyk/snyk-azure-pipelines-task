@@ -27,7 +27,7 @@ test("getOptionsToExecuteSnyk builds IExecOptions like we need it", () => {
 });
 
 test("getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it", () => {
-  const taskNameForAnalytics = "snyk-azure-pipelines-task";
+  const taskNameForAnalytics = "AZURE_PIPELINES";
   const version = "1.2.3";
 
   const taskArgs: TaskArgs = new TaskArgs();
@@ -42,7 +42,7 @@ test("getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it", ()
   expect(options.cwd).toBe("/some/path");
   expect(options.failOnStdErr).toBe(false);
   expect(options.ignoreReturnCode).toBe(true);
-  expect(options.env?.SNYK_INTEGRATION_NAME).toBe("snyk-azure-pipelines-task");
+  expect(options.env?.SNYK_INTEGRATION_NAME).toBe("AZURE_PIPELINES");
   expect(options.env?.SNYK_INTEGRATION_VERSION).toBe(version);
 });
 

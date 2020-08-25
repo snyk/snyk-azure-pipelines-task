@@ -36,7 +36,7 @@ const SNYK_MONITOR_EXIT_CODE_SUCCESS = 0;
 const SNYK_MONITOR_EXIT_INVALID_FILE_OR_IMAGE = 2;
 const regexForRemoveCommandLine = /\[command\].*/g;
 
-const taskNameForAnalytics = "snyk-azure-pipelines-task";
+const taskNameForAnalytics = "AZURE_PIPELINES";
 const taskJsonPath = path.join(__dirname, "..", "task.json");
 const taskVersion = getTaskVersion(taskJsonPath);
 
