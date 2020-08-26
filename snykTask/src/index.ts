@@ -183,8 +183,8 @@ async function runSnykTest(
     .argIf(taskArgs.dockerImageName, `--docker`)
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
     .argIf(fileArg, `--file=${fileArg}`)
-    .line(taskArgs.additionalArguments)
-    .arg(`--json-file-output=${jsonReportOutputPath}`);
+    .arg(`--json-file-output=${jsonReportOutputPath}`)
+    .line(taskArgs.additionalArguments);
 
   const options = getOptionsToExecuteSnykCLICommand(
     taskArgs,

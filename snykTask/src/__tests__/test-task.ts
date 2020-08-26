@@ -38,7 +38,7 @@ test("basic smoke test - inputs are ok", () => {
   );
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/snyk test --someAdditionalArgs --json-file-output=report.json"
+      "/usr/bin/snyk test --json-file-output=report.json --someAdditionalArgs"
     ]
   ).toBe(true);
   expect(mockTestRunner.cmdlines["/usr/bin/snyk-to-html -i report.json"]).toBe(
@@ -70,7 +70,7 @@ test("basic smoke test for container test - inputs are ok", () => {
   );
   expect(
     mockTestRunner.cmdlines[
-      "/usr/bin/snyk test --docker myImage --file=Dockerfile --someAdditionalArgs --json-file-output=report.json"
+      "/usr/bin/snyk test --docker myImage --file=Dockerfile --json-file-output=report.json --someAdditionalArgs"
     ]
   ).toBe(true);
   expect(mockTestRunner.cmdlines["/usr/bin/snyk-to-html -i report.json"]).toBe(
