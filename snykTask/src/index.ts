@@ -36,7 +36,7 @@ const SNYK_MONITOR_EXIT_CODE_SUCCESS = 0;
 const SNYK_MONITOR_EXIT_INVALID_FILE_OR_IMAGE = 2;
 const regexForRemoveCommandLine = /\[command\].*/g;
 
-const taskNameForAnalytics = "snyk-azure-pipelines-task";
+const taskNameForAnalytics = "AZURE_PIPELINES";
 const taskJsonPath = path.join(__dirname, "..", "task.json");
 const taskVersion = getTaskVersion(taskJsonPath);
 
@@ -137,7 +137,7 @@ async function installSnyk(
     console.log(`installSnykExitCode: ${installSnykExitCode}\n`);
   const snykOutput: SnykOutput = {
     code: installSnykExitCode,
-    message: "Not possible install snyk and snky-to-html packages"
+    message: "Not possible to install snyk and snyk-to-html packages"
   };
 
   return snykOutput;
@@ -183,8 +183,8 @@ async function runSnykTest(
     .argIf(taskArgs.dockerImageName, `--docker`)
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
     .argIf(fileArg, `--file=${fileArg}`)
-    .line(taskArgs.additionalArguments)
-    .arg(`--json-file-output=${jsonReportOutputPath}`);
+    .arg(`--json-file-output=${jsonReportOutputPath}`)
+    .line(taskArgs.additionalArguments);
 
   const options = getOptionsToExecuteSnykCLICommand(
     taskArgs,
