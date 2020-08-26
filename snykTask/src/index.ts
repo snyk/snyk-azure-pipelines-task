@@ -137,7 +137,7 @@ async function installSnyk(
     console.log(`installSnykExitCode: ${installSnykExitCode}\n`);
   const snykOutput: SnykOutput = {
     code: installSnykExitCode,
-    message: "Not possible install snyk and snky-to-html packages"
+    message: "Not possible to install snyk and snyk-to-html packages"
   };
 
   return snykOutput;
