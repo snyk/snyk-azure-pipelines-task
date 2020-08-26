@@ -6,5 +6,9 @@
     {
         "projectName": "goof_windows",
         "buildDefinitionId": 10
+    },
+    {
+        "projectName": "azure-maven-multimodule-goof",
+        "buildDefinitionId": 16
     }
 ]
