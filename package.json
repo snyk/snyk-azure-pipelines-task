@@ -48,7 +48,7 @@
     ]
   },
   "author": "snyk.io",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
     "azure-pipelines-task-lib": "2.9.3",
     "jquery": "^3.4.1",
