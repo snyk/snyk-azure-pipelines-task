@@ -8,6 +8,12 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Show Node Environment
+          command: |
+            node -v
+            npm -v
+            npx -v
+      - run:
           name: Build
           command: |
             ./scripts/ci-build.sh
