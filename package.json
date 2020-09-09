@@ -9,6 +9,7 @@
     "pretest": "npm run build",
     "test": "npm run test:checks && npm run test:unit && npm run test:system",
     "test:checks": "npm run eslint && npm run format:check",
+    "test:snyk": "npx snyk test",
     "test:unit": "jest --detectOpenHandles",
     "test:system": "jest --config jest.config.system.js --silent=false --verbose=true",
     "compile": "tsc -b snykTask/tsconfig.json",

@@ -16,6 +16,10 @@ jobs:
           command: |
             npm run test:checks
       - run:
+          name: Snyk Test
+          command: |
+            npm run test:snyk
+      - run:
           name: Unit Tests
           command: |
             npm run test:unit
