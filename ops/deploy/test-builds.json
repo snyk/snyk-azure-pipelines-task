@@ -10,5 +10,9 @@
     {
         "projectName": "azure-maven-multimodule-goof",
         "buildDefinitionId": 16
+    },
+    {
+        "projectName": "snyk-6598",
+        "buildDefinitionId": 18
     }
 ]
