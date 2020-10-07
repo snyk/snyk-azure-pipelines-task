@@ -14,5 +14,10 @@
     {
         "projectName": "snyk-6598",
         "buildDefinitionId": 18
+    },
+    {
+        "projectName": "DotNetFrameworkSampleCLIApp",
+        "buildDefinitionId": 19
     }
 ]
+
