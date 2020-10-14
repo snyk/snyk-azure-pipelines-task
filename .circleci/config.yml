@@ -23,10 +23,6 @@ jobs:
           name: Unit Tests
           command: |
             npm run test:unit
-      - run:
-          name: System Tests
-          command: |
-            npm run test:system
 
   deploy_dev:
     docker:
