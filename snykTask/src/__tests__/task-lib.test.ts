@@ -10,10 +10,15 @@ import {
   getOptionsForSnykToHtml,
   isSudoMode,
   getToolPath,
+  sudoExists,
   formatDate,
   attachReport
 } from "../task-lib";
 import { TaskArgs } from "../task-args";
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 test("getOptionsToExecuteSnyk builds IExecOptions like we need it", () => {
   const taskArgs: TaskArgs = new TaskArgs();
@@ -69,6 +74,14 @@ test("isSudoMode returns true only for Linux platforms", () => {
   expect(isSudoMode(pLinux)).toBe(true);
   expect(isSudoMode(pMacos)).toBe(false);
   expect(isSudoMode(pWindows)).toBe(false);
+});
+
+test.only("sudoExists works", () => {
+  const whichSpy = jest.spyOn(tl, "which").mockReturnValue("/usr/bin/sudo");
+  expect(sudoExists()).toBe(true);
+
+  whichSpy.mockReturnValue("");
+  expect(sudoExists()).toBe(false);
 });
 
 test("getToolPath returns sudo if require and not if not required", () => {
