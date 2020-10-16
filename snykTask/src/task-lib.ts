@@ -53,9 +53,19 @@ export const getOptionsForSnykToHtml = (
 };
 
 export const isSudoMode = (p: Platform): boolean => {
-  if (typeof p !== "number") return true;
+  if (typeof p !== "number") return true; // this may not be a good assumption, but now that we're actually checking if sudo exists, it should be ok
   return p === Platform.Linux;
 };
+
+export function sudoExists(): boolean {
+  const res = tl.which("sudo"); // will return an empty string if sudo does not exist or a path like `/usr/bin/sudo`
+  // coerce to boolean
+  if (res) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 export const getToolPath = (
   tool: string,
