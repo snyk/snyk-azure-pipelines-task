@@ -87,8 +87,6 @@ async function runBuild(
       testBuildDefinitionId
     );
 
-    console.log(launchPipelineResult);
-
     const buildId = launchPipelineResult.result.id;
 
     const alwaysBeTrue = 1 === 1;
