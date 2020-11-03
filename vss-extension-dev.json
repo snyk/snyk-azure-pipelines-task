@@ -4,7 +4,7 @@
 	"name": "Snyk Security Scan (Dev)",
 	"version": "0.2.2",
 	"publisher": "agranado-snyk-pub",
-"targets": [
+	"targets": [
 		{
 			"id": "Microsoft.VisualStudio.Services"
 		}
@@ -17,30 +17,30 @@
 		"default": "images/extension-icon.png"
 	},
 	"scopes": [
-		 "vso.build_execute"
- 	],
+		"vso.build_execute"
+	],
 	"files": [
 		{
 			"path": "snykTask"
 		},
 		{
-      "path": "scripts/dist",
-      "addressable": true,
-      "packagePath": "scripts"
+			"path": "scripts/dist",
+			"addressable": true,
+			"packagePath": "scripts"
 		},
 		{
-      "path": "images",
-      "addressable": true,
-      "packagePath": "img"
+			"path": "images",
+			"addressable": true,
+			"packagePath": "img"
 		},
 		{
-      "path": "ui/snyk-report-tab.html",
+			"path": "ui/snyk-report-tab.html",
 			"addressable": true
-    },
-    {
-      "path": "node_modules/vss-web-extension-sdk/lib",
-      "addressable": true,
-      "packagePath": "lib"
+		},
+		{
+			"path": "node_modules/vss-web-extension-sdk/lib",
+			"addressable": true,
+			"packagePath": "lib"
 		},
 		{
 			"path": "LICENSE",
@@ -81,18 +81,18 @@
 				"name": "snykTask"
 			}
 		},
-    {
-      "id": "snyk-report-tab",
-      "type": "ms.vss-build-web.build-results-tab",
-      "description": "Snyk Report",
-      "targets": [
-        "ms.vss-build-web.build-results-view"
-      ],
-      "properties": {
-        "name": "Snyk Report",
-        "uri": "ui/snyk-report-tab.html"
-      }
-    },
+		{
+			"id": "snyk-report-tab",
+			"type": "ms.vss-build-web.build-results-tab",
+			"description": "Snyk Report",
+			"targets": [
+				"ms.vss-build-web.build-results-view"
+			],
+			"properties": {
+				"name": "Snyk Report",
+				"uri": "ui/snyk-report-tab.html"
+			}
+		},
 		{
 			"id": "snyk-service-connection-endpoint",
 			"description": "Snyk.io",
