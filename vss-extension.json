@@ -41,6 +41,11 @@
       "path": "node_modules/vss-web-extension-sdk/lib",
       "addressable": true,
       "packagePath": "lib"
+		},
+		{
+			"path": "LICENSE",
+			"addressable": true,
+			"packagePath": "/"
 		}
 	],
 	"content": {
@@ -60,6 +65,9 @@
 		},
 		"privacypolicy": {
 			"uri": "https://snyk.io/policies/privacy/"
+		},
+		"license": {
+			"uri": "./LICENSE"
 		}
 	},
 	"contributions": [
