@@ -46,6 +46,9 @@
 	"content": {
 		"details": {
 			"path": "marketplace.md"
+		},
+		"license": {
+			"path": "LICENSE"
 		}
 	},
 	"links": {
