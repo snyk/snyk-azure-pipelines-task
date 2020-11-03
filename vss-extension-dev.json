@@ -44,8 +44,7 @@
 		},
 		{
 			"path": "LICENSE",
-			"addressable": true,
-			"packagePath": "/"
+			"addressable": true
 		}
 	],
 	"content": {
