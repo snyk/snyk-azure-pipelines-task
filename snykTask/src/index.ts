@@ -162,7 +162,8 @@ async function authorizeSnyk(
   if (isDebugMode()) console.log(`snykAuthExitCode: ${snykAuthExitCode}\n`);
   const snykOutput: SnykOutput = {
     code: snykAuthExitCode,
-    message: "Invalid token - Snyk does not authorized the user"
+    message:
+      "Invalid token - Snyk cannot authorize the given token. Make sure you correctly configure a Service Connection of type `Snyk Authentication` at the project level."
   };
 
   return snykOutput;
@@ -438,9 +439,9 @@ async function run() {
 
     tl.setResult(tl.TaskResult.Succeeded, "Snyk Scan completed");
   } catch (err) {
-    console.error("\n\n***************************");
-    console.error("** We have a problem! :( **");
-    console.error("***************************\n");
+    console.error("\n\n**********************************");
+    console.error("** Snyk task will fail pipeline **");
+    console.error("**************************************\n");
     console.error(err.message);
     if (isDebugMode()) console.log(err);
     tl.setResult(tl.TaskResult.Failed, err.message);
