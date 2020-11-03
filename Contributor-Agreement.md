@@ -1,14 +1,14 @@
-# Snyk Azure Pipelines Task tool contributor agreement
+# Snyk CLI tool contributor agreement
 
-This Snyk Azure Pipelines Task tool Agreement (this **"Agreement"**) applies to any Contribution you make to any Work. 
+This Snyk CLI tool Agreement (this **"Agreement"**) applies to any Contribution you make to any Work. 
 
 This is a binding legal agreement on you and any organization you represent. If you are signing this Agreement on behalf of your employer or other organization, you represent and warrant that you have the authority to agree to this Agreement on behalf of the organization. 
 
 ## 1. Definitions
 
-**"Contribution"** means any original work, including any modification of or addition to an existing work, that you submit to the Snyk Azure Pipelines Task repo in any manner for inclusion in any Work. 
+**"Contribution"** means any original work, including any modification of or addition to an existing work, that you submit to Snyk CLI tool repo in any manner for inclusion in any Work. 
 
-**"Snyk", "we"** and **"use"** means Snyk Ltd. 
+**"Snyk", "we"** and **"us"** means Snyk Ltd. 
 
 **"Work"** means any project, work or materials owned or managed by Snyk Ltd. 
 
