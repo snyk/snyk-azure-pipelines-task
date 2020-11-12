@@ -81,6 +81,7 @@ function parseInputArgs(): TaskArgs {
       throw new Error(errorMsg);
     }
   }
+  taskArgs.ignoreUnknownCA = tl.getBoolInput("ignoreUnknownCA", false);
 
   if (isDebugMode()) {
     logAllTaskArgs(taskArgs);
@@ -109,6 +110,7 @@ const logAllTaskArgs = (taskArgs: TaskArgs) => {
   console.log(`taskArgs.monitorOnBuild: ${taskArgs.monitorOnBuild}`);
   console.log(`taskArgs.failOnIssues: ${taskArgs.failOnIssues}`);
   console.log(`taskArgs.additionalArguments: ${taskArgs.additionalArguments}`);
+  console.log(`taskArgs.ignoreUnknownCA: ${taskArgs.ignoreUnknownCA}`);
   console.log("\n");
 };
 
@@ -157,7 +159,8 @@ async function authorizeSnyk(
   );
   const snykAuthToolRunner: tr.ToolRunner = buildToolRunner("snyk")
     .arg("auth")
-    .arg(snykToken);
+    .arg(snykToken)
+    .argIf(taskArgs.ignoreUnknownCA, `--insecure`);
   const snykAuthExitCode = await snykAuthToolRunner.exec(options);
   if (isDebugMode()) console.log(`snykAuthExitCode: ${snykAuthExitCode}\n`);
   const snykOutput: SnykOutput = {
@@ -185,6 +188,7 @@ async function runSnykTest(
     .argIf(taskArgs.dockerImageName, `--docker`)
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
     .argIf(fileArg, `--file=${fileArg}`)
+    .argIf(taskArgs.ignoreUnknownCA, `--insecure`)
     .arg(`--json-file-output=${jsonReportOutputPath}`)
     .line(taskArgs.additionalArguments);
 
@@ -266,6 +270,7 @@ async function runSnykMonitor(taskArgs: TaskArgs): Promise<SnykOutput> {
     .argIf(fileArg, `--file=${fileArg}`)
     .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
     .argIf(taskArgs.projectName, `--project-name=${taskArgs.projectName}`)
+    .argIf(taskArgs.ignoreUnknownCA, `--insecure`)
     .line(taskArgs.additionalArguments);
 
   const snykMonitorExitCode = await snykMonitorToolRunner.exec(options);

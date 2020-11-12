@@ -24,6 +24,7 @@ This extension requires that Node.js and npm be installed on the build agent. Th
 | projectName | A custom name for the Snyk project to be created on snyk.io | no | none | string |
 | organization | Name of the Snyk organisation name, under which this project should be tested and monitored | no | none | string |
 | testDirectory | Alternate working directory. For example, if you want to test a manifest file in a directory other than the root of your repo, you would put in relative path to that directory. | no | none | string |
+| ignoreUnknownCA | Use to ignore unknown or self-signed certificates. This might be useful in for self-hosted build agents with unusual network configurations or for Snyk on-prem installs configured with a self-signed certificate. | no | false | boolean |
 | additionalArguments | Additional Snyk CLI arguments to be passed in. Refer to the Snyk CLI help page for information on additional arguments. | no | none | string |
 
 

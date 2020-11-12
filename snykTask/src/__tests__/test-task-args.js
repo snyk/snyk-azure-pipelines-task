@@ -65,3 +65,8 @@ test("if dockerImageName is set and both targetFile and dockerfilePath are set, 
 
   expect(fileArg).toBe("good/Dockerfile");
 });
+
+test("ensure that ignoreUnknownCA is false by default", () => {
+  const args = new ta.TaskArgs();
+  expect(args.ignoreUnknownCA).toBe(false);
+});
