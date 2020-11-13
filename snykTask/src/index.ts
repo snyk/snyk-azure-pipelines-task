@@ -81,6 +81,7 @@ function parseInputArgs(): TaskArgs {
       throw new Error(errorMsg);
     }
   }
+  taskArgs.ignoreUnknownCA = tl.getBoolInput("ignoreUnknownCA", false);
 
   if (isDebugMode()) {
     logAllTaskArgs(taskArgs);
@@ -109,6 +110,7 @@ const logAllTaskArgs = (taskArgs: TaskArgs) => {
   console.log(`taskArgs.monitorOnBuild: ${taskArgs.monitorOnBuild}`);
   console.log(`taskArgs.failOnIssues: ${taskArgs.failOnIssues}`);
   console.log(`taskArgs.additionalArguments: ${taskArgs.additionalArguments}`);
+  console.log(`taskArgs.ignoreUnknownCA: ${taskArgs.ignoreUnknownCA}`);
   console.log("\n");
 };
 
@@ -157,12 +159,14 @@ async function authorizeSnyk(
   );
   const snykAuthToolRunner: tr.ToolRunner = buildToolRunner("snyk")
     .arg("auth")
-    .arg(snykToken);
+    .arg(snykToken)
+    .argIf(taskArgs.ignoreUnknownCA, `--insecure`);
   const snykAuthExitCode = await snykAuthToolRunner.exec(options);
   if (isDebugMode()) console.log(`snykAuthExitCode: ${snykAuthExitCode}\n`);
   const snykOutput: SnykOutput = {
     code: snykAuthExitCode,
-    message: "Invalid token - Snyk does not authorized the user"
+    message:
+      "Invalid token - Snyk cannot authorize the given token. Make sure you correctly configure a Service Connection of type `Snyk Authentication` at the project level."
   };
 
   return snykOutput;
@@ -184,6 +188,7 @@ async function runSnykTest(
     .argIf(taskArgs.dockerImageName, `--docker`)
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
     .argIf(fileArg, `--file=${fileArg}`)
+    .argIf(taskArgs.ignoreUnknownCA, `--insecure`)
     .arg(`--json-file-output=${jsonReportOutputPath}`)
     .line(taskArgs.additionalArguments);
 
@@ -265,6 +270,7 @@ async function runSnykMonitor(taskArgs: TaskArgs): Promise<SnykOutput> {
     .argIf(fileArg, `--file=${fileArg}`)
     .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
     .argIf(taskArgs.projectName, `--project-name=${taskArgs.projectName}`)
+    .argIf(taskArgs.ignoreUnknownCA, `--insecure`)
     .line(taskArgs.additionalArguments);
 
   const snykMonitorExitCode = await snykMonitorToolRunner.exec(options);
@@ -438,9 +444,9 @@ async function run() {
 
     tl.setResult(tl.TaskResult.Succeeded, "Snyk Scan completed");
   } catch (err) {
-    console.error("\n\n***************************");
-    console.error("** We have a problem! :( **");
-    console.error("***************************\n");
+    console.error("\n\n**********************************");
+    console.error("** Snyk task will fail pipeline **");
+    console.error("**************************************\n");
     console.error(err.message);
     if (isDebugMode()) console.log(err);
     tl.setResult(tl.TaskResult.Failed, err.message);
