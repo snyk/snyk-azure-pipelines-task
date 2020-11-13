@@ -4,9 +4,9 @@
 This extension requires that Node.js and npm be installed on the build agent. These are available by default on all Microsoft-hosted build agents. However, if you are using a self-hosted build agent, you may need to explicitly activate Node.js and npm and ensure they are in your [PATH](https://en.wikipedia.org/wiki/PATH_(variable)). This can be done using the [NodeTool task from Microsoft](https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/node-js?view=azure-devops) prior to the `SnykSecurityScan` task in your pipeline.
 
 ## How to use the Snyk task for Azure DevOps Pipelines
-1. Install the extension
+1. Install the [extension](https://marketplace.visualstudio.com/items?itemName=Snyk.snyk-security-scan) into your Azure DevOps environment.
 2. Configure a service connection endpoint with your Snyk token. This is done at the project level. In Azure DevOps, go to Project settings -> Service connections -> New service connection -> Snyk Authentication. Give your service connection and enter a valid Snyk Token.
-3. With an Azure DevOps Pipeline, add the Snyk task and configure it as required per the details and examples below.
+3. Within an Azure DevOps Pipeline, add the Snyk Security Scan task and configure it according to your needs according to details and examples below.
 
 
 ## Task Parameters
@@ -24,6 +24,7 @@ This extension requires that Node.js and npm be installed on the build agent. Th
 | projectName | A custom name for the Snyk project to be created on snyk.io | no | none | string |
 | organization | Name of the Snyk organisation name, under which this project should be tested and monitored | no | none | string |
 | testDirectory | Alternate working directory. For example, if you want to test a manifest file in a directory other than the root of your repo, you would put in relative path to that directory. | no | none | string |
+| ignoreUnknownCA | Use to ignore unknown or self-signed certificates. This might be useful in for self-hosted build agents with unusual network configurations or for Snyk on-prem installs configured with a self-signed certificate. | no | false | boolean |
 | additionalArguments | Additional Snyk CLI arguments to be passed in. Refer to the Snyk CLI help page for information on additional arguments. | no | none | string |
 
 

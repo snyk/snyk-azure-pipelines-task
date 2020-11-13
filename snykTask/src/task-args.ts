@@ -17,6 +17,7 @@ class TaskArgs {
 
   testDirectory: string | undefined = "";
   additionalArguments: string = "";
+  ignoreUnknownCA: boolean = false;
 
   getFileParameter() {
     if (this.targetFile && !this.dockerImageName) {
