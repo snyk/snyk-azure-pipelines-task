@@ -89,3 +89,24 @@ export function attachReport(filePath: string, attachmentType: string) {
     console.log(`${filePath} does not exist... cannot attach`);
   }
 }
+
+export function removeRegexFromFile(
+  fileFullPath: string,
+  regex: RegExp,
+  debug = false
+) {
+  if (fs.existsSync(fileFullPath)) {
+    try {
+      const data = fs.readFileSync(fileFullPath, {
+        encoding: "utf8",
+        flag: "r",
+      });
+      const result = data.replace(regex, "");
+      fs.writeFileSync(fileFullPath, result);
+    } catch (err) {
+      if (debug) {
+        console.log(`Removing ${regex} from ${fileFullPath} failed.`);
+      }
+    }
+  }
+}

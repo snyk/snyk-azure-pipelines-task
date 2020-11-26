@@ -11,11 +11,11 @@ import {
   sudoExists,
   formatDate,
   attachReport,
+  removeRegexFromFile,
   JSON_ATTACHMENT_TYPE,
   HTML_ATTACHMENT_TYPE
 } from "./task-lib";
 import * as fs from "fs";
-const replace = require("replace-in-file");
 import * as path from "path";
 
 class SnykError extends Error {
@@ -172,6 +172,17 @@ async function authorizeSnyk(
   return snykOutput;
 }
 
+function printFile(path: string) {
+  const data = fs.readFileSync(path, {
+    encoding: "utf8",
+    flag: "r",
+  });
+  console.log("--------------------------------------------------");
+  console.log("PRINTING FILE!");
+  console.log(data);
+  console.log("--------------------------------------------------");
+}
+
 async function runSnykTest(
   taskArgs: TaskArgs,
   jsonReportOutputPath: string
@@ -214,7 +225,9 @@ async function runSnykTest(
       "failing task because `snyk test` was improperly used or had other errors";
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
-  await removeFirstLineFrom(jsonReportOutputPath, regexForRemoveCommandLine);
+  printFile(jsonReportOutputPath);
+  removeRegexFromFile(jsonReportOutputPath, regexForRemoveCommandLine, isDebugMode());
+  printFile(jsonReportOutputPath);
 
   return snykOutput;
 }
@@ -250,7 +263,9 @@ const runSnykToHTML = async (
       "failing task because `snyk test` was improperly used or had other errors";
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
-  await removeFirstLineFrom(htmlReportFileFullPath, regexForRemoveCommandLine);
+  printFile(htmlReportFileFullPath);
+  removeRegexFromFile(htmlReportFileFullPath, regexForRemoveCommandLine, isDebugMode());
+  printFile(htmlReportFileFullPath);
 
   return snykOutput;
 };
@@ -291,18 +306,6 @@ async function runSnykMonitor(taskArgs: TaskArgs): Promise<SnykOutput> {
   };
 
   return snykOutput;
-}
-
-async function removeFirstLineFrom(fileFullPath: string, regex) {
-  if (fs.existsSync(fileFullPath)) {
-    const options = {
-      files: fileFullPath,
-      from: regex,
-      to: ""
-    };
-    if (isDebugMode()) console.log(`Removing first line from ${fileFullPath}`);
-    await replace(options);
-  }
 }
 
 const handleSnykTestError = (args, snykTestResult, workDir, fileName) => {
