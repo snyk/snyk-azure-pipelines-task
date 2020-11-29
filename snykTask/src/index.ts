@@ -172,17 +172,6 @@ async function authorizeSnyk(
   return snykOutput;
 }
 
-function printFile(path: string) {
-  const data = fs.readFileSync(path, {
-    encoding: "utf8",
-    flag: "r",
-  });
-  console.log("--------------------------------------------------");
-  console.log("PRINTING FILE!");
-  console.log(data);
-  console.log("--------------------------------------------------");
-}
-
 async function runSnykTest(
   taskArgs: TaskArgs,
   jsonReportOutputPath: string
@@ -225,9 +214,11 @@ async function runSnykTest(
       "failing task because `snyk test` was improperly used or had other errors";
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
-  printFile(jsonReportOutputPath);
-  removeRegexFromFile(jsonReportOutputPath, regexForRemoveCommandLine, isDebugMode());
-  printFile(jsonReportOutputPath);
+  removeRegexFromFile(
+    jsonReportOutputPath,
+    regexForRemoveCommandLine,
+    isDebugMode()
+  );
 
   return snykOutput;
 }
@@ -263,9 +254,11 @@ const runSnykToHTML = async (
       "failing task because `snyk test` was improperly used or had other errors";
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
-  printFile(htmlReportFileFullPath);
-  removeRegexFromFile(htmlReportFileFullPath, regexForRemoveCommandLine, isDebugMode());
-  printFile(htmlReportFileFullPath);
+  removeRegexFromFile(
+    htmlReportFileFullPath,
+    regexForRemoveCommandLine,
+    isDebugMode()
+  );
 
   return snykOutput;
 };

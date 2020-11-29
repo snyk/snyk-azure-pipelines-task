@@ -99,7 +99,7 @@ export function removeRegexFromFile(
     try {
       const data = fs.readFileSync(fileFullPath, {
         encoding: "utf8",
-        flag: "r",
+        flag: "r"
       });
       const result = data.replace(regex, "");
       fs.writeFileSync(fileFullPath, result);

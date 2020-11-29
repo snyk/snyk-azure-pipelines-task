@@ -12,7 +12,8 @@ import {
   getToolPath,
   sudoExists,
   formatDate,
-  attachReport
+  attachReport,
+  removeRegexFromFile
 } from "../task-lib";
 import { TaskArgs } from "../task-args";
 
@@ -76,7 +77,7 @@ test("isSudoMode returns true only for Linux platforms", () => {
   expect(isSudoMode(pWindows)).toBe(false);
 });
 
-test.only("sudoExists works", () => {
+test("sudoExists works", () => {
   const whichSpy = jest.spyOn(tl, "which").mockReturnValue("/usr/bin/sudo");
   expect(sudoExists()).toBe(true);
 
@@ -131,4 +132,24 @@ test("attachReport works", () => {
 
   fsExistsSyncSpy.mockRestore();
   addAttachmentSpy.mockRestore();
+});
+
+test("removeRegexFromFile works with global regex", () => {
+  const path = "snykTask/test/fixtures/somehtml.html";
+  const pathAfter = "snykTask/test/fixtures/somehtmlAfterGlobal.html";
+  const regex = /\[command\].*/g;
+  removeRegexFromFile(path, regex);
+  expect(fs.readFileSync(path, { encoding: "utf8", flag: "r" })).toEqual(
+    fs.readFileSync(pathAfter, { encoding: "utf8", flag: "r" })
+  );
+});
+
+test("removeRegexFromFile works with non-global regex", () => {
+  const path = "snykTask/test/fixtures/somejson.json";
+  const pathAfter = "snykTask/test/fixtures/somejsonAfterNonglobal.json";
+  const regex = /\[command\].*/;
+  removeRegexFromFile(path, regex);
+  expect(fs.readFileSync(path, { encoding: "utf8", flag: "r" })).toEqual(
+    fs.readFileSync(pathAfter, { encoding: "utf8", flag: "r" })
+  );
 });
