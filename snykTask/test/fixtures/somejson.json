@@ -1,4 +1,5 @@
 {
+  [command]/usr/local/bin/snyk-to-html -i /home/vsts/work/_temp/report-2020-11-29TLOLZ12-55-07.json
   "vulnerabilities": [],
   "ok": true,
   "dependencyCount": 0,
@@ -44,7 +45,7 @@
         "severity": "medium",
         "instructions": ""
       },
-[command]/usr/local/bin/snyk-to-html -i /home/vsts/work/_temp/report-2020-11-29TLOLZ12-55-07.json
+
       "GPL-2.0": {
         "licenseType": "GPL-2.0",
         "severity": "high",

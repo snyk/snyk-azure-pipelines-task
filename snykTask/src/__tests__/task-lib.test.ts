@@ -137,19 +137,35 @@ test("attachReport works", () => {
 test("removeRegexFromFile works with global regex", () => {
   const path = "snykTask/test/fixtures/somehtml.html";
   const pathAfter = "snykTask/test/fixtures/somehtmlAfterGlobal.html";
+  const pathToChange = "snykTask/test/fixtures/tmp.html";
   const regex = /\[command\].*/g;
-  removeRegexFromFile(path, regex);
-  expect(fs.readFileSync(path, { encoding: "utf8", flag: "r" })).toEqual(
-    fs.readFileSync(pathAfter, { encoding: "utf8", flag: "r" })
-  );
+
+  fs.copyFileSync(path, pathToChange);
+
+  try {
+    removeRegexFromFile(pathToChange, regex);
+    expect(
+      fs.readFileSync(pathToChange, { encoding: "utf8", flag: "r" })
+    ).toEqual(fs.readFileSync(pathAfter, { encoding: "utf8", flag: "r" }));
+  } finally {
+    fs.unlinkSync(pathToChange);
+  }
 });
 
 test("removeRegexFromFile works with non-global regex", () => {
   const path = "snykTask/test/fixtures/somejson.json";
   const pathAfter = "snykTask/test/fixtures/somejsonAfterNonglobal.json";
+  const pathToChange = "snykTask/test/fixtures/tmp.json";
   const regex = /\[command\].*/;
-  removeRegexFromFile(path, regex);
-  expect(fs.readFileSync(path, { encoding: "utf8", flag: "r" })).toEqual(
-    fs.readFileSync(pathAfter, { encoding: "utf8", flag: "r" })
-  );
+
+  fs.copyFileSync(path, pathToChange);
+
+  try {
+    removeRegexFromFile(pathToChange, regex);
+    expect(
+      fs.readFileSync(pathToChange, { encoding: "utf8", flag: "r" })
+    ).toEqual(fs.readFileSync(pathAfter, { encoding: "utf8", flag: "r" }));
+  } finally {
+    fs.unlinkSync(pathToChange);
+  }
 });
