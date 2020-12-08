@@ -52,7 +52,6 @@
   "dependencies": {
     "azure-pipelines-task-lib": "2.9.3",
     "jquery": "^3.4.1",
-    "replace-in-file": "^4.2.0",
     "request": "^2.88.0",
     "vss-web-extension-sdk": "^5.141.0"
   },

@@ -11,11 +11,11 @@ import {
   sudoExists,
   formatDate,
   attachReport,
+  removeRegexFromFile,
   JSON_ATTACHMENT_TYPE,
   HTML_ATTACHMENT_TYPE
 } from "./task-lib";
 import * as fs from "fs";
-const replace = require("replace-in-file");
 import * as path from "path";
 
 class SnykError extends Error {
@@ -214,7 +214,11 @@ async function runSnykTest(
       "failing task because `snyk test` was improperly used or had other errors";
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
-  await removeFirstLineFrom(jsonReportOutputPath, regexForRemoveCommandLine);
+  removeRegexFromFile(
+    jsonReportOutputPath,
+    regexForRemoveCommandLine,
+    isDebugMode()
+  );
 
   return snykOutput;
 }
@@ -250,7 +254,11 @@ const runSnykToHTML = async (
       "failing task because `snyk test` was improperly used or had other errors";
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
-  await removeFirstLineFrom(htmlReportFileFullPath, regexForRemoveCommandLine);
+  removeRegexFromFile(
+    htmlReportFileFullPath,
+    regexForRemoveCommandLine,
+    isDebugMode()
+  );
 
   return snykOutput;
 };
@@ -291,18 +299,6 @@ async function runSnykMonitor(taskArgs: TaskArgs): Promise<SnykOutput> {
   };
 
   return snykOutput;
-}
-
-async function removeFirstLineFrom(fileFullPath: string, regex) {
-  if (fs.existsSync(fileFullPath)) {
-    const options = {
-      files: fileFullPath,
-      from: regex,
-      to: ""
-    };
-    if (isDebugMode()) console.log(`Removing first line from ${fileFullPath}`);
-    await replace(options);
-  }
 }
 
 const handleSnykTestError = (args, snykTestResult, workDir, fileName) => {
