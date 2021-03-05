@@ -4,7 +4,9 @@ import * as tl from "azure-pipelines-task-lib/task";
 import { Platform } from "azure-pipelines-task-lib/task";
 import stream = require("stream");
 import * as fs from "fs";
+const fsPromises = require("fs").promises;
 import * as path from "path";
+import * as opened from "@ronomon/opened";
 
 export const JSON_ATTACHMENT_TYPE = "JSON_ATTACHMENT_TYPE";
 export const HTML_ATTACHMENT_TYPE = "HTML_ATTACHMENT_TYPE";
@@ -109,4 +111,23 @@ export function removeRegexFromFile(
       }
     }
   }
+}
+
+export async function checkFileOpenedByAnotherProcess(
+  filePath: string
+): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    opened.files([filePath], (error, hashTable) => {
+      if (error) {
+        console.log("error checking if file is opened by another process");
+        console.log(error);
+        reject(error);
+      } else {
+        console.log("result of checking if file is opened by another process:");
+        const isUsedByAnotherProcess: boolean = hashTable[filePath];
+        console.log(`${filePath} is open?: ${isUsedByAnotherProcess}`);
+        resolve(isUsedByAnotherProcess);
+      }
+    });
+  });
 }

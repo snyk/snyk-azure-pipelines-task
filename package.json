@@ -50,6 +50,7 @@
   "author": "snyk.io",
   "license": "Apache-2.0",
   "dependencies": {
+    "@ronomon/opened": "^1.5.1",
     "azure-pipelines-task-lib": "2.9.3",
     "jquery": "^3.4.1",
     "request": "^2.88.0",

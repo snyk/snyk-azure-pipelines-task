@@ -13,7 +13,8 @@ import {
   attachReport,
   removeRegexFromFile,
   JSON_ATTACHMENT_TYPE,
-  HTML_ATTACHMENT_TYPE
+  HTML_ATTACHMENT_TYPE,
+  checkFileOpenedByAnotherProcess
 } from "./task-lib";
 import * as fs from "fs";
 import * as path from "path";
@@ -422,6 +423,28 @@ async function run() {
         getOptionsToExecuteCmd(taskArgs),
         reportOutputDir
       );
+    }
+
+    if (isDebugMode()) {
+      try {
+        const jsonReportFileInUse = await checkFileOpenedByAnotherProcess(
+          jsonReportFullPath
+        );
+        const htmlReportFileInUse = await checkFileOpenedByAnotherProcess(
+          htmlReportFullPath
+        );
+        console.log(
+          `file ${jsonReportFullPath} is in use by another process?: ${jsonReportFileInUse}`
+        );
+        console.log(
+          `file ${htmlReportFullPath} is in use by another process?: ${htmlReportFileInUse}`
+        );
+      } catch (err) {
+        console.log(
+          "error caught in run() when checking if files are used by another process:"
+        );
+        console.log(err);
+      }
     }
 
     attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
