@@ -60,6 +60,11 @@ function buildToolRunner(
   return toolRunner;
 }
 
+async function sleep(seconds: number): Promise<void> {
+  const ms = seconds * 1000;
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function parseInputArgs(): TaskArgs {
   const taskArgs: TaskArgs = new TaskArgs();
   taskArgs.targetFile = tl.getInput("targetFile", false);
@@ -69,6 +74,12 @@ function parseInputArgs(): TaskArgs {
   taskArgs.organization = tl.getInput("organization", false);
   taskArgs.monitorOnBuild = tl.getBoolInput("monitorOnBuild", true);
   taskArgs.failOnIssues = tl.getBoolInput("failOnIssues", true);
+
+  const delayStr = tl.getInput("delayAfterReportGenerationSeconds", false);
+  if (delayStr) {
+    taskArgs.delayAfterReportGenerationSeconds = parseInt(delayStr);
+  }
+
   taskArgs.additionalArguments =
     tl.getInput("additionalArguments", false) || "";
   taskArgs.testDirectory = tl.getInput("testDirectory", false);
@@ -406,6 +417,16 @@ async function run() {
 
     const snykTestResult = await runSnykTest(taskArgs, jsonReportFullPath);
 
+    if (taskArgs.delayAfterReportGenerationSeconds > 0) {
+      console.log(
+        `sleeping for ${
+          taskArgs.delayAfterReportGenerationSeconds
+        } after generating JSON report at ${new Date().getTime()}`
+      );
+      await sleep(taskArgs.delayAfterReportGenerationSeconds);
+      console.log(`done sleeping at at ${new Date().getTime()}`);
+    }
+
     const snykToHTMLResult = await runSnykToHTML(
       taskArgs,
       jsonReportFullPath,
@@ -413,6 +434,16 @@ async function run() {
     );
 
     handleSnykToHTMLError(snykToHTMLResult);
+
+    if (taskArgs.delayAfterReportGenerationSeconds > 0) {
+      console.log(
+        `sleeping for ${
+          taskArgs.delayAfterReportGenerationSeconds
+        } after generating HTML report at ${new Date().getTime()}`
+      );
+      await sleep(taskArgs.delayAfterReportGenerationSeconds);
+      console.log(`done sleeping at at ${new Date().getTime()}`);
+    }
 
     if (isDebugMode()) {
       console.log("showing contents of current directory...");
