@@ -11,11 +11,11 @@ import {
   sudoExists,
   formatDate,
   attachReport,
+  removeRegexFromFile,
   JSON_ATTACHMENT_TYPE,
   HTML_ATTACHMENT_TYPE
 } from "./task-lib";
 import * as fs from "fs";
-const replace = require("replace-in-file");
 import * as path from "path";
 
 class SnykError extends Error {
@@ -60,6 +60,11 @@ function buildToolRunner(
   return toolRunner;
 }
 
+async function sleep(seconds: number): Promise<void> {
+  const ms = seconds * 1000;
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function parseInputArgs(): TaskArgs {
   const taskArgs: TaskArgs = new TaskArgs();
   taskArgs.targetFile = tl.getInput("targetFile", false);
@@ -69,6 +74,12 @@ function parseInputArgs(): TaskArgs {
   taskArgs.organization = tl.getInput("organization", false);
   taskArgs.monitorOnBuild = tl.getBoolInput("monitorOnBuild", true);
   taskArgs.failOnIssues = tl.getBoolInput("failOnIssues", true);
+
+  const delayStr = tl.getInput("delayAfterReportGenerationSeconds", false);
+  if (delayStr) {
+    taskArgs.delayAfterReportGenerationSeconds = parseInt(delayStr);
+  }
+
   taskArgs.additionalArguments =
     tl.getInput("additionalArguments", false) || "";
   taskArgs.testDirectory = tl.getInput("testDirectory", false);
@@ -214,7 +225,11 @@ async function runSnykTest(
       "failing task because `snyk test` was improperly used or had other errors";
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
-  await removeFirstLineFrom(jsonReportOutputPath, regexForRemoveCommandLine);
+  removeRegexFromFile(
+    jsonReportOutputPath,
+    regexForRemoveCommandLine,
+    isDebugMode()
+  );
 
   return snykOutput;
 }
@@ -250,7 +265,11 @@ const runSnykToHTML = async (
       "failing task because `snyk test` was improperly used or had other errors";
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
-  await removeFirstLineFrom(htmlReportFileFullPath, regexForRemoveCommandLine);
+  removeRegexFromFile(
+    htmlReportFileFullPath,
+    regexForRemoveCommandLine,
+    isDebugMode()
+  );
 
   return snykOutput;
 };
@@ -291,18 +310,6 @@ async function runSnykMonitor(taskArgs: TaskArgs): Promise<SnykOutput> {
   };
 
   return snykOutput;
-}
-
-async function removeFirstLineFrom(fileFullPath: string, regex) {
-  if (fs.existsSync(fileFullPath)) {
-    const options = {
-      files: fileFullPath,
-      from: regex,
-      to: ""
-    };
-    if (isDebugMode()) console.log(`Removing first line from ${fileFullPath}`);
-    await replace(options);
-  }
 }
 
 const handleSnykTestError = (args, snykTestResult, workDir, fileName) => {
@@ -410,6 +417,16 @@ async function run() {
 
     const snykTestResult = await runSnykTest(taskArgs, jsonReportFullPath);
 
+    if (taskArgs.delayAfterReportGenerationSeconds > 0) {
+      console.log(
+        `sleeping for ${
+          taskArgs.delayAfterReportGenerationSeconds
+        } after generating JSON report at ${new Date().getTime()}`
+      );
+      await sleep(taskArgs.delayAfterReportGenerationSeconds);
+      console.log(`done sleeping at at ${new Date().getTime()}`);
+    }
+
     const snykToHTMLResult = await runSnykToHTML(
       taskArgs,
       jsonReportFullPath,
@@ -417,6 +434,16 @@ async function run() {
     );
 
     handleSnykToHTMLError(snykToHTMLResult);
+
+    if (taskArgs.delayAfterReportGenerationSeconds > 0) {
+      console.log(
+        `sleeping for ${
+          taskArgs.delayAfterReportGenerationSeconds
+        } after generating HTML report at ${new Date().getTime()}`
+      );
+      await sleep(taskArgs.delayAfterReportGenerationSeconds);
+      console.log(`done sleeping at at ${new Date().getTime()}`);
+    }
 
     if (isDebugMode()) {
       console.log("showing contents of current directory...");
