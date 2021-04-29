@@ -1,6 +1,7 @@
 module.exports = {
     "roots": [
-        "<rootDir>/snykTask/src/"
+        "<rootDir>/snykTask/src/",
+        "<rootDir>/ui/"
     ],
     "transform": {
         "^.+\\.tsx?$": "ts-jest"
