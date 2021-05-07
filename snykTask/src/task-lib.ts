@@ -110,3 +110,21 @@ export function removeRegexFromFile(
     }
   }
 }
+
+export enum Severity {
+  CRITICAL = "critical",
+  HIGH = "high",
+  MEDIUM = "medium",
+  LOW = "low"
+}
+
+export function isNotValidThreshold(threshold: string) {
+  const severityThresholdLowerCase = threshold.toLowerCase();
+
+  return (
+    severityThresholdLowerCase !== Severity.CRITICAL &&
+    severityThresholdLowerCase !== Severity.HIGH &&
+    severityThresholdLowerCase !== Severity.MEDIUM &&
+    severityThresholdLowerCase !== Severity.LOW
+  );
+}
