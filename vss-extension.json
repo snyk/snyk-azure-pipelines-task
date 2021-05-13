@@ -24,11 +24,6 @@
 			"path": "snykTask"
 		},
 		{
-			"path": "scripts/dist",
-			"addressable": true,
-			"packagePath": "scripts"
-		},
-		{
 			"path": "images",
 			"addressable": true,
 			"packagePath": "img"
