@@ -1,9 +1,18 @@
 # snyk-azure-pipelines-task
 
+This task allows you to easily run Snyk scans within your Azure Pipeline jobs. You will need to first [create a Snyk account](https://snyk.io/login). There are two major options:
+
+- Snyk scan for vulnerable dependencies leveraging your project's manfiest files, for example `pom.xml`, `package.json`, etc.
+- Snyk scan for container images. This will look at Docker images.
+
+In addition to running a Snyk security scan, you also have the option to monitor your application / container, in which case the dependency tree or container image metadata will be posted to your Snyk account for ongoing monitoring.
+
 ## Requirements
+
 This extension requires that Node.js and npm be installed on the build agent. These are available by default on all Microsoft-hosted build agents. However, if you are using a self-hosted build agent, you may need to explicitly activate Node.js and npm and ensure they are in your [PATH](https://en.wikipedia.org/wiki/PATH_(variable)). This can be done using the [NodeTool task from Microsoft](https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/node-js?view=azure-devops) prior to the `SnykSecurityScan` task in your pipeline.
 
 ## How to use the Snyk task for Azure DevOps Pipelines
+
 1. Install the [extension](https://marketplace.visualstudio.com/items?itemName=Snyk.snyk-security-scan) into your Azure DevOps environment.
 2. Configure a service connection endpoint with your Snyk token. This is done at the project level. In Azure DevOps, go to Project settings -> Service connections -> New service connection -> Snyk Authentication. Give your service connection and enter a valid Snyk Token.
 3. Within an Azure DevOps Pipeline, add the Snyk Security Scan task and configure it according to your needs according to details and examples below.
@@ -31,6 +40,7 @@ This extension requires that Node.js and npm be installed on the build agent. Th
 ## Usage Examples
 
 ### Simple Application Testing Example
+
 ```
 - task: SnykSecurityScan@0
   inputs:
@@ -42,6 +52,7 @@ This extension requires that Node.js and npm be installed on the build agent. Th
 
 
 ### Simple Container Image Testing Example
+
 ```
 - task: SnykSecurityScan@0
   inputs:
