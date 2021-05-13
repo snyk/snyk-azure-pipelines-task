@@ -45,7 +45,9 @@ async function main() {
     const afterInstallExtensionVersion = afterInstallExtensionInfo.version;
     console.log(`Extension version installed: ${afterInstallExtensionVersion}`);
   } catch (err) {
-    console.log(`${err.statusCode} - ${err.message}`);
+    console.log(`err.statusCode: ${err.statusCode}`);
+    console.log(`err.message: ${err.message}`);
+    throw err;
   }
 }
 
