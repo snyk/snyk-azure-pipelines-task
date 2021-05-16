@@ -72,6 +72,15 @@ jobs:
             scripts/ci-deploy.sh $NEXT_DEV_VERSION $DEV_AZ_ORG
 
       - run:
+          name: Create renamed copy of the vsix bundle 
+          command: |
+            cp *.vsix extension-artifact.vsix
+            ls -la extension-artifact.vsix
+
+      - store_artifacts:
+          path: ./extension-artifact.vsix
+
+      - run:
           name: Launch Test Pipelines
           command: |
             node ./ops/deploy/dist/run-test-pipelines.js
