@@ -89,6 +89,10 @@ else
   exit ${publish_exit_code}
 fi
 
+# re-install all dependencies. The dev deps were pruned off in ci-build.sh
+echo "reinstalling all dependencies..."
+npm install
+
 echo "Run script to install the dev extension into the dev org in Azure DevOps..."
 node ./ops/deploy/dist/install-extension-to-dev-org.js "${INPUT_PARAM_AZ_EXT_NEW_VERSION}"
 if [[ ! $? -eq 0 ]]; then
@@ -100,6 +104,3 @@ fi
 node "${PWD}/scripts/recovery-task-json-dev.js"
 
 echo "Extension installed"
-
-echo "reinstalling all dependencies..."
-npm install
