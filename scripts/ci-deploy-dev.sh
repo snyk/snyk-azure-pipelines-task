@@ -90,7 +90,11 @@ else
 fi
 
 echo "Run script to install the dev extension into the dev org in Azure DevOps..."
-node ./ops/deploy/dist/install-extension-to-dev-org.js
+node ./ops/deploy/dist/install-extension-to-dev-org.js "${INPUT_PARAM_AZ_EXT_NEW_VERSION}"
+if [[ ! $? -eq 0 ]]; then
+  echo "failed installing dev extension at correct version"
+  exit 1
+fi
 
 # Updating version in task.json file
 node "${PWD}/scripts/recovery-task-json-dev.js"
