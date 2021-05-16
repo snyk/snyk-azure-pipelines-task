@@ -38,11 +38,15 @@ jobs:
       - checkout
 
       - run:
-          name: Build Ops Sub-project
+          name: Show Node Environment
           command: |
-            npm install
-            npm run deploy:format:check
-            npm run deploy:compile
+            node --version
+            npm --version
+
+      - run:
+          name: Run Build
+          command: |
+            npm run build
 
       - run:
           name: Build and Deploy to Test Environment
