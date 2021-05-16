@@ -10,7 +10,7 @@ jobs:
       - run:
           name: Build
           command: |
-            ./scripts/ci-build.sh
+            npm run build
       - run:
           name: Checks
           command: |
