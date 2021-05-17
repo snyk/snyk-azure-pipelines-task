@@ -19,6 +19,8 @@ class TaskArgs {
   additionalArguments: string = "";
   ignoreUnknownCA: boolean = false;
 
+  delayAfterReportGenerationSeconds: number = 0;
+
   getFileParameter() {
     if (this.targetFile && !this.dockerImageName) {
       return this.targetFile;
