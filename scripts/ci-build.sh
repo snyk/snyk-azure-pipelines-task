@@ -7,8 +7,8 @@ if [[ ! -z "$1" ]]; then
 fi
 echo "env: ${env}"
 
-echo "Bulding project..."
-npm run build
+# `npm run build` now being done in CI
+
 if [[ $env == "prod" ]]; then
   echo "npm prune --production..."
   npm prune --production  # remove devDependencies from node-modules

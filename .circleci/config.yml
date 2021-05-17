@@ -10,7 +10,7 @@ jobs:
       - run:
           name: Build
           command: |
-            ./scripts/ci-build.sh
+            npm run build
       - run:
           name: Checks
           command: |
@@ -38,11 +38,15 @@ jobs:
       - checkout
 
       - run:
-          name: Build Ops Sub-project
+          name: Show Node Environment
           command: |
-            npm install
-            npm run deploy:format:check
-            npm run deploy:compile
+            node --version
+            npm --version
+
+      - run:
+          name: Run Build
+          command: |
+            npm run build
 
       - run:
           name: Build and Deploy to Test Environment
@@ -66,6 +70,15 @@ jobs:
             
             echo "Deploying to dev with ${NEXT_DEV_VERSION} ${AZ_ORG}"
             scripts/ci-deploy.sh $NEXT_DEV_VERSION $DEV_AZ_ORG
+
+      - run:
+          name: Create renamed copy of the vsix bundle 
+          command: |
+            cp *.vsix extension-artifact.vsix
+            ls -la extension-artifact.vsix
+
+      - store_artifacts:
+          path: ./extension-artifact.vsix
 
       - run:
           name: Launch Test Pipelines
