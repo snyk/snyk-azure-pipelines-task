@@ -10,7 +10,7 @@
     "test": "npm run test:checks && npm run test:unit",
     "test:checks": "npm run eslint && npm run format:check",
     "test:snyk": "npx snyk test",
-    "test:unit": "jest --detectOpenHandles",
+    "test:unit": "jest",
     "compile": "tsc -b snykTask/tsconfig.json",
     "eslint": "eslint --cache 'snykTask/{src,test,public/js/{!(build)}}/**/*.{js,ts}'",
     "format:check": "prettier --check 'snykTask/{src,test,public/js/{!(build)}}/**/*.{js,ts}'",
