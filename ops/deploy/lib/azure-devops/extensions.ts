@@ -34,13 +34,15 @@ export async function uninstallExtension(
 export async function installExtension(
   webApi: WebApi,
   publisherName: string,
-  extensionId: string
+  extensionId: string,
+  version?: string
 ): Promise<ExtensionManagementInterfaces.InstalledExtension> {
   const extensionManagementApiObject: ExtensionManagementApi.IExtensionManagementApi = await webApi.getExtensionManagementApi();
 
   // Although this API claims to be "ByName", it actually corresponds to the the `extensionId`. The same weirdness exists when you use the az devops CLI
   return extensionManagementApiObject.installExtensionByName(
     publisherName,
-    extensionId
+    extensionId,
+    version
   );
 }
