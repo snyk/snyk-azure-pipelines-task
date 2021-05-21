@@ -15,12 +15,14 @@ OVERRIDE_JSON="{ \"id\": \"${AZ_EXTENSION_ID}\", \"name\": \"${AZ_EXTENSION_NAME
 
 # Publish extension
 echo "Publishing extension..."
-tfx extension publish --manifest-globs vss-extension.json \
+tfx extension create \
+--manifest-globs vss-extension.json \
 --version $AZ_EXT_NEW_VERSION \
 --extension-id $AZ_EXTENSION_ID \
 --publisher $AZ_PUBLISHER \
 --override $OVERRIDE_JSON \
---token $AZURE_DEVOPS_EXT_PAT
+--token $AZURE_DEVOPS_EXT_PAT \
+--output-path Snyk-snyk-security-scan.vsix
 
 publish_exit_code=$?
 if [[ publish_exit_code -eq 0 ]]; then
