@@ -84,7 +84,8 @@
       "options": {
         "low": "Low (default)",
         "medium": "Medium",
-        "high": "High"
+        "high": "High",
+        "critical": "Critical"
       },
       "helpMarkDown": "The testing severity threshold. Leave blank for no threshold."
     },

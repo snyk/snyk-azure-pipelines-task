@@ -13,7 +13,9 @@ import {
   attachReport,
   removeRegexFromFile,
   JSON_ATTACHMENT_TYPE,
-  HTML_ATTACHMENT_TYPE
+  HTML_ATTACHMENT_TYPE,
+  isNotValidThreshold,
+  Severity
 } from "./task-lib";
 import * as fs from "fs";
 import * as path from "path";
@@ -87,8 +89,7 @@ function parseInputArgs(): TaskArgs {
   if (taskArgs.severityThreshold) {
     taskArgs.severityThreshold = taskArgs.severityThreshold.toLowerCase();
     if (isNotValidThreshold(taskArgs.severityThreshold)) {
-      const errorMsg =
-        "If set, severity threshold must be 'high' or 'medium' or 'low' (case insensitive). If not set, the default is 'low'.";
+      const errorMsg = `If set, severity threshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
       throw new Error(errorMsg);
     }
   }
@@ -100,16 +101,6 @@ function parseInputArgs(): TaskArgs {
 
   return taskArgs;
 }
-
-const isNotValidThreshold = (threshold: string) => {
-  const severityThresholdLowerCase = threshold.toLowerCase();
-
-  return (
-    severityThresholdLowerCase !== "high" &&
-    severityThresholdLowerCase !== "medium" &&
-    severityThresholdLowerCase !== "low"
-  );
-};
 
 const logAllTaskArgs = (taskArgs: TaskArgs) => {
   console.log(`taskArgs.targetFile: ${taskArgs.targetFile}`);

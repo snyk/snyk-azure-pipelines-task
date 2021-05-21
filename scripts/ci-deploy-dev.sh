@@ -33,7 +33,6 @@ if [[ ! $? -eq 0 ]]; then
   fi
 fi
 
-
 # echo "See if the extension is installed..."
 az devops extension show \
   --publisher-name $DEV_AZ_PUBLISHER \
@@ -69,9 +68,16 @@ node "${PWD}/scripts/update-task-json-dev.js" ${INPUT_PARAM_AZ_EXT_NEW_VERSION}
 # Override version
 OVERRIDE_JSON="{ \"name\": \"${DEV_AZ_EXTENSION_NAME}\", \"version\": \"${INPUT_PARAM_AZ_EXT_NEW_VERSION}\" }"
 
-# Sharing extension
+# See if the snykTask/dist and snykTask/node_modules folders are present
+echo "Checking for snykTask/dist folder..."
+ls -la snykTask/dist
+echo "checking snykTask/node_modules..."
+ls -la snykTask/node_modules
+
+# Publishing and sharing extension
 echo "Publishing and sharing extension..."
 echo "OVERRIDE_JSON: ${OVERRIDE_JSON}"
+echo "About to call \`tfx extension publish...\`"
 
 tfx extension publish --manifest-globs vss-extension-dev.json \
 --version $INPUT_PARAM_AZ_EXT_NEW_VERSION \
@@ -89,13 +95,18 @@ else
   exit ${publish_exit_code}
 fi
 
+# re-install all dependencies. The dev deps were pruned off in ci-build.sh
+echo "reinstalling all dependencies..."
+npm install
+
 echo "Run script to install the dev extension into the dev org in Azure DevOps..."
-node ./ops/deploy/dist/install-extension-to-dev-org.js
+node ./ops/deploy/dist/install-extension-to-dev-org.js "${INPUT_PARAM_AZ_EXT_NEW_VERSION}"
+if [[ ! $? -eq 0 ]]; then
+  echo "failed installing dev extension at correct version"
+  exit 1
+fi
 
 # Updating version in task.json file
 node "${PWD}/scripts/recovery-task-json-dev.js"
 
 echo "Extension installed"
-
-echo "reinstalling all dependencies..."
-npm install
