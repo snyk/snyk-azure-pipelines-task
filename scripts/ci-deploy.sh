@@ -45,10 +45,8 @@ sudo npm install -g tfx-cli@0.7.11
 # Build project
 "${PWD}/scripts/ci-build.sh" "prod"
 
-# Deploy project
 if [[ ! -z "${AZ_ORG}" ]]; then
   "${PWD}/scripts/ci-deploy-dev.sh" ${AZ_EXT_NEW_VERSION} ${AZ_ORG}
 else
   "${PWD}/scripts/ci-deploy-prod.sh" ${AZ_EXT_NEW_VERSION}
 fi
-echo "Extesion deployed!"
