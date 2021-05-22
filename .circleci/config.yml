@@ -105,10 +105,19 @@ jobs:
             echo AZ_PUBLISHER: $AZ_PUBLISHER
 
       - run:
-          name: Build and Deploy
+          name: Install Dependencies
+          command: |
+            npm install
+            
+      - run:
+          name: Build
+          command: |
+            npm run build
+      
+      - run:
+          name: Create Extension
           command: |
             export AZURE_DEVOPS_EXT_PAT=$PROD_AZURE_DEVOPS_EXT_PAT
-            npm install
             npx semantic-release
 
       - store_artifacts:

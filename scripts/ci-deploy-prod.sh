@@ -13,8 +13,7 @@ node "${PWD}/scripts/ci-update-task-json-prod.js" ${AZ_EXT_NEW_VERSION}
 # Override version
 OVERRIDE_JSON="{ \"id\": \"${AZ_EXTENSION_ID}\", \"name\": \"${AZ_EXTENSION_NAME}\", \"version\": \"${AZ_EXT_NEW_VERSION}\", \"public\": true }"
 
-# Publish extension
-echo "Publishing extension..."
+echo "Creating extension..."
 tfx extension create \
 --manifest-globs vss-extension.json \
 --version $AZ_EXT_NEW_VERSION \
@@ -26,8 +25,8 @@ tfx extension create \
 
 publish_exit_code=$?
 if [[ publish_exit_code -eq 0 ]]; then
-  echo "Extension published"
+  echo "Extension created"
 else
-  echo "Extension failed to pubish with exit code ${publish_exit_code}"
+  echo "Extension failed to create extension with exit code ${publish_exit_code}"
   exit ${publish_exit_code}
 fi
