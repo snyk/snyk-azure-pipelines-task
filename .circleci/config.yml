@@ -85,7 +85,7 @@ jobs:
           command: |
             node ./ops/deploy/dist/run-test-pipelines.js
 
-  build_prod:
+  deploy_prod:
     docker:
       - image: circleci/node:lts
         environment:
@@ -117,27 +117,6 @@ jobs:
 
       - store_artifacts:
           path: ./Snyk-snyk-security-scan.vsix
-      
-      - persist_to_workspace:
-          root: .
-          paths:
-            - ./Snyk-snyk-security-scan.vsix
-
-  publish:
-    docker:
-      - image: circleci/node:lts
-        environment:
-          AZ_EXTENSION_ID: "snyk-security-scan"
-          AZ_EXTENSION_NAME: "Snyk Security Scan"
-          AZ_PUBLISHER: "Snyk"
-    working_directory: ~/repo
-    steps:
-      - attach_workspace:
-          at: ~/repo
-      - run:
-          name: Publish to Marketplace
-          command: |
-            tfx extension publish --token $AZURE_DEVOPS_EXT_PAT --vsix Snyk-snyk-security-scan.vsix
 
 workflows:
   version: 2
@@ -150,18 +129,10 @@ workflows:
           filters:
             branches:
               ignore: master
-      - build_prod:
+      - deploy_prod:
           context: nodejs-lib-release
           requires:
             - test
           filters:
             branches:
               only: master
-      - hold:
-          type: approval
-          requires:
-           - build_prod
-      - publish:
-          context: nodejs-lib-release
-          requires:
-            - hold
