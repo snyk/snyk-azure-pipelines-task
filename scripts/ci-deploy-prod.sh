@@ -23,10 +23,27 @@ tfx extension create \
 --token $AZURE_DEVOPS_EXT_PAT \
 --output-path Snyk-snyk-security-scan.vsix
 
+create_exit_code=$?
+if [[ create_exit_code -eq 0 ]]; then
+  echo "Extension created"
+  ls -la
+else
+  echo "Failed to create extension with exit code ${create_exit_code}"
+  exit ${create_exit_code}
+fi
+
+if [[ ! -f "Snyk-snyk-security-scan.vsix" ]]; then
+  echo "missing Snyk-snyk-security-scan.vsix file, not publishing extension"
+  exit 1
+fi
+
+echo "Snyk-snyk-security-scan.vsix file exists, publishing extension..."
+tfx extension publish --token $AZURE_DEVOPS_EXT_PAT --vsix Snyk-snyk-security-scan.vsix
+
 publish_exit_code=$?
 if [[ publish_exit_code -eq 0 ]]; then
-  echo "Extension created"
+  echo "Extension published"
 else
-  echo "Extension failed to create extension with exit code ${publish_exit_code}"
+  echo "Failed to publish extension with exit code ${publish_exit_code}"
   exit ${publish_exit_code}
 fi
