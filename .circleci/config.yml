@@ -103,11 +103,6 @@ jobs:
             echo AZ_EXTENSION_ID: $AZ_EXTENSION_ID
             echo AZ_EXTENSION_NAME: $AZ_EXTENSION_NAME
             echo AZ_PUBLISHER: $AZ_PUBLISHER
-
-      - run:
-          name: Install Dependencies
-          command: |
-            npm install
             
       - run:
           name: Build
