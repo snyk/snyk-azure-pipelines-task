@@ -74,11 +74,11 @@ jobs:
       - run:
           name: Create renamed copy of the vsix bundle 
           command: |
-            cp *.vsix extension-artifact.vsix
-            ls -la extension-artifact.vsix
+            cp *.vsix dev-extension-artifact.vsix
+            ls -la dev-extension-artifact.vsix
 
       - store_artifacts:
-          path: ./extension-artifact.vsix
+          path: ./dev-extension-artifact.vsix
 
       - run:
           name: Launch Test Pipelines
@@ -115,8 +115,14 @@ jobs:
             export AZURE_DEVOPS_EXT_PAT=$PROD_AZURE_DEVOPS_EXT_PAT
             npx semantic-release
 
+      - run:
+          name: Create renamed copy of the vsix bundle
+          command: |
+            cp *.vsix prod-extension-artifact.vsix
+            ls -la prod-extension-artifact.vsix
+
       - store_artifacts:
-          path: ./Snyk-snyk-security-scan.vsix
+          path: ./prod-extension-artifact.vsix
 
 workflows:
   version: 2
