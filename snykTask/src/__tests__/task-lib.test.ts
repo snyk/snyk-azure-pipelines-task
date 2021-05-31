@@ -109,19 +109,38 @@ test("getToolPath returns sudo if require and not if not required", () => {
 });
 
 describe("useSudo", () => {
-  it("is true for Linux platform", () => {
+  it("is true for Linux platform when noSudo is not set", () => {
     jest.spyOn(tl, "which").mockReturnValue("/usr/bin/sudo");
-    expect(useSudo(tl.Platform.Linux, false)).toBe(true);
+    const taskArgs: TaskArgs = new TaskArgs();
+    expect(taskArgs.noSudo).toBe(false);
+    expect(useSudo(tl.Platform.Linux, taskArgs, false)).toBe(true);
+  });
+
+  it("is false for Linux platform where no sudo exists and when noSudo is not set", () => {
+    jest.spyOn(tl, "which").mockReturnValue("");
+    const taskArgs: TaskArgs = new TaskArgs();
+    expect(taskArgs.noSudo).toBe(false);
+    expect(useSudo(tl.Platform.Linux, taskArgs, false)).toBe(false);
+  });
+
+  it("is false for Linux platform where sudo exists when noSudo is set to true", () => {
+    jest.spyOn(tl, "which").mockReturnValue("/usr/bin/sudo");
+    const taskArgs: TaskArgs = new TaskArgs();
+    taskArgs.noSudo = true;
+    expect(taskArgs.noSudo).toBe(true);
+    expect(useSudo(tl.Platform.Linux, taskArgs, false)).toBe(false);
   });
 
   it("is false for Mac platform even if sudo exists", () => {
     jest.spyOn(tl, "which").mockReturnValue("/usr/bin/sudo");
-    expect(useSudo(tl.Platform.MacOS, false)).toBe(false);
+    const taskArgs: TaskArgs = new TaskArgs();
+    expect(useSudo(tl.Platform.MacOS, taskArgs, false)).toBe(false);
   });
 
   it("is false for Windows platform even if sudo exists (which it should not)", () => {
     jest.spyOn(tl, "which").mockReturnValue("c:/program files/sudo.exe");
-    expect(useSudo(tl.Platform.Windows, false)).toBe(false);
+    const taskArgs: TaskArgs = new TaskArgs();
+    expect(useSudo(tl.Platform.Windows, taskArgs, false)).toBe(false);
   });
 });
 

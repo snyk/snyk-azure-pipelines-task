@@ -93,6 +93,7 @@ function parseInputArgs(): TaskArgs {
     }
   }
   taskArgs.ignoreUnknownCA = tl.getBoolInput("ignoreUnknownCA", false);
+  taskArgs.noSudo = tl.getBoolInput("noSudo", false);
 
   if (isDebugMode()) {
     logAllTaskArgs(taskArgs);
@@ -112,6 +113,7 @@ const logAllTaskArgs = (taskArgs: TaskArgs) => {
   console.log(`taskArgs.failOnIssues: ${taskArgs.failOnIssues}`);
   console.log(`taskArgs.additionalArguments: ${taskArgs.additionalArguments}`);
   console.log(`taskArgs.ignoreUnknownCA: ${taskArgs.ignoreUnknownCA}`);
+  console.log(`taskArgs.noSudo: ${taskArgs.noSudo}`);
   console.log("\n");
 };
 
@@ -390,7 +392,7 @@ async function run() {
     const platform: tl.Platform = tl.getPlatform();
     if (isDebugMode()) console.log(`platform: ${platform}`);
 
-    const sudoMode = useSudo(platform, isDebugMode());
+    const sudoMode = useSudo(platform, taskArgs, isDebugMode());
     if (isDebugMode()) console.log(`sudoMode: ${sudoMode}`);
 
     handleSnykInstallError(await installSnyk(taskArgs, sudoMode));

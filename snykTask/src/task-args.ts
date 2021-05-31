@@ -18,6 +18,7 @@ class TaskArgs {
   testDirectory: string | undefined = "";
   additionalArguments: string = "";
   ignoreUnknownCA: boolean = false;
+  noSudo: boolean = false;
 
   delayAfterReportGenerationSeconds: number = 0;
 

@@ -62,7 +62,14 @@ export function sudoExists(): boolean {
   return Boolean(res); // coerce string to boolean
 }
 
-export function useSudo(platform: Platform, debug: boolean): boolean {
+export function useSudo(
+  platform: Platform,
+  taskArgs: TaskArgs,
+  debug: boolean
+): boolean {
+  if (taskArgs.noSudo) {
+    return false;
+  }
   const sudoPlatform = isSudoPlatform(platform);
   if (debug) console.log(`sudoPlatform: ${sudoPlatform}`);
 

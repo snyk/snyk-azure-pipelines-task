@@ -70,3 +70,8 @@ test("ensure that ignoreUnknownCA is false by default", () => {
   const args = new ta.TaskArgs();
   expect(args.ignoreUnknownCA).toBe(false);
 });
+
+test("ensure that noSudo is false by default", () => {
+  const args = new ta.TaskArgs();
+  expect(args.noSudo).toBe(false);
+});
