@@ -8,9 +8,10 @@ import {
   getOptionsToExecuteSnykCLICommand,
   getOptionsToExecuteCmd,
   getOptionsForSnykToHtml,
-  isSudoMode,
+  isSudoPlatform,
   getToolPath,
   sudoExists,
+  useSudo,
   formatDate,
   attachReport,
   removeRegexFromFile
@@ -72,9 +73,9 @@ test("isSudoMode returns true only for Linux platforms", () => {
   const pMacos = tl.Platform.MacOS;
   const pWindows = tl.Platform.Windows;
 
-  expect(isSudoMode(pLinux)).toBe(true);
-  expect(isSudoMode(pMacos)).toBe(false);
-  expect(isSudoMode(pWindows)).toBe(false);
+  expect(isSudoPlatform(pLinux)).toBe(true);
+  expect(isSudoPlatform(pMacos)).toBe(false);
+  expect(isSudoPlatform(pWindows)).toBe(false);
 });
 
 test("sudoExists works", () => {
@@ -105,6 +106,23 @@ test("getToolPath returns sudo if require and not if not required", () => {
   expect(getToolPath("some-command", mockTlWhichFn, true)).toBe(
     "/usr/bin/sudo"
   );
+});
+
+describe("useSudo", () => {
+  it("is true for Linux platform", () => {
+    jest.spyOn(tl, "which").mockReturnValue("/usr/bin/sudo");
+    expect(useSudo(tl.Platform.Linux, false)).toBe(true);
+  });
+
+  it("is false for Mac platform even if sudo exists", () => {
+    jest.spyOn(tl, "which").mockReturnValue("/usr/bin/sudo");
+    expect(useSudo(tl.Platform.MacOS, false)).toBe(false);
+  });
+
+  it("is false for Windows platform even if sudo exists (which it should not)", () => {
+    jest.spyOn(tl, "which").mockReturnValue("c:/program files/sudo.exe");
+    expect(useSudo(tl.Platform.Windows, false)).toBe(false);
+  });
 });
 
 test("formatDate gives format we want for the report filename", () => {

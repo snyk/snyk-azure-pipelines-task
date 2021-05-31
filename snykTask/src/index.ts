@@ -6,16 +6,15 @@ import {
   getOptionsToExecuteCmd,
   getOptionsToExecuteSnykCLICommand,
   getOptionsForSnykToHtml,
-  isSudoMode,
   getToolPath,
-  sudoExists,
   formatDate,
   attachReport,
   removeRegexFromFile,
   JSON_ATTACHMENT_TYPE,
   HTML_ATTACHMENT_TYPE,
   isNotValidThreshold,
-  Severity
+  Severity,
+  useSudo
 } from "./task-lib";
 import * as fs from "fs";
 import * as path from "path";
@@ -391,19 +390,10 @@ async function run() {
     const platform: tl.Platform = tl.getPlatform();
     if (isDebugMode()) console.log(`platform: ${platform}`);
 
-    const sudoMode = isSudoMode(platform);
+    const sudoMode = useSudo(platform, isDebugMode());
     if (isDebugMode()) console.log(`sudoMode: ${sudoMode}`);
 
-    let useSudo = false;
-    if (sudoMode) {
-      const sudoExistOnBuildMachine = sudoExists();
-      if (isDebugMode())
-        console.log(`sudoExistOnBuildMachine: ${sudoExistOnBuildMachine}`);
-      useSudo = sudoExistOnBuildMachine;
-    }
-    if (isDebugMode()) console.log(`useSudo: ${useSudo}`);
-
-    handleSnykInstallError(await installSnyk(taskArgs, useSudo));
+    handleSnykInstallError(await installSnyk(taskArgs, sudoMode));
     handleSnykAuthError(await authorizeSnyk(taskArgs, authTokenToUse));
 
     const snykTestResult = await runSnykTest(taskArgs, jsonReportFullPath);
