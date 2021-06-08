@@ -19,6 +19,7 @@ import {
 } from "./task-lib";
 import * as fs from "fs";
 import * as path from "path";
+import { getSnykDownloadInfo, downloadExecutable } from "./install";
 
 class SnykError extends Error {
   constructor(message?: string) {
@@ -47,19 +48,6 @@ const isDebugMode = () => tl.getBoolInput("debug", false);
 
 if (isDebugMode()) {
   console.log(`taskNameForAnalytics: ${taskNameForAnalytics}`);
-}
-
-function buildToolRunner(
-  tool: string,
-  requiresSudo: boolean = false
-): tr.ToolRunner {
-  const toolPath: string = getToolPath(tool, tl.which, requiresSudo);
-  let toolRunner = tl.tool(toolPath);
-
-  if (requiresSudo) toolRunner = toolRunner.arg(tool);
-  if (isDebugMode()) console.log(`toolPath: ${toolPath}`);
-
-  return toolRunner;
 }
 
 async function sleep(seconds: number): Promise<void> {
@@ -127,61 +115,18 @@ async function showDirectoryListing(
   await lsToolRunner.exec(options);
 }
 
-async function installSnyk(
-  taskArgs: TaskArgs,
-  useSudo: boolean
-): Promise<SnykOutput> {
-  const options = getOptionsToExecuteCmd(taskArgs);
-  const installSnykToolRunner: tr.ToolRunner = buildToolRunner("npm", useSudo)
-    .arg("install")
-    .arg("-g")
-    .arg("snyk")
-    .arg("snyk-to-html");
-  const installSnykExitCode = await installSnykToolRunner.exec(options);
-  if (isDebugMode())
-    console.log(`installSnykExitCode: ${installSnykExitCode}\n`);
-  const snykOutput: SnykOutput = {
-    code: installSnykExitCode,
-    message: "Not possible to install snyk and snyk-to-html packages"
-  };
-
-  return snykOutput;
-}
-
-async function authorizeSnyk(
-  taskArgs: TaskArgs,
-  snykToken: string
-): Promise<SnykOutput> {
-  // TODO: play with setVariable as an option to use instead of running `snyk auth`
-  // tl.setVariable('SNYK_TOKEN', authToken, true);
-  const options = getOptionsToExecuteSnykCLICommand(
-    taskArgs,
-    taskNameForAnalytics,
-    taskVersion
-  );
-  const snykAuthToolRunner: tr.ToolRunner = buildToolRunner("snyk")
-    .arg("auth")
-    .arg(snykToken)
-    .argIf(taskArgs.ignoreUnknownCA, `--insecure`);
-  const snykAuthExitCode = await snykAuthToolRunner.exec(options);
-  if (isDebugMode()) console.log(`snykAuthExitCode: ${snykAuthExitCode}\n`);
-  const snykOutput: SnykOutput = {
-    code: snykAuthExitCode,
-    message:
-      "Invalid token - Snyk cannot authorize the given token. Make sure you correctly configure a Service Connection of type `Snyk Authentication` at the project level."
-  };
-
-  return snykOutput;
-}
-
 async function runSnykTest(
+  snykPath: string,
   taskArgs: TaskArgs,
-  jsonReportOutputPath: string
+  jsonReportOutputPath: string,
+  snykToken: string
 ): Promise<SnykOutput> {
   let errorMsg = "";
   let code = 0;
   const fileArg = taskArgs.getFileParameter();
-  const snykTestToolRunner: tr.ToolRunner = buildToolRunner("snyk")
+
+  const snykTestToolRunner = tl
+    .tool(snykPath)
     .arg("test")
     .argIf(
       taskArgs.severityThreshold,
@@ -197,7 +142,8 @@ async function runSnykTest(
   const options = getOptionsToExecuteSnykCLICommand(
     taskArgs,
     taskNameForAnalytics,
-    taskVersion
+    taskVersion,
+    snykToken
   );
 
   const command = `[command]${getToolPath("snyk", tl.which)} snyk test...`;
@@ -226,6 +172,7 @@ async function runSnykTest(
 }
 
 const runSnykToHTML = async (
+  snykToHtmlPath: string,
   taskArgs: TaskArgs,
   jsonReportFullPath: string,
   htmlReportFileFullPath: string
@@ -244,7 +191,8 @@ const runSnykToHTML = async (
   )} -i ${jsonReportFullPath}`;
   console.log(command);
 
-  const snykToHTMLToolRunner: tr.ToolRunner = buildToolRunner("snyk-to-html")
+  const snykToHTMLToolRunner = tl
+    .tool(snykToHtmlPath)
     .arg("-i")
     .arg(jsonReportFullPath);
   const snykToHTMLExitCode = await snykToHTMLToolRunner.exec(
@@ -265,15 +213,21 @@ const runSnykToHTML = async (
   return snykOutput;
 };
 
-async function runSnykMonitor(taskArgs: TaskArgs): Promise<SnykOutput> {
+async function runSnykMonitor(
+  snykPath: string,
+  taskArgs: TaskArgs,
+  snykToken
+): Promise<SnykOutput> {
   let errorMsg = "";
   const fileArg = taskArgs.getFileParameter();
   const options = getOptionsToExecuteSnykCLICommand(
     taskArgs,
     taskNameForAnalytics,
-    taskVersion
+    taskVersion,
+    snykToken
   );
-  const snykMonitorToolRunner: tr.ToolRunner = buildToolRunner("snyk")
+  const snykMonitorToolRunner = tl
+    .tool(snykPath)
     .arg("monitor")
     .argIf(taskArgs.dockerImageName, `--docker`)
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
@@ -332,16 +286,6 @@ const handleSnykMonitorError = snykMonitorResult => {
     throw new SnykError(snykMonitorResult.message);
 };
 
-const handleSnykAuthError = authorizeSnykResult => {
-  if (authorizeSnykResult.code !== CLI_EXIT_CODE_SUCCESS)
-    throw new SnykError(authorizeSnykResult.message);
-};
-
-const handleSnykInstallError = installSnykResult => {
-  if (installSnykResult.code !== CLI_EXIT_CODE_SUCCESS)
-    throw new SnykError(installSnykResult.message);
-};
-
 async function run() {
   try {
     const currentDir: string = tl.cwd(); // Azure mock framework will return empty string / undefined
@@ -381,8 +325,8 @@ async function run() {
     }
 
     const taskArgs: TaskArgs = parseInputArgs();
-    const authTokenToUse = getAuthToken();
-    if (!authTokenToUse) {
+    const snykToken = getAuthToken();
+    if (!snykToken) {
       const errorMsg =
         "auth token is not set. Setup SnykAuth service connection and specify serviceConnectionEndpoint input parameter.";
       throw new SnykError(errorMsg);
@@ -403,10 +347,38 @@ async function run() {
     }
     if (isDebugMode()) console.log(`useSudo: ${useSudo}`);
 
-    handleSnykInstallError(await installSnyk(taskArgs, useSudo));
-    handleSnykAuthError(await authorizeSnyk(taskArgs, authTokenToUse));
+    const agentTempDirectory = tl.getVariable("Agent.TempDirectory");
+    if (!agentTempDirectory) {
+      throw new Error("Agent.TempDirectory is not set"); // should always be set by Azure Pipelines environment
+    }
+    const snykToolDownloads = getSnykDownloadInfo(platform);
+    await downloadExecutable(agentTempDirectory, snykToolDownloads.snyk);
+    await downloadExecutable(agentTempDirectory, snykToolDownloads.snykToHtml);
+    const snykPath = path.resolve(
+      agentTempDirectory,
+      snykToolDownloads.snyk.filename
+    );
+    const snykToHtmlPath = path.resolve(
+      agentTempDirectory,
+      snykToolDownloads.snykToHtml.filename
+    );
 
-    const snykTestResult = await runSnykTest(taskArgs, jsonReportFullPath);
+    if (isDebugMode()) {
+      console.log("snykPath: " + snykPath);
+      console.log("snykToHtmlPath: " + snykToHtmlPath);
+      console.log("showing contents of agent temp directory...");
+      await showDirectoryListing(
+        getOptionsToExecuteCmd(taskArgs),
+        reportOutputDir
+      );
+    }
+
+    const snykTestResult = await runSnykTest(
+      snykPath,
+      taskArgs,
+      jsonReportFullPath,
+      snykToken
+    );
 
     if (taskArgs.delayAfterReportGenerationSeconds > 0) {
       console.log(
@@ -419,6 +391,7 @@ async function run() {
     }
 
     const snykToHTMLResult = await runSnykToHTML(
+      snykToHtmlPath,
       taskArgs,
       jsonReportFullPath,
       htmlReportFullPath
@@ -456,7 +429,11 @@ async function run() {
     );
 
     if (taskArgs.monitorOnBuild) {
-      const snykMonitorResult = await runSnykMonitor(taskArgs);
+      const snykMonitorResult = await runSnykMonitor(
+        snykPath,
+        taskArgs,
+        snykToken
+      );
       handleSnykMonitorError(snykMonitorResult);
     }
 
