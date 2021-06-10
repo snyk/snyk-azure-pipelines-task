@@ -65,6 +65,7 @@
     "eslint-config-prettier": "^6.1.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-jest": "^22.15.2",
+    "fs-extra": "^9.1.0",
     "jest": "^26.4.2",
     "mock-fs": "^4.10.4",
     "prettier": "^2.3.1",
