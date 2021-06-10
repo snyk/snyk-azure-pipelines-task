@@ -247,8 +247,8 @@ async function runSnykMonitor(
 }
 
 const handleSnykTestError = (
-  args,
-  snykTestResult,
+  args: TaskArgs,
+  snykTestResult: SnykOutput,
   jsonReportFullPath: string,
 ) => {
   if (snykTestResult.code >= CLI_EXIT_CODE_INVALID_USE) {
@@ -268,12 +268,12 @@ const handleSnykTestError = (
     throw new SnykError(snykTestResult.message);
 };
 
-const handleSnykToHTMLError = (snykToHTMLResult) => {
+const handleSnykToHTMLError = (snykToHTMLResult: SnykOutput) => {
   if (snykToHTMLResult.code !== CLI_EXIT_CODE_SUCCESS)
     throw new SnykError(snykToHTMLResult.message);
 };
 
-const handleSnykMonitorError = (snykMonitorResult) => {
+const handleSnykMonitorError = (snykMonitorResult: SnykOutput) => {
   if (snykMonitorResult.code !== CLI_EXIT_CODE_SUCCESS)
     throw new SnykError(snykMonitorResult.message);
 };
