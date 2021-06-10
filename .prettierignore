@@ -1,0 +1,6 @@
+node_modules
+dist
+fixtures
+test-output
+Contributor-Agreement.md
+.github/CONTRIBUTING.md

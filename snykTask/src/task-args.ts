@@ -1,22 +1,22 @@
-import * as tl from "azure-pipelines-task-lib";
+import * as tl from 'azure-pipelines-task-lib';
 
 class TaskArgs {
-  testType: string | undefined = "";
+  testType: string | undefined = '';
 
-  targetFile: string | undefined = "";
+  targetFile: string | undefined = '';
 
-  dockerImageName: string | undefined = "";
-  dockerfilePath: string | undefined = "";
+  dockerImageName: string | undefined = '';
+  dockerfilePath: string | undefined = '';
 
-  severityThreshold: string | undefined = "";
+  severityThreshold: string | undefined = '';
 
-  organization: string | undefined = "";
+  organization: string | undefined = '';
   monitorOnBuild: boolean = true;
   failOnIssues: boolean = true;
-  projectName: string | undefined = "";
+  projectName: string | undefined = '';
 
-  testDirectory: string | undefined = "";
-  additionalArguments: string = "";
+  testDirectory: string | undefined = '';
+  additionalArguments: string = '';
   ignoreUnknownCA: boolean = false;
 
   delayAfterReportGenerationSeconds: number = 0;
@@ -34,22 +34,22 @@ class TaskArgs {
       this.dockerImageName &&
       !this.dockerfilePath &&
       this.targetFile &&
-      this.targetFile.toLowerCase().includes("dockerfile")
+      this.targetFile.toLowerCase().includes('dockerfile')
     ) {
       return this.targetFile;
     } else {
-      return "";
+      return '';
     }
   }
 }
 
 export function getAuthToken() {
   const serviceConnectionEndpoint = tl.getInput(
-    "serviceConnectionEndpoint",
-    false
+    'serviceConnectionEndpoint',
+    false,
   );
 
-  const authToken = tl.getInput("authToken", false);
+  const authToken = tl.getInput('authToken', false);
 
   if (authToken && !serviceConnectionEndpoint) {
     return authToken;
@@ -58,17 +58,17 @@ export function getAuthToken() {
     if (serviceConnectionEndpoint) {
       const endpointAuthorization = tl.getEndpointAuthorization(
         serviceConnectionEndpoint,
-        false
+        false,
       );
 
       if (endpointAuthorization) {
         const authTokenFromServiceConnection =
-          endpointAuthorization.parameters["apitoken"];
+          endpointAuthorization.parameters['apitoken'];
         return authTokenFromServiceConnection;
       }
     }
   }
-  return "";
+  return '';
 }
 
 export { TaskArgs };

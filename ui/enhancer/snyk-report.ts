@@ -22,7 +22,8 @@ export class SnykReportTab extends Controls.BaseControl {
   public initialize = (): void => {
     super.initialize();
     // Get configuration that's shared between extension and the extension host
-    const sharedConfig: TFSBuildExtensionContracts.IBuildResultsViewExtensionConfig = VSS.getConfiguration();
+    const sharedConfig: TFSBuildExtensionContracts.IBuildResultsViewExtensionConfig =
+      VSS.getConfiguration();
     const vsoContext = VSS.getWebContext();
     if (sharedConfig) {
       // register your extension with host through callback
@@ -32,7 +33,7 @@ export class SnykReportTab extends Controls.BaseControl {
         this.planId = build.orchestrationPlan.planId;
 
         const reportListElem: HTMLElement = document.getElementById(
-          'reportList'
+          'reportList',
         ) as HTMLElement;
 
         this.taskClient
@@ -40,7 +41,7 @@ export class SnykReportTab extends Controls.BaseControl {
             this.projectId,
             BUILD_PHASE,
             this.planId,
-            HTML_ATTACHMENT_TYPE
+            HTML_ATTACHMENT_TYPE,
           )
           .then((taskAttachments) => {
             $.each(taskAttachments, (index, taskAttachment) => {
@@ -57,7 +58,7 @@ export class SnykReportTab extends Controls.BaseControl {
                   index,
                   attachmentName,
                   timelineId,
-                  recordId
+                  recordId,
                 );
                 this.appendReportItem(reportListElem, reportItem);
 
@@ -70,16 +71,16 @@ export class SnykReportTab extends Controls.BaseControl {
                     timelineId,
                     recordId,
                     JSON_ATTACHMENT_TYPE,
-                    jsonName
+                    jsonName,
                   )
                   .then((content) => {
                     const json = JSON.parse(
-                      new TextDecoder('utf-8').decode(new DataView(content))
+                      new TextDecoder('utf-8').decode(new DataView(content)),
                     );
                     this.improveReportDisplayName(
                       attachmentName,
                       json,
-                      reportItem
+                      reportItem,
                     );
                   });
 
@@ -95,7 +96,7 @@ export class SnykReportTab extends Controls.BaseControl {
   private improveReportDisplayName = (
     attachmentName: string,
     jsonResults: object | any[],
-    reportItem: HTMLElement
+    reportItem: HTMLElement,
   ): void => {
     // TODO: should we fail in this case? Or is this a valid state?
     if (!jsonResults) {
@@ -121,7 +122,7 @@ export class SnykReportTab extends Controls.BaseControl {
     index: string | number | symbol,
     attachmentName: string,
     timelineId: string,
-    recordId: string
+    recordId: string,
   ): HTMLElement => {
     const reportItem = document.createElement('li');
     $(reportItem).addClass('report');
@@ -140,10 +141,10 @@ export class SnykReportTab extends Controls.BaseControl {
     index: string | number | symbol,
     attachmentName: string,
     timelineId: string,
-    recordId: string
+    recordId: string,
   ): void => {
     $.each(this.reportList, (index, reportItem) =>
-      $(reportItem).removeClass('currentReport')
+      $(reportItem).removeClass('currentReport'),
     );
     $(this.reportList[index]).addClass('currentReport');
     const content: string = '<h3> Loading report... </h3>';
@@ -157,7 +158,7 @@ export class SnykReportTab extends Controls.BaseControl {
         timelineId,
         recordId,
         HTML_ATTACHMENT_TYPE,
-        attachmentName
+        attachmentName,
       )
       .then((content) => {
         const data = new TextDecoder('utf-8').decode(new DataView(content));
