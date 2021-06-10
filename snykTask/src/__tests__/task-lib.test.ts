@@ -8,9 +8,6 @@ import {
   getOptionsToExecuteSnykCLICommand,
   getOptionsToExecuteCmd,
   getOptionsForSnykToHtml,
-  isSudoMode,
-  getToolPath,
-  sudoExists,
   formatDate,
   attachReport,
   removeRegexFromFile,
@@ -67,46 +64,6 @@ test('getOptionsForSnykToHtml builds IExecOptions for running snyk-to-html', () 
   expect(options.failOnStdErr).toBe(false);
   expect(options.ignoreReturnCode).toBe(true);
   expect(options.outStream).toBeInstanceOf(stream.Writable);
-});
-
-test('isSudoMode returns true only for Linux platforms', () => {
-  const pLinux = tl.Platform.Linux;
-  const pMacos = tl.Platform.MacOS;
-  const pWindows = tl.Platform.Windows;
-
-  expect(isSudoMode(pLinux)).toBe(true);
-  expect(isSudoMode(pMacos)).toBe(false);
-  expect(isSudoMode(pWindows)).toBe(false);
-});
-
-test('sudoExists works', () => {
-  const whichSpy = jest.spyOn(tl, 'which').mockReturnValue('/usr/bin/sudo');
-  expect(sudoExists()).toBe(true);
-
-  whichSpy.mockReturnValue('');
-  expect(sudoExists()).toBe(false);
-});
-
-test('getToolPath returns sudo if require and not if not required', () => {
-  // mock the which function from the azure-pipelines-task-lib/task
-  const mockTlWhichFn = jest
-    .fn()
-    .mockImplementation((tool: string, check?: boolean) => {
-      return `/usr/bin/${tool}`;
-    });
-
-  expect(mockTlWhichFn('anything')).toBe('/usr/bin/anything');
-  expect(mockTlWhichFn('sudo')).toBe('/usr/bin/sudo');
-
-  expect(getToolPath('some-command', mockTlWhichFn)).toBe(
-    '/usr/bin/some-command',
-  );
-  expect(getToolPath('some-command', mockTlWhichFn, false)).toBe(
-    '/usr/bin/some-command',
-  );
-  expect(getToolPath('some-command', mockTlWhichFn, true)).toBe(
-    '/usr/bin/sudo',
-  );
 });
 
 test('formatDate gives format we want for the report filename', () => {

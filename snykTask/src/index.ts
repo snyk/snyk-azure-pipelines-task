@@ -6,9 +6,6 @@ import {
   getOptionsToExecuteCmd,
   getOptionsToExecuteSnykCLICommand,
   getOptionsForSnykToHtml,
-  isSudoMode,
-  getToolPath,
-  sudoExists,
   formatDate,
   attachReport,
   removeRegexFromFile,
@@ -146,8 +143,6 @@ async function runSnykTest(
     snykToken,
   );
 
-  const command = `[command]${getToolPath('snyk', tl.which)} snyk test...`;
-  console.log(command);
   const snykTestExitCode = await snykTestToolRunner.exec(options);
   if (isDebugMode()) console.log(`snykTestExitCode: ${snykTestExitCode}\n`);
 
@@ -184,12 +179,6 @@ const runSnykToHTML = async (
 
   let code = 0;
   let errorMsg = '';
-
-  const command = `[command]${getToolPath(
-    'snyk-to-html',
-    tl.which,
-  )} -i ${jsonReportFullPath}`;
-  console.log(command);
 
   const snykToHTMLToolRunner = tl
     .tool(snykToHtmlPath)
@@ -334,18 +323,6 @@ async function run() {
 
     const platform: tl.Platform = tl.getPlatform();
     if (isDebugMode()) console.log(`platform: ${platform}`);
-
-    const sudoMode = isSudoMode(platform);
-    if (isDebugMode()) console.log(`sudoMode: ${sudoMode}`);
-
-    let useSudo = false;
-    if (sudoMode) {
-      const sudoExistOnBuildMachine = sudoExists();
-      if (isDebugMode())
-        console.log(`sudoExistOnBuildMachine: ${sudoExistOnBuildMachine}`);
-      useSudo = sudoExistOnBuildMachine;
-    }
-    if (isDebugMode()) console.log(`useSudo: ${useSudo}`);
 
     const agentTempDirectory = tl.getVariable('Agent.TempDirectory');
     if (!agentTempDirectory) {
