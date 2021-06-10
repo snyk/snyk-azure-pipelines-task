@@ -246,12 +246,15 @@ async function runSnykMonitor(
   return snykOutput;
 }
 
-const handleSnykTestError = (args, snykTestResult, workDir, fileName) => {
+const handleSnykTestError = (
+  args,
+  snykTestResult,
+  jsonReportFullPath: string,
+) => {
   if (snykTestResult.code >= CLI_EXIT_CODE_INVALID_USE) {
     let errorMsg = snykTestResult.message;
-    const filePath = `${workDir}/${fileName}`;
-    if (fs.existsSync(filePath)) {
-      const snykErrorResponse = fs.readFileSync(filePath, 'utf8');
+    if (fs.existsSync(jsonReportFullPath)) {
+      const snykErrorResponse = fs.readFileSync(jsonReportFullPath, 'utf8');
       if (isDebugMode()) console.log(snykErrorResponse);
 
       const snykErrorJSONResponse = JSON.parse(snykErrorResponse);
@@ -280,35 +283,23 @@ async function run() {
     const currentDir: string = tl.cwd(); // Azure mock framework will return empty string / undefined
     if (isDebugMode()) console.log(`currentWorkingDirectory: ${currentDir}\n`);
 
-    const reportOutputDir = tl.getVariable('Agent.TempDirectory') || ''; // Azure mock framework will return empty string / undefined
-    if (isDebugMode()) console.log(`reportOutputDir: ${reportOutputDir}\n`);
-
-    // Hack for Azure framework mock test
-    // The test that use the Azure mock framework rely on knowing the output path and filename of the reports
-    // in order to verify proper functioning of the task.
-    // But, tl.getVariable() is not mocked and always an empty string (or undefined?) when those tests run. Also, the date/time
-    // becomes part of the report filenames.
-    // So a hack here to make those task-tests work is to set the 'now' timestamp string to "" for the tests and to use the default
-    // directory "" - this way the paths will match those in snykTask/src/__tests__/test-task.ts and snykTask/src/__tests__/_test-mock-config-*.ts.
-    // But when the task runs for real in Azure Pipelines, the paths will have a full path and a timestamp in the filenames.
-
-    let jsonReportName = 'report.json';
-    let htmlReportName = 'report.html';
-    let jsonReportFullPath = jsonReportName;
-    let htmlReportFullPath = htmlReportName;
-
-    if (reportOutputDir) {
-      const dNowStr = formatDate(new Date());
-      jsonReportName = `report-${dNowStr}.json`;
-      htmlReportName = `report-${dNowStr}.html`;
-      jsonReportFullPath = path.join(reportOutputDir, jsonReportName);
-      htmlReportFullPath = path.join(reportOutputDir, htmlReportName);
+    const agentTempDirectory = tl.getVariable('Agent.TempDirectory');
+    if (!agentTempDirectory) {
+      throw new Error('Agent.TempDirectory is not set'); // should always be set by Azure Pipelines environment
     }
 
+    const dNowStr = formatDate(new Date());
+    const jsonReportFullPath = path.join(
+      agentTempDirectory,
+      `report-${dNowStr}.json`,
+    );
+    const htmlReportFullPath = path.join(
+      agentTempDirectory,
+      `report-${dNowStr}.html`,
+    );
+
     if (isDebugMode()) {
-      console.log(`reportOutputDir: ${reportOutputDir}`);
-      console.log(`jsonReportName: ${jsonReportName}`);
-      console.log(`htmlReportName: ${htmlReportName}`);
+      console.log(`agentTempDirectory: ${agentTempDirectory}`);
       console.log(`jsonReportFullPath: ${jsonReportFullPath}`);
       console.log(`htmlReportFullPath: ${htmlReportFullPath}`);
     }
@@ -324,10 +315,6 @@ async function run() {
     const platform: tl.Platform = tl.getPlatform();
     if (isDebugMode()) console.log(`platform: ${platform}`);
 
-    const agentTempDirectory = tl.getVariable('Agent.TempDirectory');
-    if (!agentTempDirectory) {
-      throw new Error('Agent.TempDirectory is not set'); // should always be set by Azure Pipelines environment
-    }
     const snykToolDownloads = getSnykDownloadInfo(platform);
     await downloadExecutable(agentTempDirectory, snykToolDownloads.snyk);
     await downloadExecutable(agentTempDirectory, snykToolDownloads.snykToHtml);
@@ -346,7 +333,7 @@ async function run() {
       console.log('showing contents of agent temp directory...');
       await showDirectoryListing(
         getOptionsToExecuteCmd(taskArgs),
-        reportOutputDir,
+        agentTempDirectory,
       );
     }
 
@@ -392,18 +379,13 @@ async function run() {
       console.log('showing contents of agent temp directory...');
       await showDirectoryListing(
         getOptionsToExecuteCmd(taskArgs),
-        reportOutputDir,
+        agentTempDirectory,
       );
     }
 
     attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
     attachReport(htmlReportFullPath, HTML_ATTACHMENT_TYPE);
-    handleSnykTestError(
-      taskArgs,
-      snykTestResult,
-      reportOutputDir,
-      jsonReportName,
-    );
+    handleSnykTestError(taskArgs, snykTestResult, jsonReportFullPath);
 
     if (taskArgs.monitorOnBuild) {
       const snykMonitorResult = await runSnykMonitor(
