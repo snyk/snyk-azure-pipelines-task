@@ -1,4 +1,4 @@
-import { getSnykDownloadInfo, downloadExecutable } from '../../install';
+import { getSnykDownloadInfo } from '../../install';
 import { Platform } from 'azure-pipelines-task-lib/task';
 
 describe('getSnykDownloadInfo', () => {
