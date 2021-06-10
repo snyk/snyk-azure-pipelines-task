@@ -42,7 +42,8 @@ test("getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it", ()
   const options: tr.IExecOptions = getOptionsToExecuteSnykCLICommand(
     taskArgs,
     taskNameForAnalytics,
-    version
+    version,
+    "fake-token"
   );
 
   expect(options.cwd).toBe("/some/path");
@@ -50,6 +51,7 @@ test("getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it", ()
   expect(options.ignoreReturnCode).toBe(true);
   expect(options.env?.SNYK_INTEGRATION_NAME).toBe("AZURE_PIPELINES");
   expect(options.env?.SNYK_INTEGRATION_VERSION).toBe(version);
+  expect(options.env?.SNYK_TOKEN).toBe("fake-token");
 });
 
 test("getOptionsForSnykToHtml builds IExecOptions for running snyk-to-html", () => {
