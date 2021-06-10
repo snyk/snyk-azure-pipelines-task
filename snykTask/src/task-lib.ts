@@ -20,19 +20,20 @@ export const getOptionsToExecuteCmd = (taskArgs: TaskArgs): tr.IExecOptions => {
 export const getOptionsToExecuteSnykCLICommand = (
   taskArgs: TaskArgs,
   taskNameForAnalytics: string,
-  taskVersion: string
+  taskVersion: string,
+  snykToken: string
 ): tr.IExecOptions => {
-  const envVars = process.env;
-  envVars["SNYK_INTEGRATION_NAME"] = taskNameForAnalytics;
-  envVars["SNYK_INTEGRATION_VERSION"] = taskVersion;
-
   const options = {
     cwd: taskArgs.testDirectory,
     failOnStdErr: false,
     ignoreReturnCode: true,
-    env: envVars
+    env: {
+      ...process.env,
+      SNYK_INTEGRATION_NAME: taskNameForAnalytics,
+      SNYK_INTEGRATION_VERSION: taskVersion,
+      SNYK_TOKEN: snykToken
+    } as tr.IExecOptions["env"]
   } as tr.IExecOptions;
-
   return options;
 };
 
