@@ -1,14 +1,14 @@
-import { WebApi } from "azure-devops-node-api";
-import * as fs from "fs";
+import { WebApi } from 'azure-devops-node-api';
+import * as fs from 'fs';
 
-import { getAzUrl, getWebApi } from "./lib/azure-devops";
+import { getAzUrl, getWebApi } from './lib/azure-devops';
 
-import { getBuild, launchBuildPipeline } from "./lib/azure-devops/builds";
+import { getBuild, launchBuildPipeline } from './lib/azure-devops/builds';
 
 import {
   BuildStatus,
-  BuildResult
-} from "azure-devops-node-api/interfaces/BuildInterfaces";
+  BuildResult,
+} from 'azure-devops-node-api/interfaces/BuildInterfaces';
 
 interface AzureVars {
   azOrg: string;
@@ -16,12 +16,12 @@ interface AzureVars {
 }
 
 function getEnvVars(): AzureVars {
-  const azOrg = process.env.DEV_AZ_ORG || "";
-  const azToken = process.env.DEV_AZURE_DEVOPS_EXT_PAT || "";
+  const azOrg = process.env.DEV_AZ_ORG || '';
+  const azToken = process.env.DEV_AZURE_DEVOPS_EXT_PAT || '';
 
   const vars: AzureVars = {
     azOrg: azOrg,
-    azureDevopsExtPAT: azToken
+    azureDevopsExtPAT: azToken,
   };
   return vars;
 }
@@ -30,8 +30,8 @@ async function main() {
   console.log(`pwd: ${process.cwd()}`);
 
   const testBuildConfigFileStr = fs.readFileSync(
-    "./ops/deploy/test-builds.json",
-    "utf8"
+    './ops/deploy/test-builds.json',
+    'utf8',
   );
   const testBuildDefinitions = JSON.parse(testBuildConfigFileStr);
 
@@ -50,18 +50,18 @@ async function main() {
       webApi,
       azVars.azOrg,
       testProjectName,
-      testBuildDefinitionId
+      testBuildDefinitionId,
     );
 
     allBuilds.push(buildPromise);
   }
 
-  console.log("waiting for all builds to complete");
+  console.log('waiting for all builds to complete');
   try {
     await Promise.all(allBuilds);
-    console.log("all builds complete");
+    console.log('all builds complete');
   } catch (errAll) {
-    console.log("error awaiting all builds");
+    console.log('error awaiting all builds');
     console.log(errAll);
     process.exit(1);
   }
@@ -75,7 +75,7 @@ async function runBuild(
   webApi: WebApi,
   azOrg: string,
   testProjectName: string,
-  testBuildDefinitionId: number
+  testBuildDefinitionId: number,
 ): Promise<void> {
   let success = false;
 
@@ -84,7 +84,7 @@ async function runBuild(
       webApi,
       azOrg,
       testProjectName,
-      testBuildDefinitionId
+      testBuildDefinitionId,
     );
 
     const buildId = launchPipelineResult.result.id;
@@ -94,7 +94,7 @@ async function runBuild(
       const checkBuildStatusRes = await getBuild(
         webApi,
         testProjectName,
-        buildId
+        buildId,
       );
 
       const status = checkBuildStatusRes.status;
@@ -103,16 +103,16 @@ async function runBuild(
       console.log(`BuildStatus.Completed: ${BuildStatus.Completed}`);
 
       if (!status) {
-        throw new Error("status is not set");
+        throw new Error('status is not set');
       }
 
       if (status === BuildStatus.Completed) {
-        console.log("build is complete");
+        console.log('build is complete');
         const result = checkBuildStatusRes.result;
         console.log(`build result: ${result}`);
         if (result) {
           if (result === BuildResult.Succeeded) {
-            console.log("build succeeded");
+            console.log('build succeeded');
             success = true;
           } else {
             console.log(`build did not succeed. BuildResult code: ${result}`);
@@ -121,7 +121,7 @@ async function runBuild(
         break;
       } else {
         console.log(
-          `Still waiting for build ${buildId} to complete. Status: ${status}. Time: ${new Date().getTime()}`
+          `Still waiting for build ${buildId} to complete. Status: ${status}. Time: ${new Date().getTime()}`,
         );
         await asyncSleep(10000);
       }
@@ -130,19 +130,19 @@ async function runBuild(
     if (success) {
       return Promise.resolve();
     } else {
-      console.log("resolving false - not successful");
+      console.log('resolving false - not successful');
       return Promise.reject();
     }
   } catch (err) {
-    console.log("failed to launching / checking build");
+    console.log('failed to launching / checking build');
     console.log(err);
-    console.log("\nrejecting - not successful");
+    console.log('\nrejecting - not successful');
     return Promise.reject();
   }
 }
 
 async function asyncSleep(milliseconds: number): Promise<void> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
   });
 }

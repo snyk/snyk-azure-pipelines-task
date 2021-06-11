@@ -2,7 +2,7 @@ import { detectVulns } from './detect-vulns';
 
 export function generateReportTitle(
   jsonResults: object | any[],
-  attachmentName: string // timestamp e.g., 'report-2021-04-27T13-44-14.json'
+  attachmentName: string, // timestamp e.g., 'report-2021-04-27T13-44-14.json'
 ): string {
   const vulnsFound = detectVulns(jsonResults);
 
@@ -11,12 +11,12 @@ export function generateReportTitle(
     const vulnsCount: number = jsonResults.reduce(
       (issuesFound, result): number =>
         result.uniqueCount ? issuesFound + result.uniqueCount : issuesFound,
-      0
+      0,
     );
     const uniquePackageManagers = Array.from(
       new Set(
-        jsonResults.map((result) => result.packageManager).filter(Boolean)
-      )
+        jsonResults.map((result) => result.packageManager).filter(Boolean),
+      ),
     ).join('/');
 
     let titleText = `Tested ${jsonResults.length} ${uniquePackageManagers} projects`;
@@ -53,7 +53,7 @@ export function generateReportTitle(
 }
 
 function formatReportName(
-  name: string /* timestamp e.g., 'report-2021-04-27T13-44-14.json' */
+  name: string /* timestamp e.g., 'report-2021-04-27T13-44-14.json' */,
 ): string {
   const reportName = name.split('.')[0];
   const tmpName = reportName.split('T');

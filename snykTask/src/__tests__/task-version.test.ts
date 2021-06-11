@@ -1,4 +1,4 @@
-test("ensure we can read the version from the task.json file", () => {
+test('ensure we can read the version from the task.json file', () => {
   const mockFn = jest.fn().mockReturnValue(`{
         "id": "some-id",
         "name": "SnykSecurityScan",
@@ -15,14 +15,14 @@ test("ensure we can read the version from the task.json file", () => {
         "instanceNameFormat": "Snyk scan for open source vulnerabilities"
     }`);
 
-  jest.doMock("fs", () => {
+  jest.doMock('fs', () => {
     return {
-      readFileSync: mockFn
+      readFileSync: mockFn,
     };
   });
 
-  const taskVersionModule = require("../task-version");
-  const v: string = taskVersionModule.getTaskVersion("./snykTask/task.json");
-  expect(v).toBe("1.2.3");
+  const taskVersionModule = require('../task-version');
+  const v: string = taskVersionModule.getTaskVersion('./snykTask/task.json');
+  expect(v).toBe('1.2.3');
   expect(mockFn).toHaveBeenCalledTimes(1);
 });

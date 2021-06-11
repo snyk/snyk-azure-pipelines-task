@@ -1,7 +1,7 @@
-import * as fs from "fs";
+import * as fs from 'fs';
 
 export function getTaskVersion(taskJsonPath: string): string {
-  const taskJsonFile = fs.readFileSync(taskJsonPath, "utf8");
+  const taskJsonFile = fs.readFileSync(taskJsonPath, 'utf8');
   const taskObj = JSON.parse(taskJsonFile);
   const versionObj = taskObj.version;
 

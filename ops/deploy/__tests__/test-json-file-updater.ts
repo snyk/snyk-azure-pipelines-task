@@ -1,35 +1,35 @@
-test("test JsonFileUpdater", () => {
-  const deployModule = require("../deploy");
+test('test JsonFileUpdater', () => {
+  const deployModule = require('../deploy');
 
-  const mockFs = require("mock-fs");
+  const mockFs = require('mock-fs');
   mockFs({
-    "mock-json-file.json": `{
+    'mock-json-file.json': `{
             "name": "test-name",
             "otherField": "test-otherField"
-        }`
+        }`,
   });
 
   const updates = {
-    name: "new-name",
+    name: 'new-name',
     version: {
       Major: 0,
       Minor: 0,
-      Patch: 20
-    }
+      Patch: 20,
+    },
   };
 
   deployModule.JsonFileUpdater.build()
-    .setJsonFile("mock-json-file.json")
+    .setJsonFile('mock-json-file.json')
     .withUpdates(updates)
     .updateFile();
 
-  const fs = require("fs");
+  const fs = require('fs');
 
   const jsonObjAfterUpdate = JSON.parse(
-    fs.readFileSync("mock-json-file.json", "utf8")
+    fs.readFileSync('mock-json-file.json', 'utf8'),
   );
-  expect(jsonObjAfterUpdate.name).toBe("new-name");
-  expect(jsonObjAfterUpdate.otherField).toBe("test-otherField");
+  expect(jsonObjAfterUpdate.name).toBe('new-name');
+  expect(jsonObjAfterUpdate.otherField).toBe('test-otherField');
 });
 
 test("JsonFileUpdater doesn't write the file out unless there are updates", () => {
@@ -40,17 +40,17 @@ test("JsonFileUpdater doesn't write the file out unless there are updates", () =
 
   const mockFsWriteFileSync = jest.fn(); // no-op implementation
 
-  jest.doMock("fs", () => {
+  jest.doMock('fs', () => {
     return {
       readFileSync: mockFn,
-      writeFileSync: mockFsWriteFileSync
+      writeFileSync: mockFsWriteFileSync,
     };
   });
 
-  const deployModule = require("../deploy");
+  const deployModule = require('../deploy');
 
   deployModule.JsonFileUpdater.build()
-    .setJsonFile("mock-json-file.json")
+    .setJsonFile('mock-json-file.json')
     // no updates
     .updateFile();
 

@@ -1,44 +1,44 @@
-import { EndpointAuthorization } from "azure-pipelines-task-lib";
+import { EndpointAuthorization } from 'azure-pipelines-task-lib';
 
 beforeEach(() => {
   jest.resetModules();
 });
 
-test("test auth token pulled from service connection", () => {
+test('test auth token pulled from service connection', () => {
   const mockEndpointAuthorization = {
     parameters: {
-      apitoken: "some-token"
+      apitoken: 'some-token',
     },
-    scheme: "somescheme"
+    scheme: 'somescheme',
   } as EndpointAuthorization;
 
-  jest.doMock("azure-pipelines-task-lib/task", () => {
+  jest.doMock('azure-pipelines-task-lib/task', () => {
     return {
       // getInput: jest.fn((name: string, required?: boolean) => "mockValue")
       getInput: jest.fn((name: string, required?: boolean) => {
-        if (name === "serviceConnectionEndpoint") {
-          return "some-serviceConnectionEndpoint";
-        } else if (name === "authToken") {
+        if (name === 'serviceConnectionEndpoint') {
+          return 'some-serviceConnectionEndpoint';
+        } else if (name === 'authToken') {
           return null;
         }
       }),
       getEndpointAuthorization: jest
         .fn()
-        .mockReturnValue(mockEndpointAuthorization)
+        .mockReturnValue(mockEndpointAuthorization),
     };
   });
 
-  const att = require("../task-args");
+  const att = require('../task-args');
   const retrievedAuthToken = att.getAuthToken();
-  expect(retrievedAuthToken).toBe("some-token");
+  expect(retrievedAuthToken).toBe('some-token');
 });
 
-test("test auth token pulled from serviceConnectionEndpoint if both authToken and serviceConnectionEndpoint are set", () => {
+test('test auth token pulled from serviceConnectionEndpoint if both authToken and serviceConnectionEndpoint are set', () => {
   const mockEndpointAuthorization = {
     parameters: {
-      apitoken: "some-token-from-service-connection"
+      apitoken: 'some-token-from-service-connection',
     },
-    scheme: "somescheme"
+    scheme: 'somescheme',
   } as EndpointAuthorization;
 
   // defined not inline here so I can call toHaveBeenCalledTimes on it
@@ -46,33 +46,33 @@ test("test auth token pulled from serviceConnectionEndpoint if both authToken an
     .fn()
     .mockReturnValue(mockEndpointAuthorization);
 
-  jest.doMock("azure-pipelines-task-lib/task", () => {
+  jest.doMock('azure-pipelines-task-lib/task', () => {
     return {
       // getInput: jest.fn((name: string, required?: boolean) => "mockValue")
       getInput: jest.fn((name: string, required?: boolean) => {
-        if (name === "serviceConnectionEndpoint") {
-          return "some-serviceConnectionEndpoint";
-        } else if (name === "authToken") {
-          return "some-test-auth-token";
+        if (name === 'serviceConnectionEndpoint') {
+          return 'some-serviceConnectionEndpoint';
+        } else if (name === 'authToken') {
+          return 'some-test-auth-token';
         }
       }),
       // getEndpointAuthorization: jest.fn().mockReturnValue(mockEndpointAuthorization)
-      getEndpointAuthorization: mockFnGetEndpointAuthorization
+      getEndpointAuthorization: mockFnGetEndpointAuthorization,
     };
   });
 
-  const att = require("../task-args");
+  const att = require('../task-args');
   const retrievedAuthToken = att.getAuthToken();
-  expect(retrievedAuthToken).toBe("some-token-from-service-connection");
+  expect(retrievedAuthToken).toBe('some-token-from-service-connection');
   expect(mockFnGetEndpointAuthorization).toHaveBeenCalledTimes(1);
 });
 
-test("test auth token pulled from authToken if both authToken set and serviceConnectionEndpoint is not", () => {
+test('test auth token pulled from authToken if both authToken set and serviceConnectionEndpoint is not', () => {
   const mockEndpointAuthorization = {
     parameters: {
-      apitoken: "some-token-from-service-connection"
+      apitoken: 'some-token-from-service-connection',
     },
-    scheme: "somescheme"
+    scheme: 'somescheme',
   } as EndpointAuthorization;
 
   // defined not inline here so I can call toHaveBeenCalledTimes on it
@@ -80,33 +80,33 @@ test("test auth token pulled from authToken if both authToken set and serviceCon
     .fn()
     .mockReturnValue(mockEndpointAuthorization);
 
-  jest.doMock("azure-pipelines-task-lib/task", () => {
+  jest.doMock('azure-pipelines-task-lib/task', () => {
     return {
       // getInput: jest.fn((name: string, required?: boolean) => "mockValue")
       getInput: jest.fn((name: string, required?: boolean) => {
-        if (name === "serviceConnectionEndpoint") {
+        if (name === 'serviceConnectionEndpoint') {
           return null;
-        } else if (name === "authToken") {
-          return "some-test-auth-token";
+        } else if (name === 'authToken') {
+          return 'some-test-auth-token';
         }
       }),
       // getEndpointAuthorization: jest.fn().mockReturnValue(mockEndpointAuthorization)
-      getEndpointAuthorization: mockFnGetEndpointAuthorization
+      getEndpointAuthorization: mockFnGetEndpointAuthorization,
     };
   });
 
-  const att = require("../task-args");
+  const att = require('../task-args');
   const retrievedAuthToken = att.getAuthToken();
-  expect(retrievedAuthToken).toBe("some-test-auth-token");
+  expect(retrievedAuthToken).toBe('some-test-auth-token');
   expect(mockFnGetEndpointAuthorization).toHaveBeenCalledTimes(0);
 });
 
-test("test auth token returns empty string if both authToken set and serviceConnectionEndpoint are not set", () => {
+test('test auth token returns empty string if both authToken set and serviceConnectionEndpoint are not set', () => {
   const mockEndpointAuthorization = {
     parameters: {
-      apitoken: "some-token-from-service-connection"
+      apitoken: 'some-token-from-service-connection',
     },
-    scheme: "somescheme"
+    scheme: 'somescheme',
   } as EndpointAuthorization;
 
   // defined not inline here so I can call toHaveBeenCalledTimes on it
@@ -114,23 +114,23 @@ test("test auth token returns empty string if both authToken set and serviceConn
     .fn()
     .mockReturnValue(mockEndpointAuthorization);
 
-  jest.doMock("azure-pipelines-task-lib/task", () => {
+  jest.doMock('azure-pipelines-task-lib/task', () => {
     return {
       // getInput: jest.fn((name: string, required?: boolean) => "mockValue")
       getInput: jest.fn((name: string, required?: boolean) => {
-        if (name === "serviceConnectionEndpoint") {
+        if (name === 'serviceConnectionEndpoint') {
           return null;
-        } else if (name === "authToken") {
+        } else if (name === 'authToken') {
           return null;
         }
       }),
       // getEndpointAuthorization: jest.fn().mockReturnValue(mockEndpointAuthorization)
-      getEndpointAuthorization: mockFnGetEndpointAuthorization
+      getEndpointAuthorization: mockFnGetEndpointAuthorization,
     };
   });
 
-  const att = require("../task-args");
+  const att = require('../task-args');
   const retrievedAuthToken = att.getAuthToken();
-  expect(retrievedAuthToken).toBe("");
+  expect(retrievedAuthToken).toBe('');
   expect(mockFnGetEndpointAuthorization).toHaveBeenCalledTimes(0);
 });

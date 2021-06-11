@@ -1,33 +1,33 @@
-const fs = require("fs");
-const path = require("path");
-import { ChildProcess, exec, ExecException } from "child_process";
+const fs = require('fs');
+const path = require('path');
+import { ChildProcess, exec, ExecException } from 'child_process';
 
 import {
   installExtension,
-  uninstallExtension
-} from "./lib/azure-devops/extensions";
+  uninstallExtension,
+} from './lib/azure-devops/extensions';
 
 import {
   Command,
   DeployTarget,
   InputArgs,
-  parseInputParameters
-} from "./cli-args";
-import { getWebApi } from "./lib/azure-devops";
+  parseInputParameters,
+} from './cli-args';
+import { getWebApi } from './lib/azure-devops';
 
 function checkVersionsMatch(): boolean {
-  const packageJsonFilePath = "package.json";
-  const extensionFilePath = "vss-extension.json";
-  const taskFilePath = "snykTask/task.json";
+  const packageJsonFilePath = 'package.json';
+  const extensionFilePath = 'vss-extension.json';
+  const taskFilePath = 'snykTask/task.json';
 
   const packageJsonVersion: string = JSON.parse(
-    fs.readFileSync(packageJsonFilePath, "utf8")
+    fs.readFileSync(packageJsonFilePath, 'utf8'),
   ).version;
   const versionFromExtensionFile: string = JSON.parse(
-    fs.readFileSync(extensionFilePath, "utf8")
+    fs.readFileSync(extensionFilePath, 'utf8'),
   ).version;
 
-  const taskFileContents = fs.readFileSync(taskFilePath, "utf8");
+  const taskFileContents = fs.readFileSync(taskFilePath, 'utf8');
   const taskFileJson = JSON.parse(taskFileContents);
   const versionFromTaskFile = `${taskFileJson.version.Major}.${taskFileJson.version.Minor}.${taskFileJson.version.Patch}`;
 
@@ -49,7 +49,7 @@ export interface ExecCommandResult {
 
 export async function runCommand(
   fullCommand: string,
-  workingDirectory: string
+  workingDirectory: string,
 ): Promise<ExecCommandResult> {
   return new Promise<ExecCommandResult>((resolve, reject) => {
     const res: ChildProcess = exec(
@@ -60,25 +60,25 @@ export async function runCommand(
           const retValue = {
             exitCode: err.code,
             stdout: stdout,
-            stderr: stderr
+            stderr: stderr,
           } as ExecCommandResult;
           reject(retValue); // I could also resolve it here and then read the exit code in the calling block
         } else {
           const retValue = {
             exitCode: 0,
             stdout: stdout,
-            stderr: stderr
+            stderr: stderr,
           } as ExecCommandResult;
           resolve(retValue);
         }
-      }
+      },
     );
   });
 }
 
 export class JsonFileUpdater {
   updates = {};
-  filepath: string = "";
+  filepath: string = '';
 
   static build() {
     return new JsonFileUpdater();
@@ -96,8 +96,8 @@ export class JsonFileUpdater {
 
   updateFile() {
     if (Object.keys(this.updates).length > 0) {
-      const jsonObj = JSON.parse(fs.readFileSync(this.filepath, "utf8"));
-      Object.keys(this.updates).forEach(k => (jsonObj[k] = this.updates[k]));
+      const jsonObj = JSON.parse(fs.readFileSync(this.filepath, 'utf8'));
+      Object.keys(this.updates).forEach((k) => (jsonObj[k] = this.updates[k]));
       const jsonStr: string = JSON.stringify(jsonObj, null, 2);
       fs.writeFileSync(this.filepath, jsonStr);
     }
@@ -113,29 +113,29 @@ export class VSSExtensionOverrideJson {
   }
 
   withExtensionId(extensionId: string) {
-    this.overrideJsonObj["id"] = extensionId;
+    this.overrideJsonObj['id'] = extensionId;
     return this;
   }
 
   withExtensionName(extensionName: string) {
-    this.overrideJsonObj["name"] = extensionName;
+    this.overrideJsonObj['name'] = extensionName;
     return this;
   }
 
   withPublishPublic(publishPublic: boolean) {
     if (publishPublic) {
-      this.overrideJsonObj["public"] = publishPublic;
+      this.overrideJsonObj['public'] = publishPublic;
     }
     return this;
   }
 
   withVersion(version: string) {
-    this.overrideJsonObj["version"] = version;
+    this.overrideJsonObj['version'] = version;
     return this;
   }
 
   withExtensionPublisher(publisherName: string) {
-    this.overrideJsonObj["publisher"] = publisherName;
+    this.overrideJsonObj['publisher'] = publisherName;
     return this;
   }
 
@@ -146,10 +146,10 @@ export class VSSExtensionOverrideJson {
 
 export const errorIfNewVersionAndTargetNotCustom = (
   target: DeployTarget,
-  newVersion?: string
+  newVersion?: string,
 ) => {
   if (newVersion && target !== DeployTarget.Custom) {
-    throw new Error("newVersion is only valid for the Custom deploy target");
+    throw new Error('newVersion is only valid for the Custom deploy target');
   }
 };
 
@@ -158,36 +158,36 @@ export async function publishExtension(
   workingDirectory: string,
   taskRelativePath: string,
   publishArgs: ExtensionPublishArgs,
-  newVersion?: string
+  newVersion?: string,
 ): Promise<void> {
   errorIfNewVersionAndTargetNotCustom(target, newVersion);
 
   // If we want to update task.json, we need to actually update the file - Azure doesn't have the ability to pass in
   // overrides like for it does for vss-extension.json changes.
-  const taskFileRelativePath = path.join(taskRelativePath, "task.json");
+  const taskFileRelativePath = path.join(taskRelativePath, 'task.json');
   const taskFilePath = path.join(workingDirectory, taskFileRelativePath);
   const taskFileUpdates = {};
 
   if (publishArgs.taskId) {
-    taskFileUpdates["id"] = publishArgs.taskId;
+    taskFileUpdates['id'] = publishArgs.taskId;
   }
   if (publishArgs.taskName) {
-    taskFileUpdates["name"] = publishArgs.taskName;
+    taskFileUpdates['name'] = publishArgs.taskName;
   }
   if (publishArgs.taskFriendlyName) {
-    taskFileUpdates["friendlyName"] = publishArgs.taskFriendlyName;
+    taskFileUpdates['friendlyName'] = publishArgs.taskFriendlyName;
   }
 
   if (newVersion) {
-    const versionComponents: string[] = newVersion.split("."); // TODO: extract this and test it and fail if we get invalid input
+    const versionComponents: string[] = newVersion.split('.'); // TODO: extract this and test it and fail if we get invalid input
     const majorV: number = +versionComponents[0]; // the `+` here converts a string to a number
     const minorV: number = +versionComponents[1];
     const patchV: number = +versionComponents[2];
 
-    taskFileUpdates["version"] = {
+    taskFileUpdates['version'] = {
       Major: majorV,
       Minor: minorV,
-      Patch: patchV
+      Patch: patchV,
     };
   }
 
@@ -221,7 +221,7 @@ export async function publishExtension(
   console.log(res.stdout);
 
   if (res.exitCode !== 0) {
-    throw Error("Error publishing extension");
+    throw Error('Error publishing extension');
   }
 }
 
@@ -250,22 +250,22 @@ export function getEnvValueOrPanic(envVarName: string) {
 
 function getExtensionPublishArgsFromEnvVars(): ExtensionPublishArgs {
   const extPubArgs: ExtensionPublishArgs = {
-    extensionId: getEnvValueOrPanic("EXTENSION_ID"),
-    extensionName: getEnvValueOrPanic("EXTENSION_NAME"),
-    taskId: getEnvValueOrPanic("TASK_ID"),
-    taskName: getEnvValueOrPanic("TASK_NAME"),
-    taskFriendlyName: getEnvValueOrPanic("TASK_FRIENDLY_NAME"),
-    azureDevopsPAT: getEnvValueOrPanic("AZURE_DEVOPS_EXT_PAT"),
-    azureOrg: getEnvValueOrPanic("AZURE_DEVOPS_ORG"),
-    vsMarketplacePublisher: getEnvValueOrPanic("VS_MARKETPLACE_PUBLISHER")
+    extensionId: getEnvValueOrPanic('EXTENSION_ID'),
+    extensionName: getEnvValueOrPanic('EXTENSION_NAME'),
+    taskId: getEnvValueOrPanic('TASK_ID'),
+    taskName: getEnvValueOrPanic('TASK_NAME'),
+    taskFriendlyName: getEnvValueOrPanic('TASK_FRIENDLY_NAME'),
+    azureDevopsPAT: getEnvValueOrPanic('AZURE_DEVOPS_EXT_PAT'),
+    azureOrg: getEnvValueOrPanic('AZURE_DEVOPS_ORG'),
+    vsMarketplacePublisher: getEnvValueOrPanic('VS_MARKETPLACE_PUBLISHER'),
   };
   return extPubArgs;
 }
 
 function getExtensionPublishArgsFromConfigFile(
-  configFilePath: string
+  configFilePath: string,
 ): ExtensionPublishArgs {
-  const configFileJson = JSON.parse(fs.readFileSync(configFilePath, "utf8"));
+  const configFileJson = JSON.parse(fs.readFileSync(configFilePath, 'utf8'));
 
   const extPubArgs: ExtensionPublishArgs = {
     extensionId: configFileJson.EXTENSION_ID,
@@ -274,9 +274,9 @@ function getExtensionPublishArgsFromConfigFile(
     taskName: configFileJson.TASK_NAME,
     taskFriendlyName: configFileJson.TASK_FRIENDLY_NAME,
     // azureDevopsPAT: configFileJson.AZURE_DEVOPS_EXT_PAT,
-    azureDevopsPAT: getEnvValueOrPanic("AZURE_DEVOPS_EXT_PAT"), // better to not encourage putting tokens in config files
+    azureDevopsPAT: getEnvValueOrPanic('AZURE_DEVOPS_EXT_PAT'), // better to not encourage putting tokens in config files
     azureOrg: configFileJson.AZURE_DEVOPS_ORG,
-    vsMarketplacePublisher: configFileJson.VS_MARKETPLACE_PUBLISHER
+    vsMarketplacePublisher: configFileJson.VS_MARKETPLACE_PUBLISHER,
   };
   return extPubArgs;
 }
@@ -284,13 +284,13 @@ function getExtensionPublishArgsFromConfigFile(
 async function main() {
   const inputArgs: string[] = process.argv.slice(2);
   const cwd = process.cwd();
-  mainWithRawArgs(inputArgs, cwd, "snykTask");
+  mainWithRawArgs(inputArgs, cwd, 'snykTask');
 }
 
 export async function mainWithRawArgs(
   inputArgs: string[],
   workingDirectory: string,
-  taskRelativePath: string
+  taskRelativePath: string,
 ) {
   const parsedArgs: InputArgs = parseInputParameters(inputArgs);
   console.log(`parsedArgs:`);
@@ -301,7 +301,7 @@ export async function mainWithRawArgs(
   if (parsedArgs.command === Command.VersionCheck) {
     const versionsAllMatch = checkVersionsMatch();
     if (versionsAllMatch) {
-      console.log("All versions match... good");
+      console.log('All versions match... good');
       process.exit(0);
     } else {
       console.log("Versions don't match... bad");
@@ -321,7 +321,7 @@ export async function mainWithRawArgs(
       publishArgs = getExtensionPublishArgsFromEnvVars();
     } else {
       publishArgs = getExtensionPublishArgsFromConfigFile(
-        parsedArgs.configFile
+        parsedArgs.configFile,
       );
     }
 
@@ -329,7 +329,7 @@ export async function mainWithRawArgs(
       parsedArgs,
       workingDirectory,
       taskRelativePath,
-      publishArgs
+      publishArgs,
     );
   }
 }
@@ -338,10 +338,10 @@ export async function updateOrInstallExtension(
   parsedArgs: InputArgs,
   workingDirectory: string,
   taskRelativePath: string,
-  publishArgs: ExtensionPublishArgs
+  publishArgs: ExtensionPublishArgs,
 ): Promise<void> {
   if (!publishArgs.azureDevopsPAT) {
-    console.log("Azure token (AZURE_DEVOPS_EXT_PAT) is not set");
+    console.log('Azure token (AZURE_DEVOPS_EXT_PAT) is not set');
     process.exit(1);
   }
 
@@ -353,7 +353,7 @@ export async function updateOrInstallExtension(
   await uninstallExtension(
     webApi,
     publishArgs.vsMarketplacePublisher,
-    publishArgs.extensionId
+    publishArgs.extensionId,
   );
 
   // publish - shell out to call `tfx extension publish...`
@@ -362,14 +362,14 @@ export async function updateOrInstallExtension(
     workingDirectory,
     taskRelativePath,
     publishArgs,
-    parsedArgs.newVersion
+    parsedArgs.newVersion,
   );
 
   // install new version - this should be an option
   await installExtension(
     webApi,
     publishArgs.vsMarketplacePublisher,
-    publishArgs.extensionId
+    publishArgs.extensionId,
   );
 }
 
@@ -379,7 +379,7 @@ if (require.main === module) {
 
 const exported = {
   getExtensionPublishArgsFromEnvVars,
-  getExtensionPublishArgsFromConfigFile
+  getExtensionPublishArgsFromConfigFile,
 };
 
 export default exported;
