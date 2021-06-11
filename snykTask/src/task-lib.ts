@@ -1,7 +1,6 @@
 import { TaskArgs } from './task-args';
 import * as tr from 'azure-pipelines-task-lib/toolrunner';
 import * as tl from 'azure-pipelines-task-lib/task';
-import { Platform } from 'azure-pipelines-task-lib/task';
 import stream = require('stream');
 import * as fs from 'fs';
 import * as path from 'path';
@@ -52,27 +51,6 @@ export const getOptionsForSnykToHtml = (
     outStream: writableString,
   } as tr.IExecOptions;
 };
-
-export const isSudoMode = (p: Platform): boolean => {
-  if (typeof p !== 'number') return true; // this may not be a good assumption, but now that we're actually checking if sudo exists, it should be ok
-  return p === Platform.Linux;
-};
-
-export function sudoExists(): boolean {
-  const res = tl.which('sudo'); // will return an empty string if sudo does not exist or a path like `/usr/bin/sudo`
-  // coerce to boolean
-  if (res) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-export const getToolPath = (
-  tool: string,
-  whichFn: (tool: string, check?: boolean) => string,
-  requiresSudo: boolean = false,
-): string => (requiresSudo ? whichFn('sudo') : whichFn(tool));
 
 export function formatDate(d: Date): string {
   return d.toISOString().split('.')[0].replace(/:/g, '-');

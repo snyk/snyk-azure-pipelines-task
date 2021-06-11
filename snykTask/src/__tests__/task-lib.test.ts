@@ -1,6 +1,9 @@
 import * as tr from 'azure-pipelines-task-lib/toolrunner';
 import * as tl from 'azure-pipelines-task-lib/task';
 import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+import * as fse from 'fs-extra';
 
 import stream = require('stream');
 
@@ -8,17 +11,25 @@ import {
   getOptionsToExecuteSnykCLICommand,
   getOptionsToExecuteCmd,
   getOptionsForSnykToHtml,
-  isSudoMode,
-  getToolPath,
-  sudoExists,
   formatDate,
   attachReport,
   removeRegexFromFile,
 } from '../task-lib';
 import { TaskArgs } from '../task-args';
 
+let tempFolder = '';
+beforeAll(async () => {
+  tempFolder = await fse.promises.mkdtemp(
+    path.resolve(os.tmpdir(), 'snyk-azure-pipelines-task-test'),
+  );
+});
+
 afterEach(() => {
   jest.restoreAllMocks();
+});
+
+afterAll(() => {
+  fse.remove(tempFolder);
 });
 
 test('getOptionsToExecuteSnyk builds IExecOptions like we need it', () => {
@@ -54,59 +65,20 @@ test('getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it', ()
   expect(options.env?.SNYK_TOKEN).toBe('fake-token');
 });
 
-test('getOptionsForSnykToHtml builds IExecOptions for running snyk-to-html', () => {
-  const taskArgs: TaskArgs = new TaskArgs();
-  taskArgs.testDirectory = '/some/path';
-  const htmlReportFilePath = 'report.html';
-  const options: tr.IExecOptions = getOptionsForSnykToHtml(
-    htmlReportFilePath,
-    taskArgs,
-  );
-
-  expect(options.cwd).toBe('/some/path');
-  expect(options.failOnStdErr).toBe(false);
-  expect(options.ignoreReturnCode).toBe(true);
-  expect(options.outStream).toBeInstanceOf(stream.Writable);
-});
-
-test('isSudoMode returns true only for Linux platforms', () => {
-  const pLinux = tl.Platform.Linux;
-  const pMacos = tl.Platform.MacOS;
-  const pWindows = tl.Platform.Windows;
-
-  expect(isSudoMode(pLinux)).toBe(true);
-  expect(isSudoMode(pMacos)).toBe(false);
-  expect(isSudoMode(pWindows)).toBe(false);
-});
-
-test('sudoExists works', () => {
-  const whichSpy = jest.spyOn(tl, 'which').mockReturnValue('/usr/bin/sudo');
-  expect(sudoExists()).toBe(true);
-
-  whichSpy.mockReturnValue('');
-  expect(sudoExists()).toBe(false);
-});
-
-test('getToolPath returns sudo if require and not if not required', () => {
-  // mock the which function from the azure-pipelines-task-lib/task
-  const mockTlWhichFn = jest
-    .fn()
-    .mockImplementation((tool: string, check?: boolean) => {
-      return `/usr/bin/${tool}`;
-    });
-
-  expect(mockTlWhichFn('anything')).toBe('/usr/bin/anything');
-  expect(mockTlWhichFn('sudo')).toBe('/usr/bin/sudo');
-
-  expect(getToolPath('some-command', mockTlWhichFn)).toBe(
-    '/usr/bin/some-command',
-  );
-  expect(getToolPath('some-command', mockTlWhichFn, false)).toBe(
-    '/usr/bin/some-command',
-  );
-  expect(getToolPath('some-command', mockTlWhichFn, true)).toBe(
-    '/usr/bin/sudo',
-  );
+describe('getOptionsForSnykToHtml', () => {
+  it('builds IExecOptions for running snyk-to-html', async () => {
+    const taskArgs: TaskArgs = new TaskArgs();
+    taskArgs.testDirectory = '/some/path';
+    const htmlReportFilePath = path.resolve(tempFolder, 'report.html');
+    const options: tr.IExecOptions = getOptionsForSnykToHtml(
+      htmlReportFilePath,
+      taskArgs,
+    );
+    expect(options.cwd).toBe('/some/path');
+    expect(options.failOnStdErr).toBe(false);
+    expect(options.ignoreReturnCode).toBe(true);
+    expect(options.outStream).toBeInstanceOf(stream.Writable);
+  });
 });
 
 test('formatDate gives format we want for the report filename', () => {
@@ -136,38 +108,40 @@ test('attachReport works', () => {
   addAttachmentSpy.mockRestore();
 });
 
-test('removeRegexFromFile works with global regex', () => {
-  const path = 'snykTask/test/fixtures/somehtml.html';
-  const pathAfter = 'snykTask/test/fixtures/somehtmlAfterGlobal.html';
-  const pathToChange = 'snykTask/test/fixtures/tmp.html';
-  const regex = /\[command\].*/g;
-
-  fs.copyFileSync(path, pathToChange);
-
-  try {
-    removeRegexFromFile(pathToChange, regex);
+describe('removeRegexFromFile', () => {
+  it('works with global regex', () => {
+    const fixturePath = 'snykTask/test/fixtures/somehtml.html';
+    const expectedContentsAfterPath =
+      'snykTask/test/fixtures/somehtmlAfterGlobal.html';
+    const tempFileToModifyPath = path.resolve(tempFolder, 'tmp.html');
+    const regex = /\[command\].*/g;
+    fs.copyFileSync(fixturePath, tempFileToModifyPath);
+    removeRegexFromFile(tempFileToModifyPath, regex);
     expect(
-      fs.readFileSync(pathToChange, { encoding: 'utf8', flag: 'r' }),
-    ).toEqual(fs.readFileSync(pathAfter, { encoding: 'utf8', flag: 'r' }));
-  } finally {
-    fs.unlinkSync(pathToChange);
-  }
-});
+      fs.readFileSync(tempFileToModifyPath, { encoding: 'utf8', flag: 'r' }),
+    ).toEqual(
+      fs.readFileSync(expectedContentsAfterPath, {
+        encoding: 'utf8',
+        flag: 'r',
+      }),
+    );
+  });
 
-test('removeRegexFromFile works with non-global regex', () => {
-  const path = 'snykTask/test/fixtures/somejson.json';
-  const pathAfter = 'snykTask/test/fixtures/somejsonAfterNonglobal.json';
-  const pathToChange = 'snykTask/test/fixtures/tmp.json';
-  const regex = /\[command\].*/;
-
-  fs.copyFileSync(path, pathToChange);
-
-  try {
-    removeRegexFromFile(pathToChange, regex);
+  it('works with non-global regex', () => {
+    const fixturePath = 'snykTask/test/fixtures/somejson.json';
+    const expectedContentsAfterPath =
+      'snykTask/test/fixtures/somejsonAfterNonglobal.json';
+    const tempFileToModifyPath = path.resolve(tempFolder, 'tmp.json');
+    const regex = /\[command\].*/;
+    fs.copyFileSync(fixturePath, tempFileToModifyPath);
+    removeRegexFromFile(tempFileToModifyPath, regex);
     expect(
-      fs.readFileSync(pathToChange, { encoding: 'utf8', flag: 'r' }),
-    ).toEqual(fs.readFileSync(pathAfter, { encoding: 'utf8', flag: 'r' }));
-  } finally {
-    fs.unlinkSync(pathToChange);
-  }
+      fs.readFileSync(tempFileToModifyPath, { encoding: 'utf8', flag: 'r' }),
+    ).toEqual(
+      fs.readFileSync(expectedContentsAfterPath, {
+        encoding: 'utf8',
+        flag: 'r',
+      }),
+    );
+  });
 });
