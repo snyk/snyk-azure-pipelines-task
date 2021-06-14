@@ -133,6 +133,8 @@ async function runSnykTest(
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
     .argIf(fileArg, `--file=${fileArg}`)
     .argIf(taskArgs.ignoreUnknownCA, `--insecure`)
+    .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
+    .argIf(taskArgs.projectName, `--project-name=${taskArgs.projectName}`)
     .arg(`--json-file-output=${jsonReportOutputPath}`)
     .line(taskArgs.additionalArguments);
 
