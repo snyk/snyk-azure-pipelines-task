@@ -17,10 +17,10 @@ describe('SnykReportTab UI', () => {
       };
       const title = generateReportTitle(
         jsonResults,
-        'report-2021-04-27T13-44-14.json'
+        'report-2021-04-27T13-44-14.json',
       );
       expect(title).toEqual(
-        'Snyk Test for nuget (report-2021-04-27 13:44:14) | No issues found'
+        'Snyk Test for nuget (report-2021-04-27 13:44:14) | No issues found',
       );
     });
 
@@ -31,10 +31,10 @@ describe('SnykReportTab UI', () => {
       };
       const title = generateReportTitle(
         jsonResults,
-        'report-2021-04-27T13-44-14.json'
+        'report-2021-04-27T13-44-14.json',
       );
       expect(title).toEqual(
-        'Snyk Test for npm (report-2021-04-27 13:44:14) | Found 3 issues'
+        'Snyk Test for npm (report-2021-04-27 13:44:14) | Found 3 issues',
       );
     });
 
@@ -51,7 +51,7 @@ describe('SnykReportTab UI', () => {
       ];
       const title = generateReportTitle(
         jsonResults,
-        'report-2021-04-27T13-44-14.json'
+        'report-2021-04-27T13-44-14.json',
       );
       expect(title).toEqual('Tested 2 npm projects | Found 5 issues');
     });
@@ -77,10 +77,10 @@ describe('SnykReportTab UI', () => {
       ];
       const title = generateReportTitle(
         jsonResults,
-        'report-2021-04-27T13-44-14.json'
+        'report-2021-04-27T13-44-14.json',
       );
       expect(title).toEqual(
-        'Tested 4 ruby/yarn/python projects | Found 4 issues'
+        'Tested 4 ruby/yarn/python projects | Found 4 issues',
       );
     });
   });

@@ -28,10 +28,10 @@ jobs:
     docker:
       - image: circleci/node:lts
         environment:
-          DEV_AZ_EXTENSION_ID: "dev-security-scan-test"
-          DEV_AZ_EXTENSION_NAME: "Dev - Snyk Security Scan"
-          DEV_AZ_TASK_FRIENDLY_NAME: "Dev - Snyk Security Scan"
-          DEV_AZ_TASK_NAME: "DevSnykSecurityScan"
+          DEV_AZ_EXTENSION_ID: 'dev-security-scan-test'
+          DEV_AZ_EXTENSION_NAME: 'Dev - Snyk Security Scan'
+          DEV_AZ_TASK_FRIENDLY_NAME: 'Dev - Snyk Security Scan'
+          DEV_AZ_TASK_NAME: 'DevSnykSecurityScan'
 
     working_directory: ~/repo
     steps:
@@ -67,12 +67,12 @@ jobs:
               echo "no current version. Setting NEXT_DEV_VERSION to 0.0.1"
               NEXT_DEV_VERSION=0.0.1
             fi
-            
+
             echo "Deploying to dev with ${NEXT_DEV_VERSION} ${AZ_ORG}"
             scripts/ci-deploy.sh $NEXT_DEV_VERSION $DEV_AZ_ORG
 
       - run:
-          name: Create renamed copy of the vsix bundle 
+          name: Create renamed copy of the vsix bundle
           command: |
             cp *.vsix dev-extension-artifact.vsix
             ls -la dev-extension-artifact.vsix
@@ -89,9 +89,9 @@ jobs:
     docker:
       - image: circleci/node:lts
         environment:
-          AZ_EXTENSION_ID: "snyk-security-scan"
-          AZ_EXTENSION_NAME: "Snyk Security Scan"
-          AZ_PUBLISHER: "Snyk"
+          AZ_EXTENSION_ID: 'snyk-security-scan'
+          AZ_EXTENSION_NAME: 'Snyk Security Scan'
+          AZ_PUBLISHER: 'Snyk'
 
     working_directory: ~/repo
     steps:
@@ -103,12 +103,12 @@ jobs:
             echo AZ_EXTENSION_ID: $AZ_EXTENSION_ID
             echo AZ_EXTENSION_NAME: $AZ_EXTENSION_NAME
             echo AZ_PUBLISHER: $AZ_PUBLISHER
-            
+
       - run:
           name: Build
           command: |
             npm run build
-      
+
       - run:
           name: Create Extension
           command: |
@@ -131,7 +131,7 @@ workflows:
       - test
       - deploy_dev:
           requires:
-            - test      
+            - test
           filters:
             branches:
               ignore: master

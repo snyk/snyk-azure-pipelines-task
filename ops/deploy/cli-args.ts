@@ -1,14 +1,14 @@
-const yargs = require("yargs");
+const yargs = require('yargs');
 
 enum Command {
   VersionCheck,
-  Deploy
+  Deploy,
 }
 
 enum DeployTarget {
   Prod,
   Dev,
-  Custom
+  Custom,
 }
 
 interface InputArgs {
@@ -19,45 +19,45 @@ interface InputArgs {
 }
 
 const parseInputParameters = (inputArgs): InputArgs => {
-  const scriptName = "deploy";
-  const usageMsg = "Usage: $0 <command>";
+  const scriptName = 'deploy';
+  const usageMsg = 'Usage: $0 <command>';
 
   const argv = yargs(inputArgs)
     .version()
     .scriptName(scriptName)
     .usage(usageMsg)
-    .command("version-check", "Checks that all the versions match")
-    .command("deploy [options]", "Deploys to specified target", y => {
-      y.option("target", {
-        description: "the deployment target",
-        type: "string",
+    .command('version-check', 'Checks that all the versions match')
+    .command('deploy [options]', 'Deploys to specified target', (y) => {
+      y.option('target', {
+        description: 'the deployment target',
+        type: 'string',
         demandOption: true,
-        choices: ["dev", "prod", "custom"]
+        choices: ['dev', 'prod', 'custom'],
       })
-        .option("config-file", {
+        .option('config-file', {
           description:
-            "Config JSON file specifying custom deployment arguments",
-          type: "string"
+            'Config JSON file specifying custom deployment arguments',
+          type: 'string',
         })
-        .option("new-version", {
+        .option('new-version', {
           description:
-            "New version to release; only valid with --target=custom",
-          type: "string"
+            'New version to release; only valid with --target=custom',
+          type: 'string',
         })
-        .check(argsToCheck => {
-          if (argsToCheck.target === "custom" && !argsToCheck.configFile) {
-            throw new Error("--config-file is required for target `custom`");
+        .check((argsToCheck) => {
+          if (argsToCheck.target === 'custom' && !argsToCheck.configFile) {
+            throw new Error('--config-file is required for target `custom`');
           }
 
-          if (argsToCheck.target !== "custom" && argsToCheck.configFile) {
+          if (argsToCheck.target !== 'custom' && argsToCheck.configFile) {
             throw new Error(
-              "--config-file isonly allowed with target `custom`"
+              '--config-file isonly allowed with target `custom`',
             );
           }
 
-          if (argsToCheck.target !== "custom" && argsToCheck.newVersion) {
+          if (argsToCheck.target !== 'custom' && argsToCheck.newVersion) {
             throw new Error(
-              "--new-version is only allowed with target `custom`"
+              '--new-version is only allowed with target `custom`',
             );
           }
 
@@ -65,14 +65,14 @@ const parseInputParameters = (inputArgs): InputArgs => {
         });
     })
     .demandCommand(1)
-    .help("help")
-    .alias("help", "h")
-    .example("$0 version-check")
-    .example("$0 deploy --target=dev")
-    .example("$0 deploy --target=prod")
-    .example("$0 deploy --target=custom --config-file=custom-args.json").argv;
+    .help('help')
+    .alias('help', 'h')
+    .example('$0 version-check')
+    .example('$0 deploy --target=dev')
+    .example('$0 deploy --target=prod')
+    .example('$0 deploy --target=custom --config-file=custom-args.json').argv;
 
-  console.log("argv:", argv);
+  console.log('argv:', argv);
 
   return parseOptions(argv);
 };
@@ -81,22 +81,22 @@ const parseOptions = (argv: any): InputArgs => {
   const options = {
     command: Command.VersionCheck,
     target: DeployTarget.Custom,
-    configFile: "",
-    newVersion: ""
+    configFile: '',
+    newVersion: '',
   } as InputArgs;
 
   const command = argv._[0];
-  if (command === "version-check") {
+  if (command === 'version-check') {
     options.command = Command.VersionCheck;
-  } else if (command === "deploy") {
+  } else if (command === 'deploy') {
     options.command = Command.Deploy;
 
     if (argv.target) {
-      if (argv.target === "dev") {
+      if (argv.target === 'dev') {
         options.target = DeployTarget.Dev;
-      } else if (argv.target === "prod") {
+      } else if (argv.target === 'prod') {
         options.target = DeployTarget.Prod;
-      } else if (argv.target === "custom") {
+      } else if (argv.target === 'custom') {
         options.target = DeployTarget.Custom;
         if (argv.configFile) {
           options.configFile = argv.configFile;

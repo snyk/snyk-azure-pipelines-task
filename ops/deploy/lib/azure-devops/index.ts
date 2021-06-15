@@ -1,10 +1,10 @@
-import * as nodeApi from "azure-devops-node-api";
-import * as CoreApi from "azure-devops-node-api/CoreApi";
-import { GalleryApi } from "azure-devops-node-api/GalleryApi";
-import * as CoreInterfaces from "azure-devops-node-api/interfaces/CoreInterfaces";
-import * as GalleryInterfaces from "azure-devops-node-api/interfaces/GalleryInterfaces";
-import * as lim from "azure-devops-node-api/interfaces/LocationsInterfaces";
-import { WebApi, getBasicHandler } from "azure-devops-node-api/WebApi";
+import * as nodeApi from 'azure-devops-node-api';
+import * as CoreApi from 'azure-devops-node-api/CoreApi';
+import { GalleryApi } from 'azure-devops-node-api/GalleryApi';
+import * as CoreInterfaces from 'azure-devops-node-api/interfaces/CoreInterfaces';
+import * as GalleryInterfaces from 'azure-devops-node-api/interfaces/GalleryInterfaces';
+import * as lim from 'azure-devops-node-api/interfaces/LocationsInterfaces';
+import { WebApi, getBasicHandler } from 'azure-devops-node-api/WebApi';
 
 export function getAzUrl(azureOrg: string): string {
   return `https://dev.azure.com/${azureOrg}/`;
@@ -12,7 +12,7 @@ export function getAzUrl(azureOrg: string): string {
 
 export async function getApi(
   serverUrl: string,
-  azureDevOpsToken: string
+  azureDevOpsToken: string,
 ): Promise<nodeApi.WebApi> {
   const token = azureDevOpsToken;
   const authHandler = nodeApi.getPersonalAccessTokenHandler(token);
@@ -21,11 +21,11 @@ export async function getApi(
   const vsts: nodeApi.WebApi = new nodeApi.WebApi(
     serverUrl,
     authHandler,
-    option
+    option,
   );
   const connData: lim.ConnectionData = await vsts.connect();
   if (!connData?.authenticatedUser) {
-    console.error("failed to connect");
+    console.error('failed to connect');
   }
 
   return vsts;
@@ -33,7 +33,7 @@ export async function getApi(
 
 export async function getWebApi(
   serverUrl: string,
-  azureDevOpsToken: string
+  azureDevOpsToken: string,
 ): Promise<nodeApi.WebApi> {
   return await getApi(serverUrl, azureDevOpsToken);
 }
@@ -41,7 +41,7 @@ export async function getWebApi(
 export async function getProject(webApi: nodeApi.WebApi, projectName: string) {
   const coreApiObject: CoreApi.CoreApi = await webApi.getCoreApi();
   const project: CoreInterfaces.TeamProject = await coreApiObject.getProject(
-    projectName
+    projectName,
   );
   console.log(project);
   return project;
@@ -62,18 +62,18 @@ export async function getGalleryApi(webApi: nodeApi.WebApi, azToken: string) {
 }
 
 export async function getCredentials(azToken) {
-  return getBasicHandler("OAuth", azToken);
+  return getBasicHandler('OAuth', azToken);
 }
 // **********************************************************
 
 export async function getExtensionInfo(
   azToken: string,
   publisherName: string,
-  extensionName: string
+  extensionName: string,
 ) {
   // This is a hack based on some fun with the MS GalleryAPI
   // see how we're not using the usual base API URL which includes the org - this is a generic one (but we still authenticate with our token)
-  const webApi = await getApi("https://marketplace.visualstudio.com/", azToken);
+  const webApi = await getApi('https://marketplace.visualstudio.com/', azToken);
   const galleryApi = await getGalleryApi(webApi, azToken);
 
   const version = undefined;
@@ -88,7 +88,7 @@ export async function getExtensionInfo(
     GalleryInterfaces.ExtensionQueryFlags.IncludeVersions |
       GalleryInterfaces.ExtensionQueryFlags.IncludeFiles |
       GalleryInterfaces.ExtensionQueryFlags.IncludeCategoryAndTags |
-      GalleryInterfaces.ExtensionQueryFlags.IncludeSharedAccounts
+      GalleryInterfaces.ExtensionQueryFlags.IncludeSharedAccounts,
   );
   return extensionInfo;
 }
