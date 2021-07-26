@@ -53,14 +53,17 @@ async function sleep(seconds: number): Promise<void> {
 }
 
 function parseInputArgs(): TaskArgs {
-  const taskArgs: TaskArgs = new TaskArgs();
+  const taskArgs: TaskArgs = new TaskArgs({
+    monitorOnBuild: tl.getBoolInput('monitorOnBuild', true),
+    failOnIssues: tl.getBoolInput('failOnIssues', true),
+  });
+
   taskArgs.targetFile = tl.getInput('targetFile', false);
   taskArgs.dockerImageName = tl.getInput('dockerImageName', false);
   taskArgs.dockerfilePath = tl.getInput('dockerfilePath', false);
   taskArgs.projectName = tl.getInput('projectName', false);
   taskArgs.organization = tl.getInput('organization', false);
-  taskArgs.monitorOnBuild = tl.getBoolInput('monitorOnBuild', true);
-  taskArgs.failOnIssues = tl.getBoolInput('failOnIssues', true);
+  taskArgs.setMonitorWhen(tl.getInput('monitorWhen', false));
 
   const delayStr = tl.getInput('delayAfterReportGenerationSeconds', false);
   if (delayStr) {
@@ -95,6 +98,7 @@ const logAllTaskArgs = (taskArgs: TaskArgs) => {
   console.log(`taskArgs.projectName: ${taskArgs.projectName}`);
   console.log(`taskArgs.organization: ${taskArgs.organization}`);
   console.log(`taskArgs.monitorOnBuild: ${taskArgs.monitorOnBuild}`);
+  console.log(`taskArgs.monitorWhen: ${taskArgs.monitorWhen}`);
   console.log(`taskArgs.failOnIssues: ${taskArgs.failOnIssues}`);
   console.log(`taskArgs.additionalArguments: ${taskArgs.additionalArguments}`);
   console.log(`taskArgs.ignoreUnknownCA: ${taskArgs.ignoreUnknownCA}`);
@@ -265,9 +269,6 @@ const handleSnykTestError = (
     }
     throw new SnykError(errorMsg);
   }
-
-  if (snykTestResult.code === CLI_EXIT_CODE_ISSUES_FOUND && args.failOnIssues)
-    throw new SnykError(snykTestResult.message);
 };
 
 const handleSnykToHTMLError = (snykToHTMLResult: SnykOutput) => {
@@ -389,13 +390,21 @@ async function run() {
     attachReport(htmlReportFullPath, HTML_ATTACHMENT_TYPE);
     handleSnykTestError(taskArgs, snykTestResult, jsonReportFullPath);
 
-    if (taskArgs.monitorOnBuild) {
+    const snykTestSuccessAndNoIssuesFound = snykTestResult.code === 0;
+    if (taskArgs.shouldRunMonitor(snykTestSuccessAndNoIssuesFound)) {
       const snykMonitorResult = await runSnykMonitor(
         snykPath,
         taskArgs,
         snykToken,
       );
       handleSnykMonitorError(snykMonitorResult);
+    }
+
+    if (
+      snykTestResult.code === CLI_EXIT_CODE_ISSUES_FOUND &&
+      taskArgs.failOnIssues
+    ) {
+      throw new SnykError(snykTestResult.message);
     }
 
     tl.setResult(tl.TaskResult.Succeeded, 'Snyk Scan completed');

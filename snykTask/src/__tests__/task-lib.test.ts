@@ -33,7 +33,10 @@ afterAll(() => {
 });
 
 test('getOptionsToExecuteSnyk builds IExecOptions like we need it', () => {
-  const taskArgs: TaskArgs = new TaskArgs();
+  const taskArgs: TaskArgs = new TaskArgs({
+    monitorOnBuild: true,
+    failOnIssues: true,
+  });
   taskArgs.testDirectory = '/some/path';
 
   const options: tr.IExecOptions = getOptionsToExecuteCmd(taskArgs);
@@ -47,7 +50,10 @@ test('getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it', ()
   const taskNameForAnalytics = 'AZURE_PIPELINES';
   const version = '1.2.3';
 
-  const taskArgs: TaskArgs = new TaskArgs();
+  const taskArgs: TaskArgs = new TaskArgs({
+    monitorOnBuild: true,
+    failOnIssues: true,
+  });
   taskArgs.testDirectory = '/some/path';
 
   const options: tr.IExecOptions = getOptionsToExecuteSnykCLICommand(
@@ -67,7 +73,10 @@ test('getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it', ()
 
 describe('getOptionsForSnykToHtml', () => {
   it('builds IExecOptions for running snyk-to-html', async () => {
-    const taskArgs: TaskArgs = new TaskArgs();
+    const taskArgs: TaskArgs = new TaskArgs({
+      monitorOnBuild: true,
+      failOnIssues: true,
+    });
     taskArgs.testDirectory = '/some/path';
     const htmlReportFilePath = path.resolve(tempFolder, 'report.html');
     const options: tr.IExecOptions = getOptionsForSnykToHtml(
