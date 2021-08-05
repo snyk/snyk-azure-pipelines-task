@@ -34,7 +34,6 @@ afterAll(() => {
 
 test('getOptionsToExecuteSnyk builds IExecOptions like we need it', () => {
   const taskArgs: TaskArgs = new TaskArgs({
-    monitorOnBuild: true,
     failOnIssues: true,
   });
   taskArgs.testDirectory = '/some/path';
@@ -51,7 +50,6 @@ test('getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it', ()
   const version = '1.2.3';
 
   const taskArgs: TaskArgs = new TaskArgs({
-    monitorOnBuild: true,
     failOnIssues: true,
   });
   taskArgs.testDirectory = '/some/path';
@@ -74,7 +72,6 @@ test('getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it', ()
 describe('getOptionsForSnykToHtml', () => {
   it('builds IExecOptions for running snyk-to-html', async () => {
     const taskArgs: TaskArgs = new TaskArgs({
-      monitorOnBuild: true,
       failOnIssues: true,
     });
     taskArgs.testDirectory = '/some/path';

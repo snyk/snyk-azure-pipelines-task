@@ -54,7 +54,6 @@ async function sleep(seconds: number): Promise<void> {
 
 function parseInputArgs(): TaskArgs {
   const taskArgs: TaskArgs = new TaskArgs({
-    monitorOnBuild: tl.getBoolInput('monitorOnBuild', true),
     failOnIssues: tl.getBoolInput('failOnIssues', true),
   });
 
@@ -97,7 +96,6 @@ const logAllTaskArgs = (taskArgs: TaskArgs) => {
   console.log(`taskArgs.severityThreshold: ${taskArgs.severityThreshold}`);
   console.log(`taskArgs.projectName: ${taskArgs.projectName}`);
   console.log(`taskArgs.organization: ${taskArgs.organization}`);
-  console.log(`taskArgs.monitorOnBuild: ${taskArgs.monitorOnBuild}`);
   console.log(`taskArgs.monitorWhen: ${taskArgs.monitorWhen}`);
   console.log(`taskArgs.failOnIssues: ${taskArgs.failOnIssues}`);
   console.log(`taskArgs.additionalArguments: ${taskArgs.additionalArguments}`);
