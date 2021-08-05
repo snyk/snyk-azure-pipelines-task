@@ -7,7 +7,6 @@ import { TaskArgs } from '../task-args';
 
 function defaultTaskArgs(): TaskArgs {
   return new TaskArgs({
-    monitorOnBuild: true,
     failOnIssues: true,
   });
 }
@@ -83,13 +82,13 @@ describe('TaskArgs.setMonitorWhen', () => {
 
   it('defaults to `noIssuesFound` when undefined, empty string, or invalid value', () => {
     args.setMonitorWhen(undefined);
-    expect(args.monitorWhen).toBeUndefined();
+    expect(args.monitorWhen).toBe('always');
 
     args.setMonitorWhen('');
-    expect(args.monitorWhen).toBeUndefined();
+    expect(args.monitorWhen).toBe('always');
 
     args.setMonitorWhen('invalid-option');
-    expect(args.monitorWhen).toBeUndefined();
+    expect(args.monitorWhen).toBe('always');
   });
 
   it('works for valid inputs', () => {
@@ -107,12 +106,8 @@ describe('TaskArgs.setMonitorWhen', () => {
 const SNYK_TEST_SUCCESS_TRUE = true;
 const SNYK_TEST_SUCCESS_FALSE = false;
 
-function argsFrom(params: {
-  monitorOnBuild: boolean;
-  monitorWhen?: string;
-}): TaskArgs {
+function argsFrom(params: { monitorWhen: string }): TaskArgs {
   const args = new TaskArgs({
-    monitorOnBuild: params.monitorOnBuild,
     failOnIssues: true,
   });
   if (params.monitorWhen) {
@@ -122,113 +117,39 @@ function argsFrom(params: {
 }
 
 describe('TaskArgs.shouldRunMonitor', () => {
-  describe('when `monitorWhen` is not set', () => {
-    describe('and `monitorOnBuild` is false', () => {
-      const args = argsFrom({
-        monitorOnBuild: false,
-      });
-      it('return false when snykTestSuccess is false', () => {
-        expect(args.shouldRunMonitor(false)).toBe(false);
-      });
-      it('return false when snykTestSuccess is true', () => {
-        expect(args.shouldRunMonitor(true)).toBe(false);
-      });
+  describe('when `monitorWhen` is `always`', () => {
+    const args = argsFrom({
+      monitorWhen: 'always',
     });
-
-    describe('and `monitorOnBuild` is true', () => {
-      const args = argsFrom({
-        monitorOnBuild: true,
-      });
-      it('return false when snykTestSuccess is false', () => {
-        expect(args.shouldRunMonitor(false)).toBe(false);
-      });
-      it('return true when snykTestSuccess is true', () => {
-        expect(args.shouldRunMonitor(true)).toBe(true);
-      });
+    it('returns true when snykTestSuccess is false', () => {
+      expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_FALSE)).toBe(true);
+    });
+    it('returns true when snykTestSuccess is true', () => {
+      expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_TRUE)).toBe(true);
     });
   });
 
-  describe('when `monitorWhen` is set', () => {
-    describe('and `monitorOnBuild` is false', () => {
-      describe('and `monitorWhen` is `always`', () => {
-        const args = argsFrom({
-          monitorOnBuild: false,
-          monitorWhen: 'always',
-        });
-        it('returns true when snykTestSuccess is false', () => {
-          expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_FALSE)).toBe(true);
-        });
-        it('returns true when snykTestSuccess is true', () => {
-          expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_TRUE)).toBe(true);
-        });
-      });
-
-      describe('and `monitorWhen` is `never`', () => {
-        const args = argsFrom({
-          monitorOnBuild: false,
-          monitorWhen: 'never',
-        });
-        it('returns false when snykTestSuccess is false', () => {
-          expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_FALSE)).toBe(false);
-        });
-        it('returns false when snykTestSuccess is true', () => {
-          expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_TRUE)).toBe(false);
-        });
-      });
-
-      describe('and `monitorWhen` is `noIssuesFound`', () => {
-        const args = argsFrom({
-          monitorOnBuild: false,
-          monitorWhen: 'noIssuesFound',
-        });
-        it('returns false when snykTestSuccess is false', () => {
-          expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_FALSE)).toBe(false);
-        });
-        it('returns true when snykTestSuccess is true', () => {
-          expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_TRUE)).toBe(true);
-        });
-      });
+  describe('and `monitorWhen` is `never`', () => {
+    const args = argsFrom({
+      monitorWhen: 'never',
     });
+    it('returns false when snykTestSuccess is false', () => {
+      expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_FALSE)).toBe(false);
+    });
+    it('returns false when snykTestSuccess is true', () => {
+      expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_TRUE)).toBe(false);
+    });
+  });
 
-    describe('and `monitorOnBuild` is true', () => {
-      describe('and `monitorWhen` is `always`', () => {
-        const args = argsFrom({
-          monitorOnBuild: true,
-          monitorWhen: 'always',
-        });
-        it('returns true when snykTestSuccess is false', () => {
-          expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_FALSE)).toBe(true);
-        });
-        it('returns true when snykTestSuccess is true', () => {
-          expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_TRUE)).toBe(true);
-        });
-      });
-
-      describe('and `monitorWhen` is `never`', () => {
-        const args = argsFrom({
-          monitorOnBuild: true,
-          monitorWhen: 'never',
-        });
-        it('returns false when snykTestSuccess is false', () => {
-          expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_FALSE)).toBe(false);
-        });
-        it('returns false when snykTestSuccess is true', () => {
-          expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_TRUE)).toBe(false);
-        });
-      });
-
-      describe('and `monitorWhen` is `noIssuesFound`', () => {
-        const args = argsFrom({
-          monitorOnBuild: true,
-          monitorWhen: 'noIssuesFound',
-        });
-        it('returns false when snykTestSuccess is false', () => {
-          expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_FALSE)).toBe(false);
-        });
-        it('returns true when snykTestSuccess is true', () => {
-          expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_TRUE)).toBe(true);
-        });
-      });
+  describe('and `monitorWhen` is `noIssuesFound`', () => {
+    const args = argsFrom({
+      monitorWhen: 'noIssuesFound',
+    });
+    it('returns false when snykTestSuccess is false', () => {
+      expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_FALSE)).toBe(false);
+    });
+    it('returns true when snykTestSuccess is true', () => {
+      expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_TRUE)).toBe(true);
     });
   });
 });

@@ -1,6 +1,6 @@
 import * as tl from 'azure-pipelines-task-lib';
 
-export type MonitorWhen = undefined | 'never' | 'noIssuesFound' | 'always';
+export type MonitorWhen = 'never' | 'noIssuesFound' | 'always';
 class TaskArgs {
   testType: string | undefined = '';
 
@@ -12,8 +12,7 @@ class TaskArgs {
   severityThreshold: string | undefined = '';
 
   organization: string | undefined = '';
-  monitorOnBuild: boolean = true;
-  monitorWhen: MonitorWhen = undefined;
+  monitorWhen: MonitorWhen = 'always';
   failOnIssues: boolean = true;
   projectName: string | undefined = '';
 
@@ -24,8 +23,7 @@ class TaskArgs {
   delayAfterReportGenerationSeconds: number = 0;
 
   // the params here are the ones which are mandatory
-  constructor(params: { monitorOnBuild: boolean; failOnIssues: boolean }) {
-    this.monitorOnBuild = params.monitorOnBuild;
+  constructor(params: { failOnIssues: boolean }) {
     this.failOnIssues = params.failOnIssues;
   }
 
@@ -44,21 +42,13 @@ class TaskArgs {
     }
   }
   public shouldRunMonitor(snykTestSuccess: boolean): boolean {
-    if (this.monitorWhen) {
-      if (this.monitorWhen === 'always') {
-        return true;
-      } else if (this.monitorWhen === 'never') {
-        return false;
-      } else {
-        // noIssuesFound
-        return snykTestSuccess;
-      }
+    if (this.monitorWhen === 'always') {
+      return true;
+    } else if (this.monitorWhen === 'never') {
+      return false;
     } else {
-      if (this.monitorOnBuild) {
-        return snykTestSuccess;
-      } else {
-        return false;
-      }
+      // noIssuesFound
+      return snykTestSuccess;
     }
   }
 
