@@ -90,12 +90,17 @@
       "helpMarkDown": "The testing severity threshold. Leave blank for no threshold."
     },
     {
-      "name": "monitorOnBuild",
-      "label": "Run Snyk monitor after test?",
-      "type": "boolean",
+      "name": "monitorWhen",
+      "label": "When to run Snyk monitor",
+      "type": "pickList",
+      "options": {
+        "always": "always",
+        "noIssuesFound": "noIssuesFound",
+        "never": "never"
+      },
       "required": true,
-      "defaultValue": "true",
-      "helpMarkDown": "Select true if you want to run the monitor the dependency tree within Snyk."
+      "defaultValue": "always",
+      "helpMarkDown": "When to run Snyk Monitor"
     },
     {
       "name": "failOnIssues",
