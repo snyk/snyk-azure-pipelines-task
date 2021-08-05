@@ -40,25 +40,43 @@ This extension requires that Node.js and npm be installed on the build agent. Th
 ### Simple Application Testing Example
 
 ```
-- task: SnykSecurityScan@0
+- task: SnykSecurityScan@1
   inputs:
     serviceConnectionEndpoint: 'mySnykToken'
     testType: 'app'
-    monitorWhen: 'always'
     failOnIssues: true
+    monitorWhen: 'always'
+```
+
+### If you do not want the Snyk task fail your pipeline when issues are found, but still want to monitor the results in the Snyk UI
+
+To do this, you need to:
+
+- set `failOnIssues` to `false`, which will make sure the Snyk task will not fail your pipeline even if issues (vulnerabilities, etc) are found
+- have `monitorWhen` set to `always` (or just leave `monitorWhen` out, since `always` is the default)
+
+Here's a full example:
+
+```
+- task: SnykSecurityScan@1
+  inputs:
+    serviceConnectionEndpoint: 'mySnykToken'
+    testType: 'app'
+    failOnIssues: false
+    monitorWhen: 'always'
 ```
 
 ### Simple Container Image Testing Example
 
 ```
-- task: SnykSecurityScan@0
+- task: SnykSecurityScan@1
   inputs:
     serviceConnectionEndpoint: 'mySnykToken'
     testType: 'container'
     dockerImageName: 'my-container-image-name'
     dockerfilePath: 'Dockerfile'
-    monitorWhen: 'always'
     failOnIssues: true
+    monitorWhen: 'always'
 ```
 
 ---
