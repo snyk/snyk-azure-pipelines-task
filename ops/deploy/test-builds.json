@@ -1,22 +1,22 @@
 [
   {
     "projectName": "goof",
-    "buildDefinitionId": 7
+    "buildDefinitionId": 3
   },
   {
     "projectName": "goof_windows",
-    "buildDefinitionId": 10
+    "buildDefinitionId": 4
   },
   {
     "projectName": "azure-maven-multimodule-goof",
-    "buildDefinitionId": 16
+    "buildDefinitionId": 5
   },
   {
     "projectName": "snyk-6598",
-    "buildDefinitionId": 18
+    "buildDefinitionId": 6
   },
   {
     "projectName": "DotNetFrameworkSampleCLIApp",
-    "buildDefinitionId": 19
+    "buildDefinitionId": 7
   }
 ]
