@@ -10,7 +10,7 @@ export const HTML_ATTACHMENT_TYPE = 'HTML_ATTACHMENT_TYPE';
 
 export const getOptionsToExecuteCmd = (taskArgs: TaskArgs): tr.IExecOptions => {
   return {
-    cwd: taskArgs.testDirectory,
+    // cwd: taskArgs.testDirectory,
     failOnStdErr: false,
     ignoreReturnCode: true,
   } as tr.IExecOptions;
