@@ -32,24 +32,22 @@ async function main() {
       publisherName,
       extensionName,
     );
-    const alreadyInstalledVersion = alreadyInstalledExtensionInfo.version;
-    console.log(
-      `Extension version currently installed: ${alreadyInstalledVersion}`,
-    );
 
-    console.log(`Uninstalling previously installed extension`);
-    await uninstallExtension(webApi, publisherName, extensionName);
+    if (alreadyInstalledExtensionInfo) {
+      const alreadyInstalledVersion = alreadyInstalledExtensionInfo.version;
+      console.log(
+        `Extension version currently installed: ${alreadyInstalledVersion}`,
+      );
+
+      console.log(`Uninstalling previously installed extension`);
+      await uninstallExtension(webApi, publisherName, extensionName);
+    }
 
     console.log(
       'Attempting to install latest version of extension into org...',
     );
     // installExtension will throw an error if it is already installed
-    const installRes = await installExtension(
-      webApi,
-      publisherName,
-      extensionName,
-      version,
-    );
+    await installExtension(webApi, publisherName, extensionName, version);
 
     const afterInstallExtensionInfo = await getInstalledExtensionInfo(
       webApi,
