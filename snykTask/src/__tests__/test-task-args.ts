@@ -4,6 +4,7 @@
    which I don't want to do. */
 
 import { TaskArgs } from '../task-args';
+import { Severity } from '../task-lib';
 
 function defaultTaskArgs(): TaskArgs {
   return new TaskArgs({
@@ -101,6 +102,38 @@ describe('TaskArgs.setMonitorWhen', () => {
     args.setMonitorWhen('always');
     expect(args.monitorWhen).toBe('always');
   });
+});
+
+describe('TaskArgs.severitySettings', () => {
+  const args = defaultTaskArgs();
+
+  it('passes validation when correct combination of severity and fail on thresholds', () => {
+    args.severityThreshold = Severity.LOW;
+    args.failOnThreshold = Severity.HIGH;
+    args.validate();
+  });
+
+  it('passes validation when only severity level specified', () => {
+    args.severityThreshold = Severity.HIGH;
+    args.validate();
+  });
+
+  it('passes validation when only fail on threshold specified', () => {
+    args.failOnThreshold = Severity.HIGH;
+    args.validate();
+  });
+
+  it('throws error when incorrect combination of severity and fail on thresholds', () => {
+    expect(
+      () => { 
+        args.severityThreshold = Severity.HIGH;
+        args.failOnThreshold = Severity.MEDIUM;
+        args.validate();
+      }
+    ).toThrow(
+      new Error('When both set, fail on threshold must be higher than severity threshold. (\'medium\' is less than \'high\')')
+    );
+  });  
 });
 
 const SNYK_TEST_SUCCESS_TRUE = true;

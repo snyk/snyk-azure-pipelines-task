@@ -1,5 +1,6 @@
 import * as tl from 'azure-pipelines-task-lib/task';
 import * as tr from 'azure-pipelines-task-lib/toolrunner';
+
 import { TaskArgs, getAuthToken } from './task-args';
 import { getTaskVersion } from './task-version';
 import {
@@ -11,8 +12,7 @@ import {
   removeRegexFromFile,
   JSON_ATTACHMENT_TYPE,
   HTML_ATTACHMENT_TYPE,
-  isNotValidThreshold,
-  Severity,
+  doVulnerabilitiesExistForFailureThreshold,
 } from './task-lib';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -72,19 +72,15 @@ function parseInputArgs(): TaskArgs {
   taskArgs.additionalArguments =
     tl.getInput('additionalArguments', false) || '';
   taskArgs.testDirectory = tl.getInput('testDirectory', false);
-  taskArgs.severityThreshold = tl.getInput('severityThreshold', false);
-  if (taskArgs.severityThreshold) {
-    taskArgs.severityThreshold = taskArgs.severityThreshold.toLowerCase();
-    if (isNotValidThreshold(taskArgs.severityThreshold)) {
-      const errorMsg = `If set, severity threshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
-      throw new Error(errorMsg);
-    }
-  }
+  taskArgs.severityThreshold = tl.getInput('severityThreshold', false);  
+  taskArgs.failOnThreshold = tl.getInput('failOnThreshold', false);
   taskArgs.ignoreUnknownCA = tl.getBoolInput('ignoreUnknownCA', false);
 
   if (isDebugMode()) {
     logAllTaskArgs(taskArgs);
   }
+
+  taskArgs.validate();
 
   return taskArgs;
 }
@@ -94,6 +90,7 @@ const logAllTaskArgs = (taskArgs: TaskArgs) => {
   console.log(`taskArgs.dockerImageName: ${taskArgs.dockerImageName}`);
   console.log(`taskArgs.dockerfilePath: ${taskArgs.dockerfilePath}`);
   console.log(`taskArgs.severityThreshold: ${taskArgs.severityThreshold}`);
+  console.log(`taskArgs.failOnThreshold: ${taskArgs.failOnThreshold}`);
   console.log(`taskArgs.projectName: ${taskArgs.projectName}`);
   console.log(`taskArgs.organization: ${taskArgs.organization}`);
   console.log(`taskArgs.monitorWhen: ${taskArgs.monitorWhen}`);
@@ -402,7 +399,11 @@ async function run() {
       snykTestResult.code === CLI_EXIT_CODE_ISSUES_FOUND &&
       taskArgs.failOnIssues
     ) {
-      throw new SnykError(snykTestResult.message);
+      let failureThreshold:string = taskArgs.failOnThreshold!
+      const matchingVulnerabilitiesFound = await doVulnerabilitiesExistForFailureThreshold(jsonReportFullPath, failureThreshold);
+      if (matchingVulnerabilitiesFound) {
+        throw new SnykError(snykTestResult.message);
+      }            
     }
 
     tl.setResult(tl.TaskResult.Succeeded, 'Snyk Scan completed');
