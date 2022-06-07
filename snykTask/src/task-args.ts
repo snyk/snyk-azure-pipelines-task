@@ -1,5 +1,9 @@
 import * as tl from 'azure-pipelines-task-lib';
-
+import {
+  isNotValidThreshold,
+  Severity,
+  getSeverityOrdinal,
+} from './task-lib';
 export type MonitorWhen = 'never' | 'noIssuesFound' | 'always';
 class TaskArgs {
   testType: string | undefined = '';
@@ -10,7 +14,7 @@ class TaskArgs {
   dockerfilePath: string | undefined = '';
 
   severityThreshold: string | undefined = '';
-
+  failOnThreshold: string | undefined = 'low';
   organization: string | undefined = '';
   monitorWhen: MonitorWhen = 'always';
   failOnIssues: boolean = true;
@@ -72,6 +76,32 @@ class TaskArgs {
       return '';
     }
   }
+
+  public validate() {
+    if (this.failOnThreshold){
+      if (isNotValidThreshold(this.failOnThreshold!)) {
+        const errorMsg = `If set, fail on threshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
+        throw new Error(errorMsg);
+      }
+    }
+
+    if (this.severityThreshold) {
+      if (isNotValidThreshold(this.severityThreshold!)) {
+        const errorMsg = `If set, severity threshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
+        throw new Error(errorMsg);
+      } 
+    }
+
+    if (this.severityThreshold && this.failOnThreshold) {
+      let severity = getSeverityOrdinal(this.severityThreshold);
+      let failOn = getSeverityOrdinal(this.failOnThreshold);
+  
+      if (failOn < severity) {
+        const errorMsg = `When both set, fail on threshold must be higher than severity threshold. ('${this.failOnThreshold}' is less than '${this.severityThreshold}')`;
+        throw new Error(errorMsg);
+      }
+    }    
+  }  
 }
 
 export function getAuthToken() {

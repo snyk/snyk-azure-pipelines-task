@@ -27,6 +27,7 @@ This extension requires that Node.js and npm be installed on the build agent. Th
 | dockerfilePath            | The path to the Dockerfile corresponding to the `dockerImageName`                                                                                                                                                   | yes, if container image test | none          | string                                                                            |
 | targetFile                | Applicable to application type tests ony. The path to the manifest file to be used by Snyk. Should only be provided if non-standard.                                                                                | no                           | none          | string                                                                            |
 | severityThreshold         | The severity-threshold to use when testing. By default, issues of all severity types will be found.                                                                                                                 | no                           | "low"         | string: "low" or "medium" or "high" or "critical"                                 |
+| failOnThreshold           | The severity-threshold to use when determining if the build should fail. Combine with `failOnIssues` to get fine grained control over reporting and build failure behaviour. For example, with `failOnIssues` set to true and `failOnThreshold` to `critical`, all issues would be reported on but only critical issues would cause a build failure                                                                                                            | no                           | "low"         | string: "low" or "medium" or "high" or "critical"                                 |
 | monitorWhen               | When to run `snyk monitor`. Valid options are `always` (default), `noIssuesFound`, and `never`. If set, this option overrides the value of `monitorOnBuild`.                                                        | no                           | "always"      | boolean                                                                           |
 | failOnIssues              | This specifies if builds should be failed or continued based on issues found by Snyk.                                                                                                                               | yes                          | true          | boolean                                                                           |
 | projectName               | A custom name for the Snyk project to be created on snyk.io                                                                                                                                                         | no                           | none          | string                                                                            |
@@ -63,6 +64,18 @@ Here's a full example:
     serviceConnectionEndpoint: 'mySnykToken'
     testType: 'app'
     failOnIssues: false
+    monitorWhen: 'always'
+```
+
+An example that uses the default value for `severityThreshold` (low) but configures `failOnThreshold` to critical. This configuration would _only fail_ the build when critical issues are found, but all issues would be reported back to your snyk project for analysis
+
+```
+- task: SnykSecurityScan@1
+  inputs:
+    serviceConnectionEndpoint: 'mySnykToken'
+    testType: 'app'
+    failOnIssues: true
+    failOnThreshold: 'critical'
     monitorWhen: 'always'
 ```
 
