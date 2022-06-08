@@ -135,7 +135,7 @@ describe('TaskArgs.validate', () => {
         args.validate();
       }
     ).toThrow(
-      new Error('If set, severity threshold must be \'critical\' or \'high\' or \'medium\' or \'low\' (case insensitive). If not set, the default is \'low\'.')
+      new Error('If set, severityThreshold must be \'critical\' or \'high\' or \'medium\' or \'low\' (case insensitive). If not set, the default is \'low\'.')
     );
   });  
 

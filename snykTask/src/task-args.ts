@@ -1,7 +1,6 @@
 import * as tl from 'azure-pipelines-task-lib';
 import {
   Severity,
-  getSeverityOrdinal,
 } from './task-lib';
 export type MonitorWhen = 'never' | 'noIssuesFound' | 'always';
 class TaskArgs {
@@ -79,14 +78,14 @@ class TaskArgs {
   public validate() {
     if (this.failOnThreshold){
       if (this.isNotValidThreshold(this.failOnThreshold)) {
-        const errorMsg = `If set, fail on threshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
+        const errorMsg = `If set, failOnThreshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
         throw new Error(errorMsg);
       }
     }
 
     if (this.severityThreshold) {
       if (this.isNotValidThreshold(this.severityThreshold)) {
-        const errorMsg = `If set, severity threshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
+        const errorMsg = `If set, severityThreshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
         throw new Error(errorMsg);
       } 
     }  
