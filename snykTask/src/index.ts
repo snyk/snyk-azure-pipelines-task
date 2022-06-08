@@ -13,6 +13,7 @@ import {
   JSON_ATTACHMENT_TYPE,
   HTML_ATTACHMENT_TYPE,
   doVulnerabilitiesExistForFailureThreshold,
+  Severity,
 } from './task-lib';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -73,7 +74,7 @@ function parseInputArgs(): TaskArgs {
     tl.getInput('additionalArguments', false) || '';
   taskArgs.testDirectory = tl.getInput('testDirectory', false);
   taskArgs.severityThreshold = tl.getInput('severityThreshold', false);  
-  taskArgs.failOnThreshold = tl.getInput('failOnThreshold', false);
+  taskArgs.failOnThreshold = tl.getInput('failOnThreshold', false) || Severity.LOW;
   taskArgs.ignoreUnknownCA = tl.getBoolInput('ignoreUnknownCA', false);
 
   if (isDebugMode()) {
@@ -399,7 +400,7 @@ async function run() {
       snykTestResult.code === CLI_EXIT_CODE_ISSUES_FOUND &&
       taskArgs.failOnIssues
     ) {
-      let failureThreshold:string = taskArgs.failOnThreshold!
+      const failureThreshold:string = taskArgs.failOnThreshold;
       const matchingVulnerabilitiesFound = await doVulnerabilitiesExistForFailureThreshold(jsonReportFullPath, failureThreshold);
       if (matchingVulnerabilitiesFound) {
         throw new SnykError(snykTestResult.message);

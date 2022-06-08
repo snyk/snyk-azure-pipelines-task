@@ -3,7 +3,7 @@ import * as tr from 'azure-pipelines-task-lib/toolrunner';
 import * as tl from 'azure-pipelines-task-lib/task';
 import stream = require('stream');
 import * as fs from 'fs';
-const fsPromises = require('fs').promises;
+import * as fsPromises from 'fs/promises'
 import * as path from 'path';
 
 export const JSON_ATTACHMENT_TYPE = 'JSON_ATTACHMENT_TYPE';
@@ -93,17 +93,6 @@ export enum Severity {
   HIGH = 'high',
   MEDIUM = 'medium',
   LOW = 'low',
-}
-
-export function isNotValidThreshold(threshold: string) {
-  const severityThresholdLowerCase = threshold.toLowerCase();
-
-  return (
-    severityThresholdLowerCase !== Severity.CRITICAL &&
-    severityThresholdLowerCase !== Severity.HIGH &&
-    severityThresholdLowerCase !== Severity.MEDIUM &&
-    severityThresholdLowerCase !== Severity.LOW
-  );
 }
 
 export function getSeverityOrdinal(severity: string): number {

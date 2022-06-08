@@ -104,7 +104,7 @@ describe('TaskArgs.setMonitorWhen', () => {
   });
 });
 
-describe('TaskArgs.severitySettings', () => {
+describe('TaskArgs.validate', () => {
   const args = defaultTaskArgs();
 
   it('passes validation when correct combination of severity and fail on thresholds', () => {
@@ -131,7 +131,7 @@ describe('TaskArgs.severitySettings', () => {
         args.validate();
       }
     ).toThrow(
-      new Error('When both set, fail on threshold must be higher than severity threshold. (\'medium\' is less than \'high\')')
+      new Error('When both set, fail on threshold must be equal to or greater than severity threshold. (\'medium\' is less than \'high\')')
     );
   });  
 });

@@ -1,6 +1,5 @@
 import * as tl from 'azure-pipelines-task-lib';
 import {
-  isNotValidThreshold,
   Severity,
   getSeverityOrdinal,
 } from './task-lib';
@@ -14,7 +13,7 @@ class TaskArgs {
   dockerfilePath: string | undefined = '';
 
   severityThreshold: string | undefined = '';
-  failOnThreshold: string | undefined = 'low';
+  failOnThreshold: string = Severity.LOW;
   organization: string | undefined = '';
   monitorWhen: MonitorWhen = 'always';
   failOnIssues: boolean = true;
@@ -79,28 +78,39 @@ class TaskArgs {
 
   public validate() {
     if (this.failOnThreshold){
-      if (isNotValidThreshold(this.failOnThreshold!)) {
+      if (this.isNotValidThreshold(this.failOnThreshold)) {
         const errorMsg = `If set, fail on threshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
         throw new Error(errorMsg);
       }
     }
 
     if (this.severityThreshold) {
-      if (isNotValidThreshold(this.severityThreshold!)) {
+      if (this.isNotValidThreshold(this.severityThreshold)) {
         const errorMsg = `If set, severity threshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
         throw new Error(errorMsg);
       } 
     }
 
     if (this.severityThreshold && this.failOnThreshold) {
-      let severity = getSeverityOrdinal(this.severityThreshold);
-      let failOn = getSeverityOrdinal(this.failOnThreshold);
+      const severity = getSeverityOrdinal(this.severityThreshold);
+      const failOn = getSeverityOrdinal(this.failOnThreshold);
   
       if (failOn < severity) {
-        const errorMsg = `When both set, fail on threshold must be higher than severity threshold. ('${this.failOnThreshold}' is less than '${this.severityThreshold}')`;
+        const errorMsg = `When both set, fail on threshold must be equal to or greater than severity threshold. ('${this.failOnThreshold}' is less than '${this.severityThreshold}')`;
         throw new Error(errorMsg);
       }
     }    
+  }
+  
+  private isNotValidThreshold(threshold: string) {
+    const severityThresholdLowerCase = threshold.toLowerCase();
+  
+    return (
+      severityThresholdLowerCase !== Severity.CRITICAL &&
+      severityThresholdLowerCase !== Severity.HIGH &&
+      severityThresholdLowerCase !== Severity.MEDIUM &&
+      severityThresholdLowerCase !== Severity.LOW
+    );
   }  
 }
 
