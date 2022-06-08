@@ -106,7 +106,12 @@ describe('TaskArgs.setMonitorWhen', () => {
 
 describe('TaskArgs.validate', () => {
   const args = defaultTaskArgs();
-
+  const validSeverityThresholds = [
+    Severity.CRITICAL,
+    Severity.HIGH,
+    Severity.MEDIUM,
+    Severity.LOW,
+  ];
   it('passes validation when correct combination of severity and fail on thresholds', () => {
     args.severityThreshold = Severity.LOW;
     args.failOnThreshold = Severity.HIGH;
@@ -123,16 +128,20 @@ describe('TaskArgs.validate', () => {
     args.validate();
   });
 
-  it('throws error when incorrect combination of severity and fail on thresholds', () => {
+  it('throws error if invalid severity threshold', () => {
     expect(
       () => { 
-        args.severityThreshold = Severity.HIGH;
-        args.failOnThreshold = Severity.MEDIUM;
+        args.severityThreshold = 'hey';
         args.validate();
       }
     ).toThrow(
-      new Error('When both set, fail on threshold must be equal to or greater than severity threshold. (\'medium\' is less than \'high\')')
+      new Error('If set, severity threshold must be \'critical\' or \'high\' or \'medium\' or \'low\' (case insensitive). If not set, the default is \'low\'.')
     );
+  });  
+
+  it.each(validSeverityThresholds)('passes validation for ${level}', (level) => {
+    args.severityThreshold = level;
+    args.validate();
   });  
 });
 
