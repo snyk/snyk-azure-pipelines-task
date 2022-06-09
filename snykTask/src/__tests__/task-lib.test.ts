@@ -14,7 +14,7 @@ import {
   formatDate,
   attachReport,
   removeRegexFromFile,
-  doVulnerabilitiesExistForFailureThreshold
+  doVulnerabilitiesExistForFailureThreshold,
 } from '../task-lib';
 import { TaskArgs } from '../task-args';
 
@@ -46,17 +46,22 @@ test('getOptionsToExecuteSnyk builds IExecOptions like we need it', () => {
   expect(options.ignoreReturnCode).toBe(true);
 });
 
-
-test('finds vulnerabilities greater than medium threshold', async  () => {
+test('finds vulnerabilities greater than medium threshold', async () => {
   const fixturePath = 'snykTask/test/fixtures/high-vulnerabilities.json';
-  const itemsFound = await doVulnerabilitiesExistForFailureThreshold(fixturePath, "medium");
+  const itemsFound = await doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'medium',
+  );
 
   expect(itemsFound).toBe(true);
 });
 
-test('ignores vulnerabilities lower than high threshold', async  () => {
+test('ignores vulnerabilities lower than high threshold', async () => {
   const fixturePath = 'snykTask/test/fixtures/low-vulnerabilities.json';
-  const itemsFound = await doVulnerabilitiesExistForFailureThreshold(fixturePath, "high");
+  const itemsFound = await doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'high',
+  );
 
   expect(itemsFound).toBe(false);
 });

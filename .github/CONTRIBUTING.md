@@ -48,6 +48,8 @@ To release a major you need to add `BREAKING CHANGE: ` to the start of the body 
 
 Ensure that your code adheres to the included `.eslintrc` config by running `npm run test:checks`.
 
+Check your code is formatted by running `prettier`m e.g. `npx prettier --check "the-search-path"`
+
 ## Sending pull requests
 
 - add tests for newly added code (and try to mirror directory and file structure if possible) or fixes

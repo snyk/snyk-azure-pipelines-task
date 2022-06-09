@@ -129,20 +129,23 @@ describe('TaskArgs.validate', () => {
   });
 
   it('throws error if invalid severity threshold', () => {
-    expect(
-      () => { 
-        args.severityThreshold = 'hey';
-        args.validate();
-      }
-    ).toThrow(
-      new Error('If set, severityThreshold must be \'critical\' or \'high\' or \'medium\' or \'low\' (case insensitive). If not set, the default is \'low\'.')
+    expect(() => {
+      args.severityThreshold = 'hey';
+      args.validate();
+    }).toThrow(
+      new Error(
+        "If set, severityThreshold must be 'critical' or 'high' or 'medium' or 'low' (case insensitive). If not set, the default is 'low'.",
+      ),
     );
-  });  
+  });
 
-  it.each(validSeverityThresholds)('passes validation for ${level}', (level) => {
-    args.severityThreshold = level;
-    args.validate();
-  });  
+  it.each(validSeverityThresholds)(
+    'passes validation for ${level}',
+    (level) => {
+      args.severityThreshold = level;
+      args.validate();
+    },
+  );
 });
 
 const SNYK_TEST_SUCCESS_TRUE = true;

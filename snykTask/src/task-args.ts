@@ -1,7 +1,5 @@
 import * as tl from 'azure-pipelines-task-lib';
-import {
-  Severity,
-} from './task-lib';
+import { Severity } from './task-lib';
 export type MonitorWhen = 'never' | 'noIssuesFound' | 'always';
 class TaskArgs {
   testType: string | undefined = '';
@@ -76,7 +74,7 @@ class TaskArgs {
   }
 
   public validate() {
-    if (this.failOnThreshold){
+    if (this.failOnThreshold) {
       if (this.isNotValidThreshold(this.failOnThreshold)) {
         const errorMsg = `If set, failOnThreshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
         throw new Error(errorMsg);
@@ -87,20 +85,20 @@ class TaskArgs {
       if (this.isNotValidThreshold(this.severityThreshold)) {
         const errorMsg = `If set, severityThreshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
         throw new Error(errorMsg);
-      } 
-    }  
+      }
+    }
   }
-  
+
   private isNotValidThreshold(threshold: string) {
     const severityThresholdLowerCase = threshold.toLowerCase();
-  
+
     return (
       severityThresholdLowerCase !== Severity.CRITICAL &&
       severityThresholdLowerCase !== Severity.HIGH &&
       severityThresholdLowerCase !== Severity.MEDIUM &&
       severityThresholdLowerCase !== Severity.LOW
     );
-  }  
+  }
 }
 
 export function getAuthToken() {

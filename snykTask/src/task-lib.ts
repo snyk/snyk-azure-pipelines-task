@@ -3,7 +3,7 @@ import * as tr from 'azure-pipelines-task-lib/toolrunner';
 import * as tl from 'azure-pipelines-task-lib/task';
 import stream = require('stream');
 import * as fs from 'fs';
-import * as fsPromises from 'fs/promises'
+import * as fsPromises from 'fs/promises';
 import * as path from 'path';
 
 export const JSON_ATTACHMENT_TYPE = 'JSON_ATTACHMENT_TYPE';
@@ -109,8 +109,10 @@ export function getSeverityOrdinal(severity: string): number {
   throw new Error(`Cannot get severity ordinal for ${severity} severity`);
 }
 
-export async function doVulnerabilitiesExistForFailureThreshold(filePath: string, threshold: string) : Promise<boolean> {
-
+export async function doVulnerabilitiesExistForFailureThreshold(
+  filePath: string,
+  threshold: string,
+): Promise<boolean> {
   const file = await fsPromises.readFile(filePath, 'utf8');
   const json = JSON.parse(file);
   const thresholdOrdinal = getSeverityOrdinal(threshold);

@@ -73,8 +73,9 @@ function parseInputArgs(): TaskArgs {
   taskArgs.additionalArguments =
     tl.getInput('additionalArguments', false) || '';
   taskArgs.testDirectory = tl.getInput('testDirectory', false);
-  taskArgs.severityThreshold = tl.getInput('severityThreshold', false);  
-  taskArgs.failOnThreshold = tl.getInput('failOnThreshold', false) || Severity.LOW;
+  taskArgs.severityThreshold = tl.getInput('severityThreshold', false);
+  taskArgs.failOnThreshold =
+    tl.getInput('failOnThreshold', false) || Severity.LOW;
   taskArgs.ignoreUnknownCA = tl.getBoolInput('ignoreUnknownCA', false);
 
   if (isDebugMode()) {
@@ -400,11 +401,15 @@ async function run() {
       snykTestResult.code === CLI_EXIT_CODE_ISSUES_FOUND &&
       taskArgs.failOnIssues
     ) {
-      const failureThreshold:string = taskArgs.failOnThreshold;
-      const matchingVulnerabilitiesFound = await doVulnerabilitiesExistForFailureThreshold(jsonReportFullPath, failureThreshold);
+      const failureThreshold: string = taskArgs.failOnThreshold;
+      const matchingVulnerabilitiesFound =
+        await doVulnerabilitiesExistForFailureThreshold(
+          jsonReportFullPath,
+          failureThreshold,
+        );
       if (matchingVulnerabilitiesFound) {
         throw new SnykError(snykTestResult.message);
-      }            
+      }
     }
 
     tl.setResult(tl.TaskResult.Succeeded, 'Snyk Scan completed');
