@@ -3,7 +3,6 @@ import * as tr from 'azure-pipelines-task-lib/toolrunner';
 import * as tl from 'azure-pipelines-task-lib/task';
 import stream = require('stream');
 import * as fs from 'fs';
-import * as fsPromises from 'fs/promises';
 import * as path from 'path';
 
 export const JSON_ATTACHMENT_TYPE = 'JSON_ATTACHMENT_TYPE';
@@ -109,19 +108,32 @@ export function getSeverityOrdinal(severity: string): number {
   throw new Error(`Cannot get severity ordinal for ${severity} severity`);
 }
 
-export async function doVulnerabilitiesExistForFailureThreshold(
+export function doVulnerabilitiesExistForFailureThreshold(
   filePath: string,
   threshold: string,
-): Promise<boolean> {
-  const file = await fsPromises.readFile(filePath, 'utf8');
+): boolean {
+  if (!fs.existsSync(filePath)) {
+    console.log(
+      `${filePath} does not exist...cannot use it to search for vulnerabilities, defaulting to detected`,
+    );
+    return true;
+  }
+
+  const file = fs.readFileSync(filePath, 'utf8');
   const json = JSON.parse(file);
   const thresholdOrdinal = getSeverityOrdinal(threshold);
 
-  for (const vulnerability of json['vulnerabilities']) {
-    if (getSeverityOrdinal(vulnerability['severity']) >= thresholdOrdinal) {
-      return true;
+  for (let i = 0; i < json.length; i++) {
+    let project = json[i];
+    for (const vulnerability of project['vulnerabilities']) {
+      if (getSeverityOrdinal(vulnerability['severity']) >= thresholdOrdinal) {
+        return true;
+      }
     }
   }
 
+  console.log(
+    `no vulnerabilities of at least '${threshold}' severity were detected, not failing build`,
+  );
   return false;
 }

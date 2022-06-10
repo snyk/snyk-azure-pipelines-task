@@ -403,7 +403,7 @@ async function run() {
     ) {
       const failureThreshold: string = taskArgs.failOnThreshold;
       const matchingVulnerabilitiesFound =
-        await doVulnerabilitiesExistForFailureThreshold(
+        doVulnerabilitiesExistForFailureThreshold(
           jsonReportFullPath,
           failureThreshold,
         );

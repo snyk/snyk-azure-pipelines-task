@@ -9,6 +9,37 @@ Unit tests can be run via `npm run test:unit` command.
 
 To run the code, a GitHub PR against `develop` should be raised with the committed code to the branch PR. The PR runs deployment script with deploy to development environment. The script builds the code that's added as part of your change and installs it in Azure DevOps organization as an extension that can be added to run a pipeline.
 
+### Local debugging
+
+A number of environment variable are required for debugging, here's an example launch config for `VSCode` that sets mandatory parameters such as `AGENT_TEMPDIRECTORY`, `INPUT_failOnIssues` and `INPUT_authToken`
+
+```
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "program": "${workspaceFolder}/snykTask/src/index.ts",
+            "env": {
+                "AGENT_TEMPDIRECTORY": "some/temp/path",
+                "INPUT_failOnIssues": "true",
+                "INPUT_authToken": "your-auth-token-guid-from-portal", 
+                "INPUT_targetFile": "path-to-visual-studio-solution.sln", 
+                "INPUT_organization" : "your-org-guid-from-portal",
+                "INPUT_monitorWhen" : "never",
+                "INPUT_severityThreshold" : "low",
+                "INPUT_failOnThreshold" : "critical"
+              },            
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        }
+    ]
+}
+```
+
 ## Release
 The release process is fully-automated: all you need to do is create a PR to merge `develop` into `master` and call the PR `Merge develop into master for release`.
 

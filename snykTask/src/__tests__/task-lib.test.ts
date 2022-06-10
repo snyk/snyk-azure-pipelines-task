@@ -46,9 +46,9 @@ test('getOptionsToExecuteSnyk builds IExecOptions like we need it', () => {
   expect(options.ignoreReturnCode).toBe(true);
 });
 
-test('finds vulnerabilities greater than medium threshold', async () => {
+test('finds vulnerabilities greater than medium threshold', () => {
   const fixturePath = 'snykTask/test/fixtures/high-vulnerabilities.json';
-  const itemsFound = await doVulnerabilitiesExistForFailureThreshold(
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
     'medium',
   );
@@ -56,9 +56,19 @@ test('finds vulnerabilities greater than medium threshold', async () => {
   expect(itemsFound).toBe(true);
 });
 
-test('ignores vulnerabilities lower than high threshold', async () => {
+test('defaults to found when file does not exist', () => {
+  const fixturePath = 'snykTask/test/fixtures/does-not-exist.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'medium',
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
+test('ignores vulnerabilities lower than high threshold', () => {
   const fixturePath = 'snykTask/test/fixtures/low-vulnerabilities.json';
-  const itemsFound = await doVulnerabilitiesExistForFailureThreshold(
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
     'high',
   );
