@@ -46,7 +46,18 @@ test('getOptionsToExecuteSnyk builds IExecOptions like we need it', () => {
   expect(options.ignoreReturnCode).toBe(true);
 });
 
-test('finds vulnerabilities greater than medium threshold', () => {
+test('finds vulnerabilities greater than medium threshold in single-project results', () => {
+  const fixturePath =
+    'snykTask/test/fixtures/single-project-high-vulnerabilities.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'medium',
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
+test('finds vulnerabilities greater than medium threshold in multi-project results', () => {
   const fixturePath = 'snykTask/test/fixtures/high-vulnerabilities.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,

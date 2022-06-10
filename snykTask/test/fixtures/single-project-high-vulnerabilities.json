@@ -1,0 +1,14 @@
+{
+  "vulnerabilities": [
+    {
+      "severity": "critical"
+    },
+    {
+      "severity": "high"
+    }    
+  ],
+  "ok": true,
+  "dependencyCount": 0,
+  "org": "demo-applications"
+}  
+

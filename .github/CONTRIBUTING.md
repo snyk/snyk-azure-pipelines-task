@@ -79,7 +79,7 @@ To release a major you need to add `BREAKING CHANGE: ` to the start of the body 
 
 Ensure that your code adheres to the included `.eslintrc` config by running `npm run test:checks`.
 
-Check your code is formatted by running `prettier`m e.g. `npx prettier --check "the-search-path"`
+Check your code is formatted by running `prettier` e.g. `npx prettier --check snykTask/**/*.ts` and auto-fix any violations by performing `npx prettier --write snykTask/**/*.ts`
 
 ## Sending pull requests
 

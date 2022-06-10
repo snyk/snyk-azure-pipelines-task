@@ -123,17 +123,29 @@ export function doVulnerabilitiesExistForFailureThreshold(
   const json = JSON.parse(file);
   const thresholdOrdinal = getSeverityOrdinal(threshold);
 
-  for (let i = 0; i < json.length; i++) {
-    let project = json[i];
-    for (const vulnerability of project['vulnerabilities']) {
-      if (getSeverityOrdinal(vulnerability['severity']) >= thresholdOrdinal) {
+  if (Array.isArray(json)) {
+    for (let i = 0; i < json.length; i++) {
+      if (hasMatchingVulnerabilities(json[i], thresholdOrdinal)) {
         return true;
       }
+    }
+  } else {
+    if (hasMatchingVulnerabilities(json, thresholdOrdinal)) {
+      return true;
     }
   }
 
   console.log(
     `no vulnerabilities of at least '${threshold}' severity were detected, not failing build`,
   );
+  return false;
+}
+
+function hasMatchingVulnerabilities(project: any, thresholdOrdinal: number) {
+  for (const vulnerability of project['vulnerabilities']) {
+    if (getSeverityOrdinal(vulnerability['severity']) >= thresholdOrdinal) {
+      return true;
+    }
+  }
   return false;
 }
