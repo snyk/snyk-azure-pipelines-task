@@ -27,10 +27,11 @@ A number of environment variable are required for debugging, here's an example l
                 "INPUT_failOnIssues": "true",
                 "INPUT_authToken": "your-auth-token-guid-from-portal", 
                 "INPUT_targetFile": "path-to-visual-studio-solution.sln", 
-                "INPUT_organization" : "your-org-guid-from-portal",
-                "INPUT_monitorWhen" : "never",
-                "INPUT_severityThreshold" : "low",
-                "INPUT_failOnThreshold" : "critical"
+                "INPUT_organization": "your-org-guid-from-portal",
+                "INPUT_monitorWhen": "never",
+                "INPUT_severityThreshold": "low",
+                "INPUT_failOnThreshold": "critical", 
+                "NODE_OPTIONS": null
               },            
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
@@ -79,7 +80,7 @@ To release a major you need to add `BREAKING CHANGE: ` to the start of the body 
 
 Ensure that your code adheres to the included `.eslintrc` config by running `npm run test:checks`.
 
-Check your code is formatted by running `prettier` e.g. `npx prettier --check snykTask/**/*.ts` and auto-fix any violations by performing `npx prettier --write snykTask/**/*.ts`
+Fix any `prettier` violations reported before pushing by running `npm run format` 
 
 ## Sending pull requests
 

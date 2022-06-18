@@ -76,14 +76,14 @@ class TaskArgs {
   public validate() {
     if (this.failOnThreshold) {
       if (this.isNotValidThreshold(this.failOnThreshold)) {
-        const errorMsg = `If set, failOnThreshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
+        const errorMsg = `If set, failOnThreshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is '${Severity.LOW}'.`;
         throw new Error(errorMsg);
       }
     }
 
     if (this.severityThreshold) {
       if (this.isNotValidThreshold(this.severityThreshold)) {
-        const errorMsg = `If set, severityThreshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is 'low'.`;
+        const errorMsg = `If set, severityThreshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is '${Severity.LOW}'.`;
         throw new Error(errorMsg);
       }
     }

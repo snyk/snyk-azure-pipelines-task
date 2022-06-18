@@ -77,7 +77,7 @@ test('defaults to found when file does not exist', () => {
   expect(itemsFound).toBe(true);
 });
 
-test('ignores vulnerabilities lower than high threshold', () => {
+test('does not match vulnerabilities lower than high threshold', () => {
   const fixturePath = 'snykTask/test/fixtures/low-vulnerabilities.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
