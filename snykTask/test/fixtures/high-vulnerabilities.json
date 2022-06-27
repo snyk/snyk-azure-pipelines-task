@@ -1,0 +1,28 @@
+[
+  {
+    "vulnerabilities": [
+      {
+        "severity": "critical"
+      },
+      {
+        "severity": "high"
+      }    
+    ],
+    "ok": true,
+    "dependencyCount": 0,
+    "org": "demo-applications"
+  },
+  {
+    "vulnerabilities": [
+      {
+        "severity": "medium"
+      },
+      {
+        "severity": "high"
+      }    
+    ],
+    "ok": true,
+    "dependencyCount": 0,
+    "org": "demo-applications"
+  }
+]

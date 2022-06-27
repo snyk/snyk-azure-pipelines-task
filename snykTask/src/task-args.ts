@@ -1,5 +1,5 @@
 import * as tl from 'azure-pipelines-task-lib';
-
+import { Severity } from './task-lib';
 export type MonitorWhen = 'never' | 'noIssuesFound' | 'always';
 class TaskArgs {
   testType: string | undefined = '';
@@ -10,7 +10,7 @@ class TaskArgs {
   dockerfilePath: string | undefined = '';
 
   severityThreshold: string | undefined = '';
-
+  failOnThreshold: string = Severity.LOW;
   organization: string | undefined = '';
   monitorWhen: MonitorWhen = 'always';
   failOnIssues: boolean = true;
@@ -71,6 +71,33 @@ class TaskArgs {
     } else {
       return '';
     }
+  }
+
+  public validate() {
+    if (this.failOnThreshold) {
+      if (this.isNotValidThreshold(this.failOnThreshold)) {
+        const errorMsg = `If set, failOnThreshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is '${Severity.LOW}'.`;
+        throw new Error(errorMsg);
+      }
+    }
+
+    if (this.severityThreshold) {
+      if (this.isNotValidThreshold(this.severityThreshold)) {
+        const errorMsg = `If set, severityThreshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is '${Severity.LOW}'.`;
+        throw new Error(errorMsg);
+      }
+    }
+  }
+
+  private isNotValidThreshold(threshold: string) {
+    const severityThresholdLowerCase = threshold.toLowerCase();
+
+    return (
+      severityThresholdLowerCase !== Severity.CRITICAL &&
+      severityThresholdLowerCase !== Severity.HIGH &&
+      severityThresholdLowerCase !== Severity.MEDIUM &&
+      severityThresholdLowerCase !== Severity.LOW
+    );
   }
 }
 

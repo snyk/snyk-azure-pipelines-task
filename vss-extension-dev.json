@@ -3,7 +3,7 @@
   "id": "snyk-security-scan-dev",
   "name": "Snyk Security Scan (Dev)",
   "version": "0.2.2",
-  "publisher": "agranado-snyk-pub",
+  "publisher": "snyk-dev",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"

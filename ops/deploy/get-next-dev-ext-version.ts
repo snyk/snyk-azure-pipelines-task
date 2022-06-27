@@ -26,8 +26,8 @@ async function main() {
       process.exit(1);
     }
   } else {
-    console.error('could not get extension info');
-    process.exit(1);
+    // Could not get extension info. The extension must not exist. Returning `0.0.1` for first version of new extension.
+    console.log('0.0.1');
   }
 }
 
