@@ -4,6 +4,7 @@
    which I don't want to do. */
 
 import { TaskArgs } from '../task-args';
+import { Severity } from '../task-lib';
 
 function defaultTaskArgs(): TaskArgs {
   return new TaskArgs({
@@ -101,6 +102,50 @@ describe('TaskArgs.setMonitorWhen', () => {
     args.setMonitorWhen('always');
     expect(args.monitorWhen).toBe('always');
   });
+});
+
+describe('TaskArgs.validate', () => {
+  const args = defaultTaskArgs();
+  const validSeverityThresholds = [
+    Severity.CRITICAL,
+    Severity.HIGH,
+    Severity.MEDIUM,
+    Severity.LOW,
+  ];
+  it('passes validation when correct combination of severity and fail on thresholds', () => {
+    args.severityThreshold = Severity.LOW;
+    args.failOnThreshold = Severity.HIGH;
+    args.validate();
+  });
+
+  it('passes validation when only severity level specified', () => {
+    args.severityThreshold = Severity.HIGH;
+    args.validate();
+  });
+
+  it('passes validation when only fail on threshold specified', () => {
+    args.failOnThreshold = Severity.HIGH;
+    args.validate();
+  });
+
+  it('throws error if invalid severity threshold', () => {
+    expect(() => {
+      args.severityThreshold = 'hey';
+      args.validate();
+    }).toThrow(
+      new Error(
+        "If set, severityThreshold must be 'critical' or 'high' or 'medium' or 'low' (case insensitive). If not set, the default is 'low'.",
+      ),
+    );
+  });
+
+  it.each(validSeverityThresholds)(
+    'passes validation for ${level}',
+    (level) => {
+      args.severityThreshold = level;
+      args.validate();
+    },
+  );
 });
 
 const SNYK_TEST_SUCCESS_TRUE = true;

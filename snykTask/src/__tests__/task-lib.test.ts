@@ -14,6 +14,7 @@ import {
   formatDate,
   attachReport,
   removeRegexFromFile,
+  doVulnerabilitiesExistForFailureThreshold,
 } from '../task-lib';
 import { TaskArgs } from '../task-args';
 
@@ -43,6 +44,47 @@ test('getOptionsToExecuteSnyk builds IExecOptions like we need it', () => {
   expect(options.cwd).toBe('/some/path');
   expect(options.failOnStdErr).toBe(false);
   expect(options.ignoreReturnCode).toBe(true);
+});
+
+test('finds vulnerabilities greater than medium threshold in single-project results', () => {
+  const fixturePath =
+    'snykTask/test/fixtures/single-project-high-vulnerabilities.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'medium',
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
+test('finds vulnerabilities greater than medium threshold in multi-project results', () => {
+  const fixturePath = 'snykTask/test/fixtures/high-vulnerabilities.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'medium',
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
+test('defaults to found when file does not exist', () => {
+  const fixturePath = 'snykTask/test/fixtures/does-not-exist.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'medium',
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
+test('does not match vulnerabilities lower than high threshold', () => {
+  const fixturePath = 'snykTask/test/fixtures/low-vulnerabilities.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'high',
+  );
+
+  expect(itemsFound).toBe(false);
 });
 
 test('getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it', () => {

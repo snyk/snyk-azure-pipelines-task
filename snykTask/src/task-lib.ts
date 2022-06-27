@@ -94,13 +94,58 @@ export enum Severity {
   LOW = 'low',
 }
 
-export function isNotValidThreshold(threshold: string) {
-  const severityThresholdLowerCase = threshold.toLowerCase();
+export function getSeverityOrdinal(severity: string): number {
+  switch (severity) {
+    case Severity.CRITICAL:
+      return 3;
+    case Severity.HIGH:
+      return 2;
+    case Severity.MEDIUM:
+      return 1;
+    case Severity.LOW:
+      return 0;
+  }
+  throw new Error(`Cannot get severity ordinal for ${severity} severity`);
+}
 
-  return (
-    severityThresholdLowerCase !== Severity.CRITICAL &&
-    severityThresholdLowerCase !== Severity.HIGH &&
-    severityThresholdLowerCase !== Severity.MEDIUM &&
-    severityThresholdLowerCase !== Severity.LOW
+export function doVulnerabilitiesExistForFailureThreshold(
+  filePath: string,
+  threshold: string,
+): boolean {
+  if (!fs.existsSync(filePath)) {
+    console.log(
+      `${filePath} does not exist...cannot use it to search for vulnerabilities, defaulting to detected`,
+    );
+    return true;
+  }
+
+  const file = fs.readFileSync(filePath, 'utf8');
+  const json = JSON.parse(file);
+  const thresholdOrdinal = getSeverityOrdinal(threshold);
+
+  if (Array.isArray(json)) {
+    for (let i = 0; i < json.length; i++) {
+      if (hasMatchingVulnerabilities(json[i], thresholdOrdinal)) {
+        return true;
+      }
+    }
+  } else {
+    if (hasMatchingVulnerabilities(json, thresholdOrdinal)) {
+      return true;
+    }
+  }
+
+  console.log(
+    `no vulnerabilities of at least '${threshold}' severity were detected, not failing build`,
   );
+  return false;
+}
+
+function hasMatchingVulnerabilities(project: any, thresholdOrdinal: number) {
+  for (const vulnerability of project['vulnerabilities']) {
+    if (getSeverityOrdinal(vulnerability['severity']) >= thresholdOrdinal) {
+      return true;
+    }
+  }
+  return false;
 }
