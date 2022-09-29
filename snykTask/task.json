@@ -116,6 +116,12 @@
       "type": "string",
       "required": false,
       "defaultValue": "low",
+      "options": {
+        "low": "Low (default)",
+        "medium": "Medium",
+        "high": "High",
+        "critical": "Critical"
+      },
       "helpMarkDown": "Fail build if Snyk finds issues above specified level (low, medium, high, critical)"
     },
     {
