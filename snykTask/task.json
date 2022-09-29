@@ -111,6 +111,14 @@
       "helpMarkDown": "Fail build if Snyk finds issues"
     },
     {
+      "name": "failOnThreshold",
+      "label": "Fail build if Snyk finds issues above specified level",
+      "type": "string",
+      "required": false,
+      "defaultValue": "low",
+      "helpMarkDown": "Fail build if Snyk finds issues above specified level (low, medium, high, critical)"
+    },
+    {
       "name": "projectName",
       "label": "Project name in Snyk",
       "type": "string",
