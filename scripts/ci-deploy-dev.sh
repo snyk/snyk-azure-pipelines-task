@@ -1,5 +1,21 @@
 #!/bin/bash
 
+#
+# Copyright 2022 Snyk Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 # This script deploys a dev version of the extension to the dev environment for development / testing purposes.
 # It also shares / installs it into the given Azure organization.
 # Arguments:
@@ -13,7 +29,7 @@ INPUT_PARAM_AZ_ORG="$2"
 # Check if the Azure CLI is already installed. If not, install it.
 az -v >/dev/null 2>&1
 if [[ ! $? -eq 0 ]]; then
-  echo "Intalling AZ Cli..."
+  echo "Installing AZ Cli..."
   platform=$OSTYPE
   echo "Platform: ${platform}"
   if [[ $platform == "linux-gnu" ]]; then
