@@ -89,9 +89,9 @@ test('if dockerImageName is set and both targetFile and dockerfilePath are set, 
   expect(fileArg).toBe('good/Dockerfile');
 });
 
-test("project name is wrapped in quotes, if project name contains space", () => {
+test('project name is wrapped in quotes, if project name contains space', () => {
   const args = defaultTaskArgs();
-  args.projectName = "my project";
+  args.projectName = 'my project';
 
   const projectNameArg = args.getProjectNameParameter();
 
