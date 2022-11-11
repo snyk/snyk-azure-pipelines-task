@@ -95,7 +95,7 @@ class TaskArgs {
     }
 
     if (this.projectName.indexOf(' ') >= 0) {
-      console.log("project name contains space")
+      console.log('project name contains space');
       return `"${this.projectName}"`;
     }
 
