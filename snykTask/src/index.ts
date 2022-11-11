@@ -138,6 +138,7 @@ async function runSnykTest(
   let errorMsg = '';
   let code = 0;
   const fileArg = taskArgs.getFileParameter();
+  const projectNameArg = taskArgs.getProjectNameParameter();
 
   const snykTestToolRunner = tl
     .tool(snykPath)
@@ -150,7 +151,7 @@ async function runSnykTest(
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
     .argIf(fileArg, `--file=${fileArg}`)
     .argIf(taskArgs.ignoreUnknownCA, `--insecure`)
-    .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
+    .argIf(taskArgs.organization, `--org=${projectNameArg}`)
     .argIf(taskArgs.projectName, `--project-name=${taskArgs.projectName}`)
     .arg(`--json-file-output=${jsonReportOutputPath}`)
     .line(taskArgs.additionalArguments);
