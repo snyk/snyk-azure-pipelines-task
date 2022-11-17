@@ -138,6 +138,7 @@ async function runSnykTest(
   let errorMsg = '';
   let code = 0;
   const fileArg = taskArgs.getFileParameter();
+  const projectNameArg = taskArgs.getProjectNameParameter();
 
   const snykTestToolRunner = tl
     .tool(snykPath)
@@ -151,7 +152,7 @@ async function runSnykTest(
     .argIf(fileArg, `--file=${fileArg}`)
     .argIf(taskArgs.ignoreUnknownCA, `--insecure`)
     .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
-    .argIf(taskArgs.projectName, `--project-name=${taskArgs.projectName}`)
+    .argIf(taskArgs.projectName, `--project-name=${projectNameArg}`)
     .arg(`--json-file-output=${jsonReportOutputPath}`)
     .line(taskArgs.additionalArguments);
 
@@ -228,6 +229,7 @@ async function runSnykMonitor(
 ): Promise<SnykOutput> {
   let errorMsg = '';
   const fileArg = taskArgs.getFileParameter();
+  const projectNameArg = taskArgs.getProjectNameParameter();
   const options = getOptionsToExecuteSnykCLICommand(
     taskArgs,
     taskNameForAnalytics,
@@ -241,7 +243,7 @@ async function runSnykMonitor(
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
     .argIf(fileArg, `--file=${fileArg}`)
     .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
-    .argIf(taskArgs.projectName, `--project-name=${taskArgs.projectName}`)
+    .argIf(taskArgs.projectName, `--project-name=${projectNameArg}`)
     .argIf(taskArgs.ignoreUnknownCA, `--insecure`)
     .line(taskArgs.additionalArguments);
 
