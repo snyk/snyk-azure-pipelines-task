@@ -89,6 +89,19 @@ class TaskArgs {
     }
   }
 
+  getProjectNameParameter() {
+    if (!this.projectName) {
+      return undefined;
+    }
+
+    if (this.projectName.indexOf(' ') >= 0) {
+      console.log('project name contains space');
+      return `"${this.projectName}"`;
+    }
+
+    return this.projectName;
+  }
+
   public validate() {
     if (this.failOnThreshold) {
       if (this.isNotValidThreshold(this.failOnThreshold)) {
