@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Snyk Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /* This test is in JS not TS because I need to be able to set args.targetFile and args.dockerFilePath to null
    to simulate the case where Azure returns null from getInput() when the corresponding input paremters
    are not set and I can't do that in TypeScript without modifying the tsconfig.js to have "strictNullChecks": false
@@ -71,6 +87,15 @@ test('if dockerImageName is set and both targetFile and dockerfilePath are set, 
   }
 
   expect(fileArg).toBe('good/Dockerfile');
+});
+
+test('project name is wrapped in quotes, if project name contains space', () => {
+  const args = defaultTaskArgs();
+  args.projectName = 'my project';
+
+  const projectNameArg = args.getProjectNameParameter();
+
+  expect(projectNameArg).toBe('"my project"');
 });
 
 test('ensure that ignoreUnknownCA is false by default', () => {
