@@ -51,6 +51,10 @@
       "path": "LICENSE"
     }
   },
+  "repository": {
+    "type": "git",
+    "uri": "https://github.com/snyk/snyk-azure-pipelines-task"
+  },
   "links": {
     "home": {
       "uri": "https://snyk.io/"
