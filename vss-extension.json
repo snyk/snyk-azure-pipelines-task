@@ -65,6 +65,10 @@
       "uri": "./LICENSE"
     }
   },
+  "CustomerQnASupport": {
+    "enablemarketplaceqna": true,
+    "url": "https://support.snyk.io/"
+  }, 
   "contributions": [
     {
       "id": "custom-build-release-task",
