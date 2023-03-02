@@ -67,7 +67,7 @@ Here's a full example:
     monitorWhen: 'always'
 ```
 
-An example that specifies a value for `severityThreshold` as medium and configures `failOnThreshold` to critical. This configuration would _only fail_ the build when critical issues are found, but all issues detected at medium, high and critical would be reported back to your snyk project for analysis
+An example that specifies a value for `severityThreshold` as medium and configures `failOnThreshold` to critical. This configuration would _only fail_ the build when critical issues are found, but all issues detected at medium, high and critical would be reported back to your snyk project for analysis,
 
 ```
 - task: SnykSecurityScan@1
