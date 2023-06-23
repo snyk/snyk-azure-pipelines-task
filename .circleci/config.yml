@@ -60,6 +60,8 @@ jobs:
             echo DEV_AZ_TASK_NAME: $DEV_AZ_TASK_NAME
 
             npm run deploy:compile
+
+            echo Getting next dev version...
             NEXT_DEV_VERSION=$(node ./ops/deploy/dist/get-next-dev-ext-version.js)
             if [[ $? -eq 0 ]]; then
               echo NEXT_DEV_VERSION: $NEXT_DEV_VERSION
