@@ -135,7 +135,9 @@ async function runBuild(
             console.log('build succeeded');
             success = true;
           } else {
-            console.log(`build did not succeed for ${testProjectName}. BuildResult code: ${result}`);
+            console.log(
+              `build did not succeed for ${testProjectName}. BuildResult code: ${result}`,
+            );
           }
         }
         break;
