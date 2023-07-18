@@ -95,6 +95,10 @@ async function runBuild(
 ): Promise<void> {
   let success = false;
 
+  console.log(
+    `Starting build for project: ${testProjectName} with build definition ID: ${testBuildDefinitionId}`,
+  );
+
   try {
     const launchPipelineResult = await launchBuildPipeline(
       webApi,
@@ -150,7 +154,9 @@ async function runBuild(
       return Promise.reject();
     }
   } catch (err) {
-    console.log('failed to launching / checking build');
+    console.log(
+      `Failed to launch/check build for project: ${testProjectName} with build definition ID: ${testBuildDefinitionId}`,
+    );
     console.log(err);
     console.log('\nrejecting - not successful');
     return Promise.reject();
