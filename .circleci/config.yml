@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   prodsec: snyk/prodsec-orb@1.0
-  
+
 jobs:
   test:
     docker:
