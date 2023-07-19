@@ -127,12 +127,12 @@ async function runBuild(
       }
 
       if (status === BuildStatus.Completed) {
-        console.log('build is complete');
+        console.log(`build is complete for ${testProjectName}`);
         const result = checkBuildStatusRes.result;
         console.log(`build result: ${result}`);
         if (result) {
           if (result === BuildResult.Succeeded) {
-            console.log('build succeeded');
+            console.log(`build succeeded for ${testProjectName}`);
             success = true;
           } else {
             console.log(
@@ -143,7 +143,7 @@ async function runBuild(
         break;
       } else {
         console.log(
-          `Still waiting for build ${buildId} to complete. Status: ${status}. Time: ${new Date().getTime()}`,
+          `Still waiting for build ${buildId} (${testProjectName}) to complete. Status: ${status}. Time: ${new Date().getTime()}`,
         );
         await asyncSleep(10000);
       }
