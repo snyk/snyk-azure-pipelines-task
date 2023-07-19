@@ -53,7 +53,7 @@ export function getSnykDownloadInfo(platform: Platform): SnykDownloads {
 export async function downloadExecutable(
   targetDirectory: string,
   executable: Executable,
-  maxRetries = 5
+  maxRetries = 5,
 ) {
   const filePath = path.join(targetDirectory, executable.filename);
 
@@ -91,7 +91,9 @@ export async function downloadExecutable(
       console.log(`Download successful for ${executable.filename}`);
       break;
     } catch (err) {
-      console.error(`Download of ${executable.filename} failed: ${err.message}`);
+      console.error(
+        `Download of ${executable.filename} failed: ${err.message}`,
+      );
 
       // Don't wait before retrying the last attempt
       if (attempt < maxRetries - 1) {
