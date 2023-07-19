@@ -53,6 +53,7 @@ export function getSnykDownloadInfo(platform: Platform): SnykDownloads {
 export async function downloadExecutable(
   targetDirectory: string,
   executable: Executable,
+  maxRetries = 5
 ) {
   const filePath = path.join(targetDirectory, executable.filename);
 
@@ -83,22 +84,26 @@ export async function downloadExecutable(
       });
     });
 
-  // Try to download the file, retry once after 5 seconds if the first attempt fails
-  try {
-    await doDownload();
-  } catch (err) {
-    console.error(`Download of ${executable.filename} failed: ${err.message}`);
-    console.log(
-      `Retrying download of ${executable.filename} after 5 seconds...`,
-    );
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+  // Try to download the file, retry up to `maxRetries` times if the attempt fails
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       await doDownload();
-      console.log(`Retry successful for ${executable.filename}`);
-    } catch (retryErr) {
-      console.error(
-        `Retry failed for ${executable.filename}: ${retryErr.message}`,
-      );
+      console.log(`Download successful for ${executable.filename}`);
+      break;
+    } catch (err) {
+      console.error(`Download of ${executable.filename} failed: ${err.message}`);
+
+      // Don't wait before retrying the last attempt
+      if (attempt < maxRetries - 1) {
+        console.log(
+          `Retrying download of ${executable.filename} after 5 seconds...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      } else {
+        console.error(
+          `All retries failed for ${executable.filename}: ${err.message}`,
+        );
+      }
     }
   }
 }
