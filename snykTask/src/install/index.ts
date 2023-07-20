@@ -53,18 +53,59 @@ export function getSnykDownloadInfo(platform: Platform): SnykDownloads {
 export async function downloadExecutable(
   targetDirectory: string,
   executable: Executable,
+  maxRetries = 5,
 ) {
-  const fileWriter = fs.createWriteStream(
-    path.join(targetDirectory, executable.filename),
-    {
-      mode: 0o766,
-    },
-  );
-  return new Promise<void>((resolve, reject) => {
-    https.get(executable.downloadUrl, (response) => {
-      response.on('end', () => resolve());
-      response.on('error', (err) => reject(err));
-      response.pipe(fileWriter);
-    });
+  const filePath = path.join(targetDirectory, executable.filename);
+
+  // Check if the file already exists
+  if (fs.existsSync(filePath)) {
+    console.log(
+      `File ${executable.filename} already exists, skipping download.`,
+    );
+    return;
+  }
+
+  const fileWriter = fs.createWriteStream(filePath, {
+    mode: 0o766,
   });
+
+  // Wrapping the download in a function for easy retrying
+  const doDownload = () =>
+    new Promise<void>((resolve, reject) => {
+      https.get(executable.downloadUrl, (response) => {
+        response.on('end', () => resolve());
+        response.on('error', (err) => {
+          console.error(
+            `Download of ${executable.filename} failed: ${err.message}`,
+          );
+          reject(err);
+        });
+        response.pipe(fileWriter);
+      });
+    });
+
+  // Try to download the file, retry up to `maxRetries` times if the attempt fails
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      await doDownload();
+      console.log(`Download successful for ${executable.filename}`);
+      break;
+    } catch (err) {
+      console.error(
+        `Download of ${executable.filename} failed: ${err.message}`,
+      );
+
+      // Don't wait before retrying the last attempt
+      if (attempt < maxRetries - 1) {
+        console.log(
+          `Retrying download of ${executable.filename} after 5 seconds...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      } else {
+        console.error(
+          `All retries failed for ${executable.filename}: ${err.message}`,
+        );
+      }
+    }
+  }
 }

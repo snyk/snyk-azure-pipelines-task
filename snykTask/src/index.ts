@@ -154,6 +154,7 @@ async function runSnykTest(
     .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
     .argIf(taskArgs.projectName, `--project-name=${projectNameArg}`)
     .arg(`--json-file-output=${jsonReportOutputPath}`)
+    .argIf(isDebugMode(), '-d')
     .line(taskArgs.additionalArguments);
 
   const options = getOptionsToExecuteSnykCLICommand(
