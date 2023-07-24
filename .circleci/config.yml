@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  prodsec: snyk/prodsec-orb@1.0
+
 jobs:
   test:
     docker:
@@ -128,6 +131,11 @@ workflows:
   version: 2
   build_and_test:
     jobs:
+      - prodsec/secrets-scan:
+          name: Scan repository for secrets
+          context:
+            - snyk-bot-slack
+          channel: hammerhead-alerts
       - test
       - deploy_dev:
           requires:

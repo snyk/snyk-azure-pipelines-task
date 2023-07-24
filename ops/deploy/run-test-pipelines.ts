@@ -95,6 +95,10 @@ async function runBuild(
 ): Promise<void> {
   let success = false;
 
+  console.log(
+    `Starting build for project: ${testProjectName} with build definition ID: ${testBuildDefinitionId}`,
+  );
+
   try {
     const launchPipelineResult = await launchBuildPipeline(
       webApi,
@@ -123,21 +127,23 @@ async function runBuild(
       }
 
       if (status === BuildStatus.Completed) {
-        console.log('build is complete');
+        console.log(`build is complete for ${testProjectName}`);
         const result = checkBuildStatusRes.result;
         console.log(`build result: ${result}`);
         if (result) {
           if (result === BuildResult.Succeeded) {
-            console.log('build succeeded');
+            console.log(`build succeeded for ${testProjectName}`);
             success = true;
           } else {
-            console.log(`build did not succeed. BuildResult code: ${result}`);
+            console.log(
+              `build did not succeed for ${testProjectName}. BuildResult code: ${result}`,
+            );
           }
         }
         break;
       } else {
         console.log(
-          `Still waiting for build ${buildId} to complete. Status: ${status}. Time: ${new Date().getTime()}`,
+          `Still waiting for build ${buildId} (${testProjectName}) to complete. Status: ${status}. Time: ${new Date().getTime()}`,
         );
         await asyncSleep(10000);
       }
@@ -150,7 +156,9 @@ async function runBuild(
       return Promise.reject();
     }
   } catch (err) {
-    console.log('failed to launching / checking build');
+    console.log(
+      `Failed to launch/check build for project: ${testProjectName} with build definition ID: ${testBuildDefinitionId}`,
+    );
     console.log(err);
     console.log('\nrejecting - not successful');
     return Promise.reject();
