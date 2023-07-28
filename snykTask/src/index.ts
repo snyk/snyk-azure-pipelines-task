@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Snyk Ltd.
+ * Copyright 2022-2023 Snyk Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +126,11 @@ async function showDirectoryListing(
   const lsToolRunner: tr.ToolRunner = tl.tool(lsPath);
   lsToolRunner.arg('-la');
   lsToolRunner.argIf(dirToShow, dirToShow);
-  await lsToolRunner.exec(options);
+  try {
+    await lsToolRunner.exec(options);
+  } catch (err) {
+    console.log(`Error listing directory: ${err}`);
+  }
 }
 
 async function runSnykTest(
