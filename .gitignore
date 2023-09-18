@@ -9,7 +9,6 @@ cycle.sh
 .taskkey
 /.mocha_tests/
 snykTask/coverage
-package-lock.json
 *.bak
 *.vsix
 .eslintcache
