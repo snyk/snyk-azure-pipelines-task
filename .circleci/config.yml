@@ -144,7 +144,7 @@ workflows:
             branches:
               ignore: master
       - deploy_prod:
-          context: nodejs-lib-release
+          context: team-hammerhead-common-deploy-tokens
           requires:
             - test
           filters:
