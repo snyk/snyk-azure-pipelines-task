@@ -1,5 +1,22 @@
 {
+  "branches": [
+    "master"
+  ],
+  "repositoryUrl": "https://github.com/snyk/snyk-azure-pipelines-task",
   "plugins": [
+    [
+      "@semantic-release/exec",
+      {
+        "publishCmd": "scripts/ci-deploy.sh ${nextRelease.version}"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": [],
+        "message": "chore(release): ${nextRelease.version}"
+      }
+    ],
     [
       "@semantic-release/commit-analyzer",
       {
@@ -11,12 +28,8 @@
         ]
       }
     ],
-    [
-      "@semantic-release/git",
-      {
-        "assets": [],
-        "message": "chore(release): ${nextRelease.version}"
-      }
-    ]
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    "@semantic-release/github"
   ]
 }
