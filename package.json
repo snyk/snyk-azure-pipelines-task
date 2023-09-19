@@ -6,6 +6,8 @@
   "scripts": {
     "install_dependencies": "npm install && cd snykTask && npm install && cd .. && cd ops/deploy && npm install",
     "build": "npm run install_dependencies && npm run compile && npm run enhancer:compile && npm run deploy:compile",
+    "build:clean": "npm run clean:install_dependencies && npm run compile && npm run enhancer:compile && npm run deploy:compile",
+    "clean:install_dependencies": "npm ci && cd snykTask && npm ci && cd .. && cd ops/deploy && npm ci",
     "pretest": "npm run build",
     "test": "npm run test:checks && npm run test:unit",
     "test:checks": "npm run eslint && npm run format:check",
@@ -48,7 +50,7 @@
   "author": "snyk.io",
   "license": "Apache-2.0",
   "dependencies": {
-    "azure-pipelines-task-lib": "3.3.1",
+    "azure-pipelines-task-lib": "^3.4.0",
     "jquery": "^3.4.1",
     "vss-web-extension-sdk": "^5.141.0"
   },
