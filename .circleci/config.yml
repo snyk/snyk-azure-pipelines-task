@@ -13,7 +13,7 @@ jobs:
       - run:
           name: Build
           command: |
-            npm run build
+            npm run build:clean
       - run:
           name: Checks
           command: |
@@ -49,7 +49,7 @@ jobs:
       - run:
           name: Run Build
           command: |
-            npm run build
+            npm run build:clean
 
       - run:
           name: Build and Deploy to Test Environment
@@ -110,7 +110,7 @@ jobs:
       - run:
           name: Build
           command: |
-            npm run build
+            npm run build:clean
 
       - run:
           name: Create Extension
@@ -144,7 +144,7 @@ workflows:
             branches:
               ignore: master
       - deploy_prod:
-          context: nodejs-lib-release
+          context: team-hammerhead-common-deploy-tokens
           requires:
             - test
           filters:
