@@ -23,24 +23,6 @@
     "deploy:eslint": "eslint --cache 'ops/deploy/**/*.ts'",
     "deploy:run": "node ops/deploy/dist/deploy.js"
   },
-  "release": {
-    "branches": [
-      "master"
-    ],
-    "repositoryUrl": "https://github.com/snyk/snyk-azure-pipelines-task",
-    "plugins": [
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
-      "@semantic-release/changelog",
-      "@semantic-release/github",
-      [
-        "@semantic-release/exec",
-        {
-          "publishCmd": "scripts/ci-deploy.sh ${nextRelease.version}"
-        }
-      ]
-    ]
-  },
   "author": "snyk.io",
   "license": "Apache-2.0",
   "dependencies": {
@@ -51,6 +33,7 @@
   "devDependencies": {
     "@semantic-release/changelog": "^5.0.1",
     "@semantic-release/exec": "^5.0.0",
+    "@semantic-release/git": "^9.0.1",
     "@types/jest": "^24.0.18",
     "@types/node": "^16.11.10",
     "@types/q": "^1.5.2",
