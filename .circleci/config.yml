@@ -121,8 +121,12 @@ jobs:
       - run:
           name: Create renamed copy of the vsix bundle
           command: |
-            cp *.vsix prod-extension-artifact.vsix
-            ls -la prod-extension-artifact.vsix
+            if ls *.vsix 1>/dev/null 2>&1; then
+              cp *.vsix prod-extension-artifact.vsix
+              ls -la prod-extension-artifact.vsix
+            else
+              echo "No .vsix files found to copy."
+            fi
 
       - store_artifacts:
           path: ./prod-extension-artifact.vsix
