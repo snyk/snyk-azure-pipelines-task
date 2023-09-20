@@ -125,7 +125,7 @@ jobs:
               cp *.vsix prod-extension-artifact.vsix
               ls -la prod-extension-artifact.vsix
             else
-              echo "No .vsix files found to copy."
+              echo "No new version detected; skipping .vsix file copy step."
             fi
 
       - store_artifacts:
