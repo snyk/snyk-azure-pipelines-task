@@ -30,6 +30,7 @@ import {
   HTML_ATTACHMENT_TYPE,
   doVulnerabilitiesExistForFailureThreshold,
   Severity,
+  TestType,
 } from './task-lib';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -74,6 +75,7 @@ function parseInputArgs(): TaskArgs {
     failOnIssues: tl.getBoolInput('failOnIssues', true),
   });
 
+  taskArgs.testType = tl.getInput('testType', false) || TestType.APPLICATION;
   taskArgs.targetFile = tl.getInput('targetFile', false);
   taskArgs.dockerImageName = tl.getInput('dockerImageName', false);
   taskArgs.dockerfilePath = tl.getInput('dockerfilePath', false);
@@ -90,6 +92,7 @@ function parseInputArgs(): TaskArgs {
     tl.getInput('additionalArguments', false) || '';
   taskArgs.testDirectory = tl.getInput('testDirectory', false);
   taskArgs.severityThreshold = tl.getInput('severityThreshold', false);
+  taskArgs.codeSeverityThreshold = tl.getInput('codeSeverityThreshold', false);
   taskArgs.failOnThreshold =
     tl.getInput('failOnThreshold', false) || Severity.LOW;
   taskArgs.ignoreUnknownCA = tl.getBoolInput('ignoreUnknownCA', false);
@@ -104,10 +107,14 @@ function parseInputArgs(): TaskArgs {
 }
 
 const logAllTaskArgs = (taskArgs: TaskArgs) => {
+  console.log(`taskArgs.testType: ${taskArgs.testType}`);
   console.log(`taskArgs.targetFile: ${taskArgs.targetFile}`);
   console.log(`taskArgs.dockerImageName: ${taskArgs.dockerImageName}`);
   console.log(`taskArgs.dockerfilePath: ${taskArgs.dockerfilePath}`);
   console.log(`taskArgs.severityThreshold: ${taskArgs.severityThreshold}`);
+  console.log(
+    `taskArgs.codeSeverityThreshold: ${taskArgs.codeSeverityThreshold}`,
+  );
   console.log(`taskArgs.failOnThreshold: ${taskArgs.failOnThreshold}`);
   console.log(`taskArgs.projectName: ${taskArgs.projectName}`);
   console.log(`taskArgs.organization: ${taskArgs.organization}`);
@@ -146,20 +153,38 @@ async function runSnykTest(
 
   const snykTestToolRunner = tl
     .tool(snykPath)
+    .argIf(taskArgs.testType == TestType.CODE, 'code')
+    .argIf(
+      taskArgs.dockerImageName || taskArgs.testType == TestType.CONTAINER_IMAGE,
+      'container',
+    )
     .arg('test')
     .argIf(
-      taskArgs.severityThreshold,
+      taskArgs.testType != TestType.CODE && taskArgs.severityThreshold,
       `--severity-threshold=${taskArgs.severityThreshold}`,
     )
-    .argIf(taskArgs.dockerImageName, `--docker`)
+    .argIf(
+      taskArgs.testType == TestType.CODE && taskArgs.codeSeverityThreshold,
+      `--severity-threshold=${taskArgs.codeSeverityThreshold}`,
+    )
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
     .argIf(fileArg, `--file=${fileArg}`)
     .argIf(taskArgs.ignoreUnknownCA, `--insecure`)
     .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
     .argIf(taskArgs.projectName, `--project-name=${projectNameArg}`)
     .arg(`--json-file-output=${jsonReportOutputPath}`)
-    .argIf(isDebugMode(), '-d')
+    .argIf(isDebugMode() && taskArgs.testType != TestType.CODE, '-d')
+    .argIf(taskArgs.testType == TestType.CODE, `--json`)
     .line(taskArgs.additionalArguments);
+
+  // pipe to json file output with --json to handle no code issues found
+  if (taskArgs.testType == TestType.CODE) {
+    const catToolRunner = tl.tool('cat');
+    snykTestToolRunner.pipeExecOutputToTool(
+      catToolRunner,
+      jsonReportOutputPath,
+    );
+  }
 
   const options = getOptionsToExecuteSnykCLICommand(
     taskArgs,
@@ -179,7 +204,7 @@ async function runSnykTest(
   if (snykTestExitCode >= CLI_EXIT_CODE_INVALID_USE) {
     code = snykTestExitCode;
     errorMsg =
-      'failing task because `snyk test` was improperly used or had other errors';
+      'failing task because `snyk` was improperly used or had other errors';
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
   removeRegexFromFile(
@@ -215,7 +240,7 @@ const runSnykToHTML = async (
   if (snykToHTMLExitCode >= CLI_EXIT_CODE_INVALID_USE) {
     code = snykToHTMLExitCode;
     errorMsg =
-      'failing task because `snyk test` was improperly used or had other errors';
+      'failing task because `snyk` was improperly used or had other errors';
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
   removeRegexFromFile(
@@ -241,10 +266,14 @@ async function runSnykMonitor(
     taskVersion,
     snykToken,
   );
+  // not handling snyk code cli upload which is still a closed beta
   const snykMonitorToolRunner = tl
     .tool(snykPath)
+    .argIf(
+      taskArgs.dockerImageName || taskArgs.testType == TestType.CONTAINER_IMAGE,
+      'container',
+    )
     .arg('monitor')
-    .argIf(taskArgs.dockerImageName, `--docker`)
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)
     .argIf(fileArg, `--file=${fileArg}`)
     .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)

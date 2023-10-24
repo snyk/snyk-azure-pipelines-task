@@ -110,6 +110,24 @@ export enum Severity {
   LOW = 'low',
 }
 
+export enum TestType {
+  APPLICATION = 'app',
+  CODE = 'code',
+  CONTAINER_IMAGE = 'container',
+}
+
+export const testTypeSeverityThreshold = new Map<string, Array<string>>([
+  [
+    TestType.APPLICATION,
+    [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW],
+  ],
+  [TestType.CODE, [Severity.HIGH, Severity.MEDIUM, Severity.LOW]],
+  [
+    TestType.CONTAINER_IMAGE,
+    [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW],
+  ],
+]);
+
 export function getSeverityOrdinal(severity: string): number {
   switch (severity) {
     case Severity.CRITICAL:

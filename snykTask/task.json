@@ -42,6 +42,7 @@
       "helpMarkDown": "What do you want to test?",
       "options": {
         "app": "Application",
+        "code": "Code",
         "container": "Container Image"
       },
       "properties": {
@@ -87,7 +88,22 @@
         "high": "High",
         "critical": "Critical"
       },
-      "helpMarkDown": "The testing severity threshold. Leave blank for no threshold."
+      "helpMarkDown": "The testing severity threshold. Leave blank for no threshold.",
+      "visibleRule": "testType = app || testType = container"
+    },
+    {
+      "name": "codeSeverityThreshold",
+      "label": "Code Testing severity threshold",
+      "type": "pickList",
+      "required": false,
+      "defaultValue": "low",
+      "options": {
+        "low": "Low (default)",
+        "medium": "Medium",
+        "high": "High"
+      },
+      "helpMarkDown": "Snyk Code testing severity threshold. Leave blank for no threshold.",
+      "visibleRule": "testType = code"
     },
     {
       "name": "monitorWhen",
@@ -100,7 +116,8 @@
       },
       "required": true,
       "defaultValue": "always",
-      "helpMarkDown": "When to run Snyk Monitor"
+      "helpMarkDown": "When to run Snyk Monitor",
+      "visibleRule": "testType = app || testType = container"
     },
     {
       "name": "failOnIssues",
