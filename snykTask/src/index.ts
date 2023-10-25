@@ -173,18 +173,8 @@ async function runSnykTest(
     .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
     .argIf(taskArgs.projectName, `--project-name=${projectNameArg}`)
     .arg(`--json-file-output=${jsonReportOutputPath}`)
-    .argIf(isDebugMode() && taskArgs.testType != TestType.CODE, '-d')
-    .argIf(taskArgs.testType == TestType.CODE, `--json`)
+    .argIf(isDebugMode(), '-d')
     .line(taskArgs.additionalArguments);
-
-  // pipe to json file output with --json to handle no code issues found
-  if (taskArgs.testType == TestType.CODE) {
-    const catToolRunner = tl.tool('cat');
-    snykTestToolRunner.pipeExecOutputToTool(
-      catToolRunner,
-      jsonReportOutputPath,
-    );
-  }
 
   const options = getOptionsToExecuteSnykCLICommand(
     taskArgs,
@@ -207,6 +197,31 @@ async function runSnykTest(
       'failing task because `snyk` was improperly used or had other errors';
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
+
+  // handle snyk code no-issues-found non-existent json by rerunning --json stdout to piped file
+  if (
+    taskArgs.testType == TestType.CODE &&
+    !fs.existsSync(jsonReportOutputPath) &&
+    snykTestExitCode === CLI_EXIT_CODE_SUCCESS
+  ) {
+    const echoToolRunner = tl.tool('echo');
+    const snykCodeTestToolRunner = tl
+      .tool(snykPath)
+      .arg('code')
+      .arg('test')
+      .arg('--json')
+      .argIf(
+        taskArgs.codeSeverityThreshold,
+        `--severity-threshold=${taskArgs.codeSeverityThreshold}`,
+      )
+      .argIf(taskArgs.ignoreUnknownCA, `--insecure`)
+      .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
+      .argIf(taskArgs.projectName, `--project-name=${projectNameArg}`)
+      .line(taskArgs.additionalArguments)
+      .pipeExecOutputToTool(echoToolRunner, jsonReportOutputPath);
+    await snykCodeTestToolRunner.exec(options);
+  }
+
   removeRegexFromFile(
     jsonReportOutputPath,
     regexForRemoveCommandLine,
