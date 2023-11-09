@@ -15,7 +15,7 @@
  */
 
 import * as tl from 'azure-pipelines-task-lib';
-import { Severity, TestType, testTypeSeverityThreshold } from './task-lib';
+import { Severity } from './task-lib';
 export type MonitorWhen = 'never' | 'noIssuesFound' | 'always';
 class TaskArgs {
   testType: string | undefined = '';
@@ -35,8 +35,6 @@ class TaskArgs {
   testDirectory: string | undefined = '';
   additionalArguments: string = '';
   ignoreUnknownCA: boolean = false;
-  // Snyk Code severity with its own pickList (no critical)
-  codeSeverityThreshold: string | undefined = '';
 
   delayAfterReportGenerationSeconds: number = 0;
 
@@ -48,10 +46,7 @@ class TaskArgs {
   public setMonitorWhen(rawInput?: string) {
     if (rawInput) {
       const lowerCaseInput = rawInput.toLowerCase();
-      if (this.testType == TestType.CODE) {
-        console.log('Snyk Code publishes results using --report workflow');
-        this.monitorWhen = 'never';
-      } else if (lowerCaseInput === 'never' || lowerCaseInput === 'always') {
+      if (lowerCaseInput === 'never' || lowerCaseInput === 'always') {
         this.monitorWhen = lowerCaseInput;
       } else if (lowerCaseInput === 'noissuesfound') {
         this.monitorWhen = 'noIssuesFound';
@@ -62,12 +57,8 @@ class TaskArgs {
       }
     }
   }
-
-  // disallow snyk code monitor which follows --report workflow
   public shouldRunMonitor(snykTestSuccess: boolean): boolean {
-    if (this.testType == TestType.CODE) {
-      return false;
-    } else if (this.monitorWhen === 'always') {
+    if (this.monitorWhen === 'always') {
       return true;
     } else if (this.monitorWhen === 'never') {
       return false;
@@ -111,33 +102,31 @@ class TaskArgs {
     return this.projectName;
   }
 
-  // validate based on testTypeSeverityThreshold applicable thresholds
   public validate() {
-    const taskTestType = this.testType || TestType.APPLICATION;
-    const taskTestTypeThreshold = testTypeSeverityThreshold.get(taskTestType);
-
     if (this.failOnThreshold) {
-      if (
-        !taskTestTypeThreshold?.includes(this.failOnThreshold.toLowerCase())
-      ) {
-        const errorMsg = `If set, failOnThreshold must be one from [${taskTestTypeThreshold}] (case insensitive). If not set, the default is '${Severity.LOW}'.`;
+      if (this.isNotValidThreshold(this.failOnThreshold)) {
+        const errorMsg = `If set, failOnThreshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is '${Severity.LOW}'.`;
         throw new Error(errorMsg);
       }
     }
 
-    if (
-      (this.severityThreshold &&
-        !taskTestTypeThreshold?.includes(
-          this.severityThreshold.toLowerCase(),
-        )) ||
-      (this.codeSeverityThreshold &&
-        !taskTestTypeThreshold?.includes(
-          this.codeSeverityThreshold.toLowerCase(),
-        ))
-    ) {
-      const errorMsg = `If set, severityThreshold must be one from [${taskTestTypeThreshold}] (case insensitive). If not set, the default is '${Severity.LOW}'.`;
-      throw new Error(errorMsg);
+    if (this.severityThreshold) {
+      if (this.isNotValidThreshold(this.severityThreshold)) {
+        const errorMsg = `If set, severityThreshold must be '${Severity.CRITICAL}' or '${Severity.HIGH}' or '${Severity.MEDIUM}' or '${Severity.LOW}' (case insensitive). If not set, the default is '${Severity.LOW}'.`;
+        throw new Error(errorMsg);
+      }
     }
+  }
+
+  private isNotValidThreshold(threshold: string) {
+    const severityThresholdLowerCase = threshold.toLowerCase();
+
+    return (
+      severityThresholdLowerCase !== Severity.CRITICAL &&
+      severityThresholdLowerCase !== Severity.HIGH &&
+      severityThresholdLowerCase !== Severity.MEDIUM &&
+      severityThresholdLowerCase !== Severity.LOW
+    );
   }
 }
 

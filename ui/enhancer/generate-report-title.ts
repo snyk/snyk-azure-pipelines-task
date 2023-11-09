@@ -45,7 +45,7 @@ export function generateReportTitle(
     return titleText;
   }
 
-  // Single project scan or Snyk code scan results
+  // Single project scan results
   let titleText = '';
   if (jsonResults['docker'] && jsonResults['docker']['baseImage']) {
     titleText = `Snyk Test for ${
@@ -59,17 +59,8 @@ export function generateReportTitle(
     } (${formatReportName(attachmentName)})`;
   }
 
-  if (jsonResults['$schema']) {
-    titleText = `Snyk Code Test for (${formatReportName(attachmentName)})`;
-  }
-
   if (jsonResults['uniqueCount'] && jsonResults['uniqueCount'] > 0) {
     titleText += ` | Found ${jsonResults['uniqueCount']} issues`;
-  } else if (
-    jsonResults['$schema'] &&
-    jsonResults['runs'][0]['results'].length > 0
-  ) {
-    titleText += ` | Found ${jsonResults['runs'][0]['results'].length} issues`;
   } else {
     titleText += ` | No issues found`;
   }

@@ -19,10 +19,7 @@ export function detectVulns(jsonResults: object | any[]): boolean {
     return jsonResults.some((result) => !!result.uniqueCount);
   }
 
-  if (
-    (jsonResults['uniqueCount'] && jsonResults['uniqueCount'] > 0) ||
-    (jsonResults['$schema'] && jsonResults['runs'][0]['results'].length > 0)
-  ) {
+  if (jsonResults['uniqueCount'] && jsonResults['uniqueCount'] > 0) {
     return true;
   }
 
