@@ -20,7 +20,7 @@
    which I don't want to do. */
 
 import { TaskArgs } from '../task-args';
-import { Severity, TestType } from '../task-lib';
+import { Severity } from '../task-lib';
 
 function defaultTaskArgs(): TaskArgs {
   return new TaskArgs({
@@ -41,23 +41,6 @@ test('ensure no problems if both targetFile and docker-file-path are both not se
     console.log('fileArg is null');
   }
 
-  expect(fileArg).toBe('');
-});
-
-test('ensure no problems if testType set to code and both targetFile and dockerImageName are both set', () => {
-  const args = defaultTaskArgs();
-  args.testType = TestType.CODE;
-  args.dockerImageName = 'some-docker-image';
-  args.targetFile = 'some-target-file';
-  args.dockerfilePath = null as any;
-
-  const fileArg = args.getFileParameter();
-  console.log(`fileArg: ${fileArg}`);
-  if (fileArg == null) {
-    console.log('fileArg is null');
-  }
-
-  expect(args.testType).toBe('code');
   expect(fileArg).toBe('');
 });
 
@@ -143,27 +126,17 @@ describe('TaskArgs.setMonitorWhen', () => {
 
     args.setMonitorWhen('always');
     expect(args.monitorWhen).toBe('always');
-
-    args.testType = TestType.CODE;
-    args.setMonitorWhen('always');
-    expect(args.monitorWhen).toBe('never');
   });
 });
 
 describe('TaskArgs.validate', () => {
   const args = defaultTaskArgs();
-  const testTypeSeverityThreshold = [
-    [
-      TestType.APPLICATION,
-      [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW],
-    ],
-    [TestType.CODE, [Severity.HIGH, Severity.MEDIUM, Severity.LOW]],
-    [
-      TestType.CONTAINER_IMAGE,
-      [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW],
-    ],
+  const validSeverityThresholds = [
+    Severity.CRITICAL,
+    Severity.HIGH,
+    Severity.MEDIUM,
+    Severity.LOW,
   ];
-
   it('passes validation when correct combination of severity and fail on thresholds', () => {
     args.severityThreshold = Severity.LOW;
     args.failOnThreshold = Severity.HIGH;
@@ -180,51 +153,22 @@ describe('TaskArgs.validate', () => {
     args.validate();
   });
 
-  it('throws error if invalid severity threshold for blank testType defaulted to app', () => {
+  it('throws error if invalid severity threshold', () => {
     expect(() => {
       args.severityThreshold = 'hey';
       args.validate();
     }).toThrow(
       new Error(
-        "If set, severityThreshold must be one from [critical,high,medium,low] (case insensitive). If not set, the default is 'low'.",
+        "If set, severityThreshold must be 'critical' or 'high' or 'medium' or 'low' (case insensitive). If not set, the default is 'low'.",
       ),
     );
   });
 
-  it('throws error if invalid severity threshold for container testType', () => {
-    expect(() => {
-      args.severityThreshold = 'hey';
-      args.testType = TestType.CONTAINER_IMAGE;
+  it.each(validSeverityThresholds)(
+    'passes validation for ${level}',
+    (level) => {
+      args.severityThreshold = level;
       args.validate();
-    }).toThrow(
-      new Error(
-        "If set, severityThreshold must be one from [critical,high,medium,low] (case insensitive). If not set, the default is 'low'.",
-      ),
-    );
-  });
-
-  it('throws error if invalid severity threshold for code', () => {
-    expect(() => {
-      args.codeSeverityThreshold = 'hey';
-      args.testType = TestType.CODE;
-      args.validate();
-    }).toThrow(
-      new Error(
-        "If set, severityThreshold must be one from [high,medium,low] (case insensitive). If not set, the default is 'low'.",
-      ),
-    );
-  });
-
-  it.each(testTypeSeverityThreshold)(
-    'passes validation for each test type severity threshold',
-    (a, b) => {
-      args.testType = a as TestType;
-      for (const sev of b) {
-        args.severityThreshold = sev as Severity;
-        args.codeSeverityThreshold = sev as Severity;
-        args.failOnThreshold = sev as Severity;
-        args.validate();
-      }
     },
   );
 });
