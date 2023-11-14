@@ -74,7 +74,7 @@ async function main() {
     console.log(`Extension version installed: ${afterInstallExtensionVersion}`);
 
     // there seems to be a delay between when the API indicates the extension is available and when a Pipeline
-    // can be succesfully launched that uses it.
+    // can be successfully launched that uses it.
     // so, we will sleep for 30 seconds to give it some time to sort itself out
     console.log(
       'sleeping for 30 seconds to give Azure DevOps time to settle extension availability',
