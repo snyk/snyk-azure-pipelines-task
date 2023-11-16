@@ -192,7 +192,7 @@ describe('TaskArgs.validate', () => {
   });
 
   it('passes validation when invalid testType is specified with blank severityThreshold, codeSeverityThreshold, defaulted failOnThreshold', () => {
-    args.testType = 'thisIsWrongType';
+    args.testType = 'thisIsInvalidType';
     args.severityThreshold = '';
     args.codeSeverityThreshold = '';
     args.failOnThreshold = Severity.LOW;
@@ -200,7 +200,7 @@ describe('TaskArgs.validate', () => {
   });
 
   it('passes validation when invalid testType is specified with undefined severityThreshold, codeSeverityThreshold, defaulted failOnThreshold', () => {
-    args.testType = 'thisIsWrongType';
+    args.testType = 'thisIsInvalidType';
     args.severityThreshold = undefined;
     args.codeSeverityThreshold = undefined;
     args.failOnThreshold = Severity.LOW;
@@ -208,7 +208,7 @@ describe('TaskArgs.validate', () => {
   });
 
   it('passes validation when invalid testType is specified with undefined severityThreshold, defaulted failOnThreshold, invalid codeSeverityThreshold', () => {
-    args.testType = 'thisIsWrongType';
+    args.testType = 'thisIsInvalidType';
     args.severityThreshold = undefined;
     args.codeSeverityThreshold = 'thisIsInvalidCodeSeverityThreshold';
     args.failOnThreshold = Severity.LOW;
@@ -216,7 +216,7 @@ describe('TaskArgs.validate', () => {
   });
 
   it('passes validation if invalid testType specified with default failOnThreshold (low), default severityThreshold (low)', () => {
-    args.testType = 'thisIsWrongType';
+    args.testType = 'thisIsInvalidType';
     args.failOnThreshold = Severity.LOW;
     args.severityThreshold = Severity.LOW;
     args.validate();
@@ -246,10 +246,46 @@ describe('TaskArgs.validate', () => {
     );
   });
 
+  it('throws error if invalid failOnThreshold for code testType', () => {
+    expect(() => {
+      args.failOnThreshold = 'thisIsInvalidFailOnThreshold';
+      args.testType = TestType.CODE;
+      args.validate();
+    }).toThrow(
+      new Error(
+        "If set, failOnThreshold must be one from [high,medium,low] (case insensitive). If not set, the default is 'low'.",
+      ),
+    );
+  });
+
+  it('throws error if invalid failOnThreshold for container testType', () => {
+    expect(() => {
+      args.failOnThreshold = 'thisIsInvalidFailOnThreshold';
+      args.testType = TestType.CONTAINER_IMAGE;
+      args.validate();
+    }).toThrow(
+      new Error(
+        "If set, failOnThreshold must be one from [critical,high,medium,low] (case insensitive). If not set, the default is 'low'.",
+      ),
+    );
+  });
+
+  it('throws error if invalid failOnThreshold for app testType', () => {
+    expect(() => {
+      args.failOnThreshold = 'thisIsInvalidFailOnThreshold';
+      args.testType = TestType.APPLICATION;
+      args.validate();
+    }).toThrow(
+      new Error(
+        "If set, failOnThreshold must be one from [critical,high,medium,low] (case insensitive). If not set, the default is 'low'.",
+      ),
+    );
+  });
+
   it('throws error if invalid testType specified with invalid failOnThreshold', () => {
     expect(() => {
-      args.failOnThreshold = 'thisIsWrongFailOnThreshold';
-      args.testType = 'thisIsWrongType';
+      args.failOnThreshold = 'thisIsInvalidFailOnThreshold';
+      args.testType = 'thisIsInvalidType';
       args.validate();
     }).toThrow(
       new Error(
