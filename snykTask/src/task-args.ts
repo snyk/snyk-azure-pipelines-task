@@ -150,7 +150,6 @@ class TaskArgs {
       const errorMsg = `If set, codeSeverityThreshold must be one from [${taskTestTypeThreshold}] (case insensitive). If not set, the default is '${Severity.LOW}'.`;
       throw new Error(errorMsg);
     }
-
   }
 }
 
