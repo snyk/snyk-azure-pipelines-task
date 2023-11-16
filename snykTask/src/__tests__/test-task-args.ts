@@ -210,7 +210,7 @@ describe('TaskArgs.validate', () => {
   it('passes validation when invalid testType is specified with undefined severityThreshold, defaulted failOnThreshold, invalid codeSeverityThreshold', () => {
     args.testType = 'thisIsWrongType';
     args.severityThreshold = undefined;
-    args.codeSeverityThreshold = 'thisIsInvalidCodeSeverityThreshold'
+    args.codeSeverityThreshold = 'thisIsInvalidCodeSeverityThreshold';
     args.failOnThreshold = Severity.LOW;
     args.validate();
   });
