@@ -114,7 +114,15 @@ class TaskArgs {
   // validate based on testTypeSeverityThreshold applicable thresholds
   public validate() {
     const taskTestType = this.testType || TestType.APPLICATION;
-    const taskTestTypeThreshold = testTypeSeverityThreshold.get(taskTestType);
+    const validTestTypes: any = Object.values(TestType);
+    const taskTestTypeThreshold =
+      testTypeSeverityThreshold.get(taskTestType) ??
+      testTypeSeverityThreshold.get(TestType.APPLICATION);
+
+    if (!validTestTypes.includes(taskTestType)) {
+      const warningMsgTestType = `Invalid testType specified. Defaulted to 'app'`;
+      console.log(warningMsgTestType);
+    }
 
     if (this.failOnThreshold) {
       if (
@@ -126,18 +134,23 @@ class TaskArgs {
     }
 
     if (
-      (this.severityThreshold &&
-        !taskTestTypeThreshold?.includes(
-          this.severityThreshold.toLowerCase(),
-        )) ||
-      (this.codeSeverityThreshold &&
-        !taskTestTypeThreshold?.includes(
-          this.codeSeverityThreshold.toLowerCase(),
-        ))
+      taskTestType != TestType.CODE &&
+      this.severityThreshold &&
+      !taskTestTypeThreshold?.includes(this.severityThreshold.toLowerCase())
     ) {
       const errorMsg = `If set, severityThreshold must be one from [${taskTestTypeThreshold}] (case insensitive). If not set, the default is '${Severity.LOW}'.`;
       throw new Error(errorMsg);
     }
+
+    if (
+      taskTestType == TestType.CODE &&
+      this.codeSeverityThreshold &&
+      !taskTestTypeThreshold?.includes(this.codeSeverityThreshold.toLowerCase())
+    ) {
+      const errorMsg = `If set, codeSeverityThreshold must be one from [${taskTestTypeThreshold}] (case insensitive). If not set, the default is '${Severity.LOW}'.`;
+      throw new Error(errorMsg);
+    }
+
   }
 }
 
