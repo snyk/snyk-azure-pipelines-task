@@ -155,7 +155,8 @@ async function runSnykTest(
     .tool(snykPath)
     .argIf(taskArgs.testType === TestType.CODE, 'code')
     .argIf(
-      taskArgs.dockerImageName || taskArgs.testType === TestType.CONTAINER_IMAGE,
+      taskArgs.dockerImageName ||
+        taskArgs.testType === TestType.CONTAINER_IMAGE,
       'container',
     )
     .arg('test')
