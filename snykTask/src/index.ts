@@ -153,18 +153,18 @@ async function runSnykTest(
 
   const snykTestToolRunner = tl
     .tool(snykPath)
-    .argIf(taskArgs.testType == TestType.CODE, 'code')
+    .argIf(taskArgs.testType === TestType.CODE, 'code')
     .argIf(
-      taskArgs.dockerImageName || taskArgs.testType == TestType.CONTAINER_IMAGE,
+      taskArgs.dockerImageName || taskArgs.testType === TestType.CONTAINER_IMAGE,
       'container',
     )
     .arg('test')
     .argIf(
-      taskArgs.testType != TestType.CODE && taskArgs.severityThreshold,
+      taskArgs.testType !== TestType.CODE && taskArgs.severityThreshold,
       `--severity-threshold=${taskArgs.severityThreshold}`,
     )
     .argIf(
-      taskArgs.testType == TestType.CODE && taskArgs.codeSeverityThreshold,
+      taskArgs.testType === TestType.CODE && taskArgs.codeSeverityThreshold,
       `--severity-threshold=${taskArgs.codeSeverityThreshold}`,
     )
     .argIf(taskArgs.dockerImageName, `${taskArgs.dockerImageName}`)

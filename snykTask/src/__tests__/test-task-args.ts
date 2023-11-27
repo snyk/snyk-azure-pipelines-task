@@ -29,11 +29,11 @@ function defaultTaskArgs(): TaskArgs {
 }
 
 // Azure's getInput() returns nulls for inputs which are not set. Make sure they don't result in NPEs in the task args parsing.
-test('ensure no problems if both targetFile and docker-file-path are both not set', () => {
+test('fileArg should be an empty string when both targetFile and dockerfilePath are not set', () => {
   const args = defaultTaskArgs();
   args.dockerImageName = 'some-docker-image';
-  args.targetFile = null as any;
-  args.dockerfilePath = null as any;
+  args.targetFile = undefined;
+  args.dockerfilePath = undefined;
 
   const fileArg = args.getFileParameter();
   console.log(`fileArg: ${fileArg}`);
@@ -41,15 +41,16 @@ test('ensure no problems if both targetFile and docker-file-path are both not se
     console.log('fileArg is null');
   }
 
+  expect(fileArg).not.toBeNull();
   expect(fileArg).toBe('');
 });
 
-test('ensure no problems if testType set to code and both targetFile and dockerImageName are both set', () => {
+test('test that fileArg is empty when testType is set to CODE and both targetFile and dockerImageName are provided', () => {
   const args = defaultTaskArgs();
   args.testType = TestType.CODE;
   args.dockerImageName = 'some-docker-image';
   args.targetFile = 'some-target-file';
-  args.dockerfilePath = null as any;
+  args.dockerfilePath = undefined;
 
   const fileArg = args.getFileParameter();
   console.log(`fileArg: ${fileArg}`);
@@ -58,6 +59,7 @@ test('ensure no problems if testType set to code and both targetFile and dockerI
   }
 
   expect(args.testType).toBe('code');
+  expect(fileArg).not.toBeNull();
   expect(fileArg).toBe('');
 });
 
@@ -65,7 +67,7 @@ test("if dockerImageName is specified and (dockerfilePath is not specified but t
   const args = defaultTaskArgs();
   args.dockerImageName = 'some-docker-image';
   args.targetFile = 'should/not/be/set.pom';
-  args.dockerfilePath = null as any;
+  args.dockerfilePath = undefined;
 
   const fileArg = args.getFileParameter();
   console.log(`fileArg: ${fileArg}`);
@@ -80,7 +82,7 @@ test("if dockerImageName is specified and (dockerfilePath is not specified but t
   const args = defaultTaskArgs();
   args.dockerImageName = 'some-docker-image';
   args.targetFile = 'my/Dockerfile';
-  args.dockerfilePath = null as any;
+  args.dockerfilePath = undefined;
 
   const fileArg = args.getFileParameter();
   console.log(`fileArg: ${fileArg}`);

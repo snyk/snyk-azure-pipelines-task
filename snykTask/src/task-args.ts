@@ -18,7 +18,7 @@ import * as tl from 'azure-pipelines-task-lib';
 import { Severity, TestType, testTypeSeverityThreshold } from './task-lib';
 export type MonitorWhen = 'never' | 'noIssuesFound' | 'always';
 class TaskArgs {
-  testType: string | undefined = '';
+  testType: string | undefined = 'app';
 
   targetFile: string | undefined = '';
 
@@ -114,7 +114,7 @@ class TaskArgs {
   // validate based on testTypeSeverityThreshold applicable thresholds
   public validate() {
     const taskTestType = this.testType || TestType.APPLICATION;
-    const validTestTypes: any = Object.values(TestType);
+    const validTestTypes: string[] = Object.values(TestType);
     const taskTestTypeThreshold =
       testTypeSeverityThreshold.get(taskTestType) ??
       testTypeSeverityThreshold.get(TestType.APPLICATION);
@@ -134,7 +134,7 @@ class TaskArgs {
     }
 
     if (
-      taskTestType != TestType.CODE &&
+      taskTestType !== TestType.CODE &&
       this.severityThreshold &&
       !taskTestTypeThreshold?.includes(this.severityThreshold.toLowerCase())
     ) {
@@ -143,7 +143,7 @@ class TaskArgs {
     }
 
     if (
-      taskTestType == TestType.CODE &&
+      taskTestType === TestType.CODE &&
       this.codeSeverityThreshold &&
       !taskTestTypeThreshold?.includes(this.codeSeverityThreshold.toLowerCase())
     ) {
