@@ -20,7 +20,7 @@
    which I don't want to do. */
 
 import { TaskArgs } from '../task-args';
-import { Severity } from '../task-lib';
+import { Severity, TestType } from '../task-lib';
 
 function defaultTaskArgs(): TaskArgs {
   return new TaskArgs({
@@ -29,11 +29,11 @@ function defaultTaskArgs(): TaskArgs {
 }
 
 // Azure's getInput() returns nulls for inputs which are not set. Make sure they don't result in NPEs in the task args parsing.
-test('ensure no problems if both targetFile and docker-file-path are both not set', () => {
+test('fileArg should be an empty string when both targetFile and dockerfilePath are not set', () => {
   const args = defaultTaskArgs();
   args.dockerImageName = 'some-docker-image';
-  args.targetFile = null as any;
-  args.dockerfilePath = null as any;
+  args.targetFile = undefined;
+  args.dockerfilePath = undefined;
 
   const fileArg = args.getFileParameter();
   console.log(`fileArg: ${fileArg}`);
@@ -41,6 +41,25 @@ test('ensure no problems if both targetFile and docker-file-path are both not se
     console.log('fileArg is null');
   }
 
+  expect(fileArg).not.toBeNull();
+  expect(fileArg).toBe('');
+});
+
+test('test that fileArg is empty when testType is set to CODE and both targetFile and dockerImageName are provided', () => {
+  const args = defaultTaskArgs();
+  args.testType = TestType.CODE;
+  args.dockerImageName = 'some-docker-image';
+  args.targetFile = 'some-target-file';
+  args.dockerfilePath = undefined;
+
+  const fileArg = args.getFileParameter();
+  console.log(`fileArg: ${fileArg}`);
+  if (fileArg == null) {
+    console.log('fileArg is null');
+  }
+
+  expect(args.testType).toBe('code');
+  expect(fileArg).not.toBeNull();
   expect(fileArg).toBe('');
 });
 
@@ -48,7 +67,7 @@ test("if dockerImageName is specified and (dockerfilePath is not specified but t
   const args = defaultTaskArgs();
   args.dockerImageName = 'some-docker-image';
   args.targetFile = 'should/not/be/set.pom';
-  args.dockerfilePath = null as any;
+  args.dockerfilePath = undefined;
 
   const fileArg = args.getFileParameter();
   console.log(`fileArg: ${fileArg}`);
@@ -63,7 +82,7 @@ test("if dockerImageName is specified and (dockerfilePath is not specified but t
   const args = defaultTaskArgs();
   args.dockerImageName = 'some-docker-image';
   args.targetFile = 'my/Dockerfile';
-  args.dockerfilePath = null as any;
+  args.dockerfilePath = undefined;
 
   const fileArg = args.getFileParameter();
   console.log(`fileArg: ${fileArg}`);
@@ -126,17 +145,27 @@ describe('TaskArgs.setMonitorWhen', () => {
 
     args.setMonitorWhen('always');
     expect(args.monitorWhen).toBe('always');
+
+    args.testType = TestType.CODE;
+    args.setMonitorWhen('always');
+    expect(args.monitorWhen).toBe('never');
   });
 });
 
 describe('TaskArgs.validate', () => {
   const args = defaultTaskArgs();
-  const validSeverityThresholds = [
-    Severity.CRITICAL,
-    Severity.HIGH,
-    Severity.MEDIUM,
-    Severity.LOW,
+  const testTypeSeverityThreshold = [
+    [
+      TestType.APPLICATION,
+      [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW],
+    ],
+    [TestType.CODE, [Severity.HIGH, Severity.MEDIUM, Severity.LOW]],
+    [
+      TestType.CONTAINER_IMAGE,
+      [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW],
+    ],
   ];
+
   it('passes validation when correct combination of severity and fail on thresholds', () => {
     args.severityThreshold = Severity.LOW;
     args.failOnThreshold = Severity.HIGH;
@@ -153,22 +182,130 @@ describe('TaskArgs.validate', () => {
     args.validate();
   });
 
-  it('throws error if invalid severity threshold', () => {
+  it('throws error if invalid severity threshold for blank testType defaulted to app', () => {
     expect(() => {
       args.severityThreshold = 'hey';
       args.validate();
     }).toThrow(
       new Error(
-        "If set, severityThreshold must be 'critical' or 'high' or 'medium' or 'low' (case insensitive). If not set, the default is 'low'.",
+        "If set, severityThreshold must be one from [critical,high,medium,low] (case insensitive). If not set, the default is 'low'.",
       ),
     );
   });
 
-  it.each(validSeverityThresholds)(
-    'passes validation for ${level}',
-    (level) => {
-      args.severityThreshold = level;
+  it('passes validation when invalid testType is specified with blank severityThreshold, codeSeverityThreshold, defaulted failOnThreshold', () => {
+    args.testType = 'thisIsInvalidType';
+    args.severityThreshold = '';
+    args.codeSeverityThreshold = '';
+    args.failOnThreshold = Severity.LOW;
+    args.validate();
+  });
+
+  it('passes validation when invalid testType is specified with undefined severityThreshold, codeSeverityThreshold, defaulted failOnThreshold', () => {
+    args.testType = 'thisIsInvalidType';
+    args.severityThreshold = undefined;
+    args.codeSeverityThreshold = undefined;
+    args.failOnThreshold = Severity.LOW;
+    args.validate();
+  });
+
+  it('passes validation when invalid testType is specified with undefined severityThreshold, defaulted failOnThreshold, invalid codeSeverityThreshold', () => {
+    args.testType = 'thisIsInvalidType';
+    args.severityThreshold = undefined;
+    args.codeSeverityThreshold = 'thisIsInvalidCodeSeverityThreshold';
+    args.failOnThreshold = Severity.LOW;
+    args.validate();
+  });
+
+  it('passes validation if invalid testType specified with default failOnThreshold (low), default severityThreshold (low)', () => {
+    args.testType = 'thisIsInvalidType';
+    args.failOnThreshold = Severity.LOW;
+    args.severityThreshold = Severity.LOW;
+    args.validate();
+  });
+
+  it('throws error if invalid severity threshold for container testType', () => {
+    expect(() => {
+      args.severityThreshold = 'hey';
+      args.testType = TestType.CONTAINER_IMAGE;
       args.validate();
+    }).toThrow(
+      new Error(
+        "If set, severityThreshold must be one from [critical,high,medium,low] (case insensitive). If not set, the default is 'low'.",
+      ),
+    );
+  });
+
+  it('throws error if invalid severity threshold for code', () => {
+    expect(() => {
+      args.codeSeverityThreshold = 'hey';
+      args.testType = TestType.CODE;
+      args.validate();
+    }).toThrow(
+      new Error(
+        "If set, codeSeverityThreshold must be one from [high,medium,low] (case insensitive). If not set, the default is 'low'.",
+      ),
+    );
+  });
+
+  it('throws error if invalid failOnThreshold for code testType', () => {
+    expect(() => {
+      args.failOnThreshold = 'thisIsInvalidFailOnThreshold';
+      args.testType = TestType.CODE;
+      args.validate();
+    }).toThrow(
+      new Error(
+        "If set, failOnThreshold must be one from [high,medium,low] (case insensitive). If not set, the default is 'low'.",
+      ),
+    );
+  });
+
+  it('throws error if invalid failOnThreshold for container testType', () => {
+    expect(() => {
+      args.failOnThreshold = 'thisIsInvalidFailOnThreshold';
+      args.testType = TestType.CONTAINER_IMAGE;
+      args.validate();
+    }).toThrow(
+      new Error(
+        "If set, failOnThreshold must be one from [critical,high,medium,low] (case insensitive). If not set, the default is 'low'.",
+      ),
+    );
+  });
+
+  it('throws error if invalid failOnThreshold for app testType', () => {
+    expect(() => {
+      args.failOnThreshold = 'thisIsInvalidFailOnThreshold';
+      args.testType = TestType.APPLICATION;
+      args.validate();
+    }).toThrow(
+      new Error(
+        "If set, failOnThreshold must be one from [critical,high,medium,low] (case insensitive). If not set, the default is 'low'.",
+      ),
+    );
+  });
+
+  it('throws error if invalid testType specified with invalid failOnThreshold', () => {
+    expect(() => {
+      args.failOnThreshold = 'thisIsInvalidFailOnThreshold';
+      args.testType = 'thisIsInvalidType';
+      args.validate();
+    }).toThrow(
+      new Error(
+        "If set, failOnThreshold must be one from [critical,high,medium,low] (case insensitive). If not set, the default is 'low'.",
+      ),
+    );
+  });
+
+  it.each(testTypeSeverityThreshold)(
+    'passes validation for each test type severity threshold',
+    (a, b) => {
+      args.testType = a as TestType;
+      for (const sev of b) {
+        args.severityThreshold = sev as Severity;
+        args.codeSeverityThreshold = sev as Severity;
+        args.failOnThreshold = sev as Severity;
+        args.validate();
+      }
     },
   );
 });
