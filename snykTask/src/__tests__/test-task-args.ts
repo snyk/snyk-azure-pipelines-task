@@ -152,6 +152,7 @@ describe('TaskArgs.setMonitorWhen', () => {
   });
 });
 
+// Runs validation based on defaulted or predefined testType to severityThreshold, codeSeverityThreshold, failOnThreshold.
 describe('TaskArgs.validate', () => {
   const args = defaultTaskArgs();
   const testTypeSeverityThreshold = [
