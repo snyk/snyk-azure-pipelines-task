@@ -261,6 +261,52 @@ describe('TaskArgs.validate', () => {
     );
   });
 
+  it('passes validation if undefined codeSeverityThreshold with low failOnThreshold for code testType', () => {
+    args.failOnThreshold = Severity.LOW;
+    args.codeSeverityThreshold = undefined;
+    args.testType = TestType.CODE;
+    args.validate();
+  });
+
+  it('throws error if undefined codeSeverityThreshold with medium failOnThreshold for code testType', () => {
+    expect(() => {
+      args.failOnThreshold = Severity.MEDIUM;
+      args.codeSeverityThreshold = undefined;
+      args.testType = TestType.CODE;
+      args.validate();
+    }).toThrow(
+      new Error(
+        'If set, failOnThreshold must be matching its codeSeverityThreshold.',
+      ),
+    );
+  });
+
+  it('throws error if undefined codeSeverityThreshold with high failOnThreshold for code testType', () => {
+    expect(() => {
+      args.failOnThreshold = Severity.HIGH;
+      args.codeSeverityThreshold = undefined;
+      args.testType = TestType.CODE;
+      args.validate();
+    }).toThrow(
+      new Error(
+        'If set, failOnThreshold must be matching its codeSeverityThreshold.',
+      ),
+    );
+  });
+
+  it('throws error if differing codeSeverityThreshold and failOnThreshold for code testType', () => {
+    expect(() => {
+      args.failOnThreshold = Severity.LOW;
+      args.codeSeverityThreshold = Severity.HIGH;
+      args.testType = TestType.CODE;
+      args.validate();
+    }).toThrow(
+      new Error(
+        'If set, failOnThreshold must be matching its codeSeverityThreshold.',
+      ),
+    );
+  });
+
   it('throws error if invalid failOnThreshold for container testType', () => {
     expect(() => {
       args.failOnThreshold = 'thisIsInvalidFailOnThreshold';

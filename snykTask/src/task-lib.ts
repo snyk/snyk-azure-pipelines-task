@@ -157,7 +157,12 @@ export function doVulnerabilitiesExistForFailureThreshold(
   const json = JSON.parse(file);
   const thresholdOrdinal = getSeverityOrdinal(threshold);
 
-  if (Array.isArray(json)) {
+  // code test json identified by $schema property and does not describe issues severity
+  if (json['$schema'] && json['runs'][0]['results'].length > 0) {
+    return true;
+  } else if (json['$schema'] && json['runs'][0]['results'].length === 0) {
+    return false;
+  } else if (Array.isArray(json)) {
     for (let i = 0; i < json.length; i++) {
       if (hasMatchingVulnerabilities(json[i], thresholdOrdinal)) {
         return true;

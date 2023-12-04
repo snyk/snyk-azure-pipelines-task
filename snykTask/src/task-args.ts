@@ -150,6 +150,19 @@ class TaskArgs {
       const errorMsg = `If set, codeSeverityThreshold must be one from [${taskTestTypeThreshold}] (case insensitive). If not set, the default is '${Severity.LOW}'.`;
       throw new Error(errorMsg);
     }
+
+    // code output json dependent on tested severity threshold but does not describe issues by its severity.
+    if (
+      taskTestType === TestType.CODE &&
+      ((this.codeSeverityThreshold &&
+        this.failOnThreshold &&
+        this.codeSeverityThreshold.toLowerCase() !==
+          this.failOnThreshold.toLowerCase()) ||
+        (!this.codeSeverityThreshold && this.failOnThreshold !== Severity.LOW))
+    ) {
+      const errorMsg = `If set, failOnThreshold must be matching its codeSeverityThreshold.`;
+      throw new Error(errorMsg);
+    }
   }
 }
 

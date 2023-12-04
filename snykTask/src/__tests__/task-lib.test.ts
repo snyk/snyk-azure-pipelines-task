@@ -103,6 +103,67 @@ test('does not match vulnerabilities lower than high threshold', () => {
   expect(itemsFound).toBe(false);
 });
 
+// code test output json does not categorize issue by severity
+test('finds issues in code test of low threshold', () => {
+  const fixturePath = 'snykTask/test/fixtures/code-test-issues.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'low',
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
+test('finds issues in code test of medium threshold', () => {
+  const fixturePath = 'snykTask/test/fixtures/code-test-issues.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'medium',
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
+test('finds issues in code test of high threshold', () => {
+  const fixturePath = 'snykTask/test/fixtures/code-test-issues.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'high',
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
+test('finds no issues in code test of low threshold', () => {
+  const fixturePath = 'snykTask/test/fixtures/code-test-no-issues.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'low',
+  );
+
+  expect(itemsFound).toBe(false);
+});
+
+test('finds no issues in code test of medium threshold', () => {
+  const fixturePath = 'snykTask/test/fixtures/code-test-no-issues.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'medium',
+  );
+
+  expect(itemsFound).toBe(false);
+});
+
+test('finds no issues in code test of high threshold', () => {
+  const fixturePath = 'snykTask/test/fixtures/code-test-no-issues.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'high',
+  );
+
+  expect(itemsFound).toBe(false);
+});
+
 test('getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it', () => {
   const taskNameForAnalytics = 'AZURE_PIPELINES';
   const version = '1.2.3';

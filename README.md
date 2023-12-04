@@ -96,7 +96,8 @@ An example that specifies a value for `severityThreshold` as medium and configur
 
 ### Snyk Code Testing Example
 
-Snyk Code applicable Severity Threshold: high, medium or low (default). This is specified with `codeSeverityThreshold`. This configuration fails the build when high severity issues are found, but all issues detected at medium, high would be displayed at Task console log.
+Snyk Code applicable Severity Threshold: high, medium or low (default). This is specified with `codeSeverityThreshold`. Because snyk code resultant output json does not describe issues severity,
+its `failOnThreshold` if specified has to match its `codeSeverityThreshold`. `failOnIssues` as defaulted to true will subsequently fail the build. If `failOnIssues` is set to false, the build will still continue.
 
 ```
 - task: SnykSecurityScan@1
@@ -104,8 +105,8 @@ Snyk Code applicable Severity Threshold: high, medium or low (default). This is 
     serviceConnectionEndpoint: 'mySnykToken'
     testType: 'code'
     codeSeverityThreshold: 'medium'
-    failOnThreshold: 'high'
-    failOnIssues: false
+    failOnThreshold: 'medium'
+    failOnIssues: true
 ```
 
 ---
