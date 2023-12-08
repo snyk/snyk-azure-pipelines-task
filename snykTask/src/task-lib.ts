@@ -165,8 +165,7 @@ export function doVulnerabilitiesExistForFailureThreshold(
   const json = JSON.parse(file);
   const thresholdOrdinal = getSeverityOrdinal(threshold);
 
-  // code test json identified by $schema property
-  if (json['$schema']) {
+  if (isSnykCodeOutput(json)) {
     return hasMatchingCodeIssues(json['runs'][0]['results'], thresholdOrdinal);
   } else if (Array.isArray(json)) {
     for (let i = 0; i < json.length; i++) {
@@ -205,4 +204,9 @@ function hasMatchingCodeIssues(results: any, thresholdOrdinal: number) {
     }
   }
   return false;
+}
+
+// tests whether json content is a Snyk code cli output json
+function isSnykCodeOutput(jsonContent: any) {
+  return jsonContent['$schema'];
 }
