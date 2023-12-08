@@ -103,9 +103,19 @@ test('does not match vulnerabilities lower than high threshold', () => {
   expect(itemsFound).toBe(false);
 });
 
-// code test output json does not categorize issue by severity
+// code test output json with level: none, note, warning, error
 test('finds issues in code test of low threshold', () => {
-  const fixturePath = 'snykTask/test/fixtures/code-test-issues.json';
+  const fixturePath = 'snykTask/test/fixtures/code-test-none-issues.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'low',
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
+test('finds issues in code test of low threshold', () => {
+  const fixturePath = 'snykTask/test/fixtures/code-test-note-issues.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
     'low',
@@ -115,7 +125,7 @@ test('finds issues in code test of low threshold', () => {
 });
 
 test('finds issues in code test of medium threshold', () => {
-  const fixturePath = 'snykTask/test/fixtures/code-test-issues.json';
+  const fixturePath = 'snykTask/test/fixtures/code-test-warning-issues.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
     'medium',
@@ -125,7 +135,7 @@ test('finds issues in code test of medium threshold', () => {
 });
 
 test('finds issues in code test of high threshold', () => {
-  const fixturePath = 'snykTask/test/fixtures/code-test-issues.json';
+  const fixturePath = 'snykTask/test/fixtures/code-test-error-issues.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
     'high',

@@ -276,7 +276,7 @@ describe('TaskArgs.validate', () => {
       args.validate();
     }).toThrow(
       new Error(
-        'If set, failOnThreshold must be matching its codeSeverityThreshold.',
+        'If set, failOnThreshold must be matching or higher severity than its codeSeverityThreshold.',
       ),
     );
   });
@@ -289,12 +289,26 @@ describe('TaskArgs.validate', () => {
       args.validate();
     }).toThrow(
       new Error(
-        'If set, failOnThreshold must be matching its codeSeverityThreshold.',
+        'If set, failOnThreshold must be matching or higher severity than its codeSeverityThreshold.',
       ),
     );
   });
 
-  it('throws error if differing codeSeverityThreshold and failOnThreshold for code testType', () => {
+  it('passes validation if failOnThreshold is matching codeSeverityThreshold for code testType', () => {
+    args.failOnThreshold = Severity.MEDIUM;
+    args.codeSeverityThreshold = Severity.MEDIUM;
+    args.testType = TestType.CODE;
+    args.validate();
+  });
+
+  it('passes validation if failOnThreshold is higher severity than codeSeverityThreshold for code testType', () => {
+    args.failOnThreshold = Severity.HIGH;
+    args.codeSeverityThreshold = Severity.MEDIUM;
+    args.testType = TestType.CODE;
+    args.validate();
+  });
+
+  it('throws error if failOnThreshold is lower in severity than codeSeverityThreshold for code testType', () => {
     expect(() => {
       args.failOnThreshold = Severity.LOW;
       args.codeSeverityThreshold = Severity.HIGH;
@@ -302,7 +316,7 @@ describe('TaskArgs.validate', () => {
       args.validate();
     }).toThrow(
       new Error(
-        'If set, failOnThreshold must be matching its codeSeverityThreshold.',
+        'If set, failOnThreshold must be matching or higher severity than its codeSeverityThreshold.',
       ),
     );
   });

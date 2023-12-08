@@ -142,6 +142,14 @@ export function getSeverityOrdinal(severity: string): number {
   throw new Error(`Cannot get severity ordinal for ${severity} severity`);
 }
 
+const codeSeverityMap = {
+  error: Severity.HIGH,
+  warning: Severity.MEDIUM,
+  info: Severity.LOW,
+  note: Severity.LOW,
+  none: Severity.LOW,
+};
+
 export function doVulnerabilitiesExistForFailureThreshold(
   filePath: string,
   threshold: string,
@@ -157,11 +165,12 @@ export function doVulnerabilitiesExistForFailureThreshold(
   const json = JSON.parse(file);
   const thresholdOrdinal = getSeverityOrdinal(threshold);
 
-  // code test json identified by $schema property and does not describe issues severity
-  if (json['$schema'] && json['runs'][0]['results'].length > 0) {
-    return true;
-  } else if (json['$schema'] && json['runs'][0]['results'].length === 0) {
-    return false;
+  // code test json identified by $schema property
+  if (json['$schema']) {
+    return hasMatchingCodeIssues(
+      json['runs'][0]['results'],
+      thresholdOrdinal,
+    );
   } else if (Array.isArray(json)) {
     for (let i = 0; i < json.length; i++) {
       if (hasMatchingVulnerabilities(json[i], thresholdOrdinal)) {
@@ -183,6 +192,21 @@ export function doVulnerabilitiesExistForFailureThreshold(
 function hasMatchingVulnerabilities(project: any, thresholdOrdinal: number) {
   for (const vulnerability of project['vulnerabilities']) {
     if (getSeverityOrdinal(vulnerability['severity']) >= thresholdOrdinal) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// finds code issues levels mapping to severity of matching or higher than threshold
+function hasMatchingCodeIssues(
+  results: any,
+  thresholdOrdinal: number,
+) {
+  for (const issue of results) {
+    if (
+      getSeverityOrdinal(codeSeverityMap[issue['level']]) >= thresholdOrdinal
+    ) {
       return true;
     }
   }
