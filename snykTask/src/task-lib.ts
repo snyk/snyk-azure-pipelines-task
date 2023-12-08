@@ -167,10 +167,7 @@ export function doVulnerabilitiesExistForFailureThreshold(
 
   // code test json identified by $schema property
   if (json['$schema']) {
-    return hasMatchingCodeIssues(
-      json['runs'][0]['results'],
-      thresholdOrdinal,
-    );
+    return hasMatchingCodeIssues(json['runs'][0]['results'], thresholdOrdinal);
   } else if (Array.isArray(json)) {
     for (let i = 0; i < json.length; i++) {
       if (hasMatchingVulnerabilities(json[i], thresholdOrdinal)) {
@@ -199,10 +196,7 @@ function hasMatchingVulnerabilities(project: any, thresholdOrdinal: number) {
 }
 
 // finds code issues levels mapping to severity of matching or higher than threshold
-function hasMatchingCodeIssues(
-  results: any,
-  thresholdOrdinal: number,
-) {
+function hasMatchingCodeIssues(results: any, thresholdOrdinal: number) {
   for (const issue of results) {
     if (
       getSeverityOrdinal(codeSeverityMap[issue['level']]) >= thresholdOrdinal
