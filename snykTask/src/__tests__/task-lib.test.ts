@@ -144,6 +144,16 @@ test('finds issues in code test of high threshold', () => {
   expect(itemsFound).toBe(true);
 });
 
+test('finds medium and above severity threshold issues in code test result of high threshold', () => {
+  const fixturePath = 'snykTask/test/fixtures/code-test-error-issues.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'medium',
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
 test('finds no issues in code test of low threshold', () => {
   const fixturePath = 'snykTask/test/fixtures/code-test-no-issues.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(

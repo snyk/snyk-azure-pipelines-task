@@ -15,12 +15,7 @@
  */
 
 import * as tl from 'azure-pipelines-task-lib';
-import {
-  Severity,
-  TestType,
-  getSeverityOrdinal,
-  testTypeSeverityThreshold,
-} from './task-lib';
+import { Severity, TestType, testTypeSeverityThreshold } from './task-lib';
 export type MonitorWhen = 'never' | 'noIssuesFound' | 'always';
 class TaskArgs {
   testType: string | undefined = 'app';
@@ -153,18 +148,6 @@ class TaskArgs {
       !taskTestTypeThreshold?.includes(this.codeSeverityThreshold.toLowerCase())
     ) {
       const errorMsg = `If set, codeSeverityThreshold must be one from [${taskTestTypeThreshold}] (case insensitive). If not set, the default is '${Severity.LOW}'.`;
-      throw new Error(errorMsg);
-    }
-
-    // code output json dependent on tested severity threshold.
-    if (
-      taskTestType === TestType.CODE &&
-      ((this.codeSeverityThreshold &&
-        getSeverityOrdinal(this.failOnThreshold) <
-          getSeverityOrdinal(this.codeSeverityThreshold)) ||
-        (!this.codeSeverityThreshold && this.failOnThreshold !== Severity.LOW))
-    ) {
-      const errorMsg = `If set, failOnThreshold must be matching or higher severity than its codeSeverityThreshold.`;
       throw new Error(errorMsg);
     }
   }

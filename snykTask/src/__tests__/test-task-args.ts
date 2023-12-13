@@ -261,66 +261,6 @@ describe('TaskArgs.validate', () => {
     );
   });
 
-  it('passes validation if undefined codeSeverityThreshold with low failOnThreshold for code testType', () => {
-    args.failOnThreshold = Severity.LOW;
-    args.codeSeverityThreshold = undefined;
-    args.testType = TestType.CODE;
-    args.validate();
-  });
-
-  it('throws error if undefined codeSeverityThreshold with medium failOnThreshold for code testType', () => {
-    expect(() => {
-      args.failOnThreshold = Severity.MEDIUM;
-      args.codeSeverityThreshold = undefined;
-      args.testType = TestType.CODE;
-      args.validate();
-    }).toThrow(
-      new Error(
-        'If set, failOnThreshold must be matching or higher severity than its codeSeverityThreshold.',
-      ),
-    );
-  });
-
-  it('throws error if undefined codeSeverityThreshold with high failOnThreshold for code testType', () => {
-    expect(() => {
-      args.failOnThreshold = Severity.HIGH;
-      args.codeSeverityThreshold = undefined;
-      args.testType = TestType.CODE;
-      args.validate();
-    }).toThrow(
-      new Error(
-        'If set, failOnThreshold must be matching or higher severity than its codeSeverityThreshold.',
-      ),
-    );
-  });
-
-  it('passes validation if failOnThreshold is matching codeSeverityThreshold for code testType', () => {
-    args.failOnThreshold = Severity.MEDIUM;
-    args.codeSeverityThreshold = Severity.MEDIUM;
-    args.testType = TestType.CODE;
-    args.validate();
-  });
-
-  it('passes validation if failOnThreshold is higher severity than codeSeverityThreshold for code testType', () => {
-    args.failOnThreshold = Severity.HIGH;
-    args.codeSeverityThreshold = Severity.MEDIUM;
-    args.testType = TestType.CODE;
-    args.validate();
-  });
-
-  it('throws error if failOnThreshold is lower in severity than codeSeverityThreshold for code testType', () => {
-    expect(() => {
-      args.failOnThreshold = Severity.LOW;
-      args.codeSeverityThreshold = Severity.HIGH;
-      args.testType = TestType.CODE;
-      args.validate();
-    }).toThrow(
-      new Error(
-        'If set, failOnThreshold must be matching or higher severity than its codeSeverityThreshold.',
-      ),
-    );
-  });
-
   it('throws error if invalid failOnThreshold for container testType', () => {
     expect(() => {
       args.failOnThreshold = 'thisIsInvalidFailOnThreshold';
