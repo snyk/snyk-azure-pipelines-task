@@ -7,4 +7,9 @@ ignore:
         reason: No upgrade available
         expires: 2024-07-18T00:00:00.000Z
         created: 2023-07-18T12:52:43.840Z
+  SNYK-JS-INFLIGHT-6095116:
+    - '*':
+        reason: No upgrade available
+        expires: 2024-03-01T00:00:00.000Z
+        created: 2023-12-04T08:42:17.557Z
 patch: {}

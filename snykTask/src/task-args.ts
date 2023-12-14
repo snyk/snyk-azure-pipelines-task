@@ -25,7 +25,7 @@ class TaskArgs {
   dockerImageName: string | undefined = '';
   dockerfilePath: string | undefined = '';
 
-  severityThreshold: string | undefined = '';
+  severityThreshold: string | undefined = Severity.LOW;
   failOnThreshold: string = Severity.LOW;
   organization: string | undefined = '';
   monitorWhen: MonitorWhen = 'always';
@@ -36,7 +36,7 @@ class TaskArgs {
   additionalArguments: string = '';
   ignoreUnknownCA: boolean = false;
   // Snyk Code severity with its own pickList (no critical)
-  codeSeverityThreshold: string | undefined = '';
+  codeSeverityThreshold: string | undefined = Severity.LOW;
 
   delayAfterReportGenerationSeconds: number = 0;
 

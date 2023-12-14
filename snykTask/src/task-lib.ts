@@ -142,6 +142,14 @@ export function getSeverityOrdinal(severity: string): number {
   throw new Error(`Cannot get severity ordinal for ${severity} severity`);
 }
 
+const codeSeverityMap = {
+  error: Severity.HIGH,
+  warning: Severity.MEDIUM,
+  info: Severity.LOW,
+  note: Severity.LOW,
+  none: Severity.LOW,
+};
+
 export function doVulnerabilitiesExistForFailureThreshold(
   filePath: string,
   threshold: string,
@@ -157,7 +165,9 @@ export function doVulnerabilitiesExistForFailureThreshold(
   const json = JSON.parse(file);
   const thresholdOrdinal = getSeverityOrdinal(threshold);
 
-  if (Array.isArray(json)) {
+  if (isSnykCodeOutput(json)) {
+    return hasMatchingCodeIssues(json['runs'][0]['results'], thresholdOrdinal);
+  } else if (Array.isArray(json)) {
     for (let i = 0; i < json.length; i++) {
       if (hasMatchingVulnerabilities(json[i], thresholdOrdinal)) {
         return true;
@@ -182,4 +192,21 @@ function hasMatchingVulnerabilities(project: any, thresholdOrdinal: number) {
     }
   }
   return false;
+}
+
+// finds code issues levels mapping to severity of matching or higher than threshold
+function hasMatchingCodeIssues(results: any, thresholdOrdinal: number) {
+  for (const issue of results) {
+    if (
+      getSeverityOrdinal(codeSeverityMap[issue['level']]) >= thresholdOrdinal
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// tests whether json content is a Snyk code cli output json
+function isSnykCodeOutput(jsonContent: any) {
+  return jsonContent['$schema'];
 }

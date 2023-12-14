@@ -1,0 +1,134 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "SnykCode",
+          "semanticVersion": "1.0.0",
+          "version": "1.0.0"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "javascript/HardcodedNonCryptoSecret/test",
+          "ruleIndex": 0,
+          "level": "none",
+          "message": {
+            "text": "Avoid hardcoding values that are meant to be secret. Found a hardcoded string used in here.",
+            "markdown": "Avoid hardcoding values that are meant to be secret. Found {0} used in {1}.",
+            "arguments": [
+              "[a hardcoded string](0)",
+              "[here](1)"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "myOwnRepo/src/__tests__/test-auth-token-retrieved.ts",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 26,
+                  "endLine": 26,
+                  "startColumn": 7,
+                  "endColumn": 15
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "0": "6ada7144e0ba5ee8ec92228733394aefe9df7cb937fb5264118052df2ab7e579",
+            "1": "851af641.bc7307ec.7acba8d2.c3c70106.79a7d027.12d7a8d2.5b0e9934.a51e97f2.851af641.bc7307ec.7acba8d2.c3c70106.79a7d027.cf33be24.5b0e9934.a51e97f2"
+          },
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "id": 0,
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "myOwnRepo/src/__tests__/abc.ts",
+                            "uriBaseId": "%SRCROOT%"
+                          },
+                          "region": {
+                            "startLine": 26,
+                            "endLine": 26,
+                            "startColumn": 17,
+                            "endColumn": 29
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "location": {
+                        "id": 1,
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "myOwnRepo/src/__tests__/def.ts",
+                            "uriBaseId": "%SRCROOT%"
+                          },
+                          "region": {
+                            "startLine": 26,
+                            "endLine": 26,
+                            "startColumn": 7,
+                            "endColumn": 15
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "priorityScore": 500,
+            "priorityScoreFactors": [
+              {
+                "label": true,
+                "type": "multipleOccurrence"
+              },
+              {
+                "label": true,
+                "type": "hotFileSource"
+              },
+              {
+                "label": true,
+                "type": "fixExamples"
+              }
+            ],
+            "isAutofixable": false
+          }
+        }
+      ],
+      "properties": {
+        "coverage": [
+          {
+            "isSupported": true,
+            "lang": "TypeScript",
+            "files": 27,
+            "type": "SUPPORTED"
+          },
+          {
+            "isSupported": true,
+            "lang": "HTML",
+            "files": 1,
+            "type": "SUPPORTED"
+          },
+          {
+            "isSupported": true,
+            "lang": "JavaScript",
+            "files": 6,
+            "type": "SUPPORTED"
+          }
+        ]
+      }
+    }
+  ]
+}
