@@ -1,6 +1,6 @@
 # snyk-azure-pipelines-task
 
-This task/extension for Azure Pipelines allows you to easily run Snyk scans within your Azure Pipeline jobs. You will need to first [create a Snyk account](https://snyk.io/login). There are two major options:
+This task / extension for Azure Pipelines allows you to easily run Snyk scans within your Azure Pipeline jobs. You will need to first [create a Snyk account](https://snyk.io/login). There are two major options:
 
 - Snyk scan for vulnerable dependencies leveraging your project's manfiest files, for example `pom.xml`, `package.json`, etc.
 - Snyk scan for container images. This will look at Docker images.
