@@ -142,6 +142,7 @@ async function showDirectoryListing(
 
 async function runSnykTest(
   snykPath: string,
+  snykToHtmlPath: string,
   taskArgs: TaskArgs,
   jsonReportOutputPath: string,
   snykToken: string,
@@ -205,7 +206,8 @@ async function runSnykTest(
     !fs.existsSync(jsonReportOutputPath) &&
     snykTestExitCode === CLI_EXIT_CODE_SUCCESS
   ) {
-    const echoToolRunner = tl.tool('echo');
+    // pipe console json output to snykToHtml and file for subsequent conversion again
+    const echoToolRunner = tl.tool(snykToHtmlPath);
     const snykCodeTestToolRunner = tl
       .tool(snykPath)
       .arg('code')
@@ -407,6 +409,7 @@ async function run() {
 
     const snykTestResult = await runSnykTest(
       snykPath,
+      snykToHtmlPath,
       taskArgs,
       jsonReportFullPath,
       snykToken,
