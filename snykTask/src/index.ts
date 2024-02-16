@@ -207,7 +207,7 @@ async function runSnykTest(
     snykTestExitCode === CLI_EXIT_CODE_SUCCESS
   ) {
     // pipe console json output to snykToHtml and file for subsequent conversion again
-    const echoToolRunner = tl.tool(snykToHtmlPath);
+    const snykToHtmlRunner = tl.tool(snykToHtmlPath);
     const snykCodeTestToolRunner = tl
       .tool(snykPath)
       .arg('code')
@@ -221,7 +221,7 @@ async function runSnykTest(
       .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
       .argIf(taskArgs.projectName, `--project-name=${projectNameArg}`)
       .line(taskArgs.additionalArguments)
-      .pipeExecOutputToTool(echoToolRunner, jsonReportOutputPath);
+      .pipeExecOutputToTool(snykToHtmlRunner, jsonReportOutputPath);
     await snykCodeTestToolRunner.exec(options);
   }
 
