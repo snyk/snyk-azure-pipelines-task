@@ -226,6 +226,43 @@ describe('getOptionsForSnykToHtml', () => {
   });
 });
 
+describe('execute pipeExecOutputToTool to snyk-to-html', () => {
+  it('outputs piped input to json file', async () => {
+    const codeTestJsonPath = 'snykTask/test/fixtures/code-test-no-issues.json';
+    const taskArgs: TaskArgs = new TaskArgs({
+      failOnIssues: true,
+    });
+    taskArgs.testDirectory = tempFolder;
+    const htmlReportFilePath = path.resolve(tempFolder, 'report.html');
+    const inputCodeTestJsonPath = path.resolve(tempFolder, 'tmp.json');
+    const pipedCodeTestJsonPath = path.resolve(tempFolder, 'pipedtmp.json');
+    fs.copyFileSync(codeTestJsonPath, inputCodeTestJsonPath);
+    const options: tr.IExecOptions = getOptionsForSnykToHtml(
+      htmlReportFilePath,
+      taskArgs,
+    );
+    const snykToHtmlRunner = tl.tool(tl.which('snyk-to-html', true));
+    const snykToHtmlPipedRunner = tl
+      .tool(tl.which('cat', true))
+      .arg(inputCodeTestJsonPath)
+      .pipeExecOutputToTool(snykToHtmlRunner, pipedCodeTestJsonPath);
+
+    const rc = await snykToHtmlPipedRunner.exec(options);
+
+    // expect snyk-to-html to accept valid no-issues json with successful exec
+    expect(rc).toBe(0);
+    // expect pipeExecOutputToTool to send piped input to defined output file
+    expect(
+      fs.readFileSync(inputCodeTestJsonPath, { encoding: 'utf8', flag: 'r' }),
+    ).toEqual(
+      fs.readFileSync(pipedCodeTestJsonPath, {
+        encoding: 'utf8',
+        flag: 'r',
+      }),
+    );
+  });
+});
+
 test('formatDate gives format we want for the report filename', () => {
   const timestampMillis = 1590174610000; // arbitrary timestamp in ms since epoch
   const d = new Date(timestampMillis);
