@@ -140,7 +140,7 @@ async function showDirectoryListing(
   }
 }
 
-async function runSnykCodeTest(
+async function generateSnykCodeResultsWithoutIssues(
   snykPath: string,
   taskArgs: TaskArgs,
   jsonReportOutputPath: string,
@@ -233,7 +233,7 @@ async function runSnykTest(
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
 
-  // handle bug in snyk CLI for code test, when --json-file-output is specified
+  // handle inconsistency in snyk CLI for code test, when --json-file-output is specified
   // and the test results in no issues found, no JSON is produced when it should still be
   // just with an empty set of issues
   if (
@@ -241,7 +241,12 @@ async function runSnykTest(
     !fs.existsSync(jsonReportOutputPath) &&
     snykTestExitCode === CLI_EXIT_CODE_SUCCESS
   ) {
-    await runSnykCodeTest(snykPath, taskArgs, jsonReportOutputPath, snykToken);
+    await generateSnykCodeResultsWithoutIssues(
+      snykPath,
+      taskArgs,
+      jsonReportOutputPath,
+      snykToken,
+    );
   }
 
   removeRegexFromFile(
