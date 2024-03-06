@@ -184,6 +184,16 @@ test('finds no issues in code test of high threshold', () => {
   expect(itemsFound).toBe(false);
 });
 
+test('finds issues in container test of high threshold', () => {
+  const fixturePath = 'snykTask/test/fixtures/container-test-error-issues.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'high',
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
 test('getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it', () => {
   const taskNameForAnalytics = 'AZURE_PIPELINES';
   const version = '1.2.3';
