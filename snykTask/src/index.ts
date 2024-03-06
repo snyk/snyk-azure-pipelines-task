@@ -140,7 +140,7 @@ async function showDirectoryListing(
   }
 }
 
-async function generateSnykCodeResultsWithoutIssues(
+export async function generateSnykCodeResultsWithoutIssues(
   snykPath: string,
   taskArgs: TaskArgs,
   jsonReportOutputPath: string,
