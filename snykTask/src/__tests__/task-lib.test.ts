@@ -286,8 +286,15 @@ describe('generateSnykCodeResultsWithoutIssues sends console output to file', ()
       failOnIssues: true,
     });
 
-    taskArgs.testDirectory = path.join(__dirname, '..', '..','test','fixtures','golang-no-code-issues')
-    console.debug(taskArgs.testDirectory)
+    taskArgs.testDirectory = path.join(
+      __dirname,
+      '..',
+      '..',
+      'test',
+      'fixtures',
+      'golang-no-code-issues',
+    );
+    console.debug(taskArgs.testDirectory);
 
     const outputPath = path.join(
       tempFolder,
