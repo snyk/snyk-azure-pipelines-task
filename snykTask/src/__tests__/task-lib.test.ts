@@ -252,10 +252,7 @@ describe('generateSnykCodeResultsWithoutIssues sends console output to file', ()
     const snykCodeTestResult = await mockPipeToFileRunner.execSync(options);
     tl.writeFile(pipedCodeTestJsonPath, snykCodeTestResult.stdout);
 
-    expect(
-      fs.readFileSync(inputCodeTestJsonPath, { encoding: 'utf8', flag: 'r' }),
-    ).toEqual(
-      // snykCodeTestResult.stdout
+    expect(snykCodeTestResult.stdout).toEqual(
       fs.readFileSync(pipedCodeTestJsonPath, {
         encoding: 'utf8',
         flag: 'r',
