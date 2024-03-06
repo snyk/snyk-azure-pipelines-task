@@ -248,7 +248,7 @@ describe('generateSnykCodeResultsWithoutIssues sends console output to file', ()
     // mock behaviour of a cmd sending sample printed console output to file
     const mockPipeToFileRunner = tl
       .tool(tl.which('cat', true))
-      .arg(inputCodeTestJsonPath)
+      .arg(inputCodeTestJsonPath);
     const snykCodeTestResult = await mockPipeToFileRunner.execSync(options);
     tl.writeFile(pipedCodeTestJsonPath, snykCodeTestResult.stdout);
 
