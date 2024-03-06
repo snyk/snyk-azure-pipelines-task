@@ -191,6 +191,13 @@ function hasMatchingVulnerabilities(project: any, thresholdOrdinal: number) {
       return true;
     }
   }
+  if (project['applications']) {
+    for (const application of project['applications']) {
+      if (hasMatchingVulnerabilities(application, thresholdOrdinal)) {
+        return true;
+      }
+    }
+  }
   return false;
 }
 
