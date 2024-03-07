@@ -320,6 +320,8 @@ describe('generateSnykCodeResultsWithoutIssues sends console output to file', ()
     const actualFileContent = fs.readFileSync(outputPath);
     const obj = JSON.parse(actualFileContent.toString());
     expect(obj).not.toBeNull();
+
+    console.debug(obj);
   });
 });
 

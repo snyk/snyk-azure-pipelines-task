@@ -172,6 +172,10 @@ export async function generateSnykCodeResultsWithoutIssues(
   const snykCodeTestResult: tr.IExecSyncResult =
     snykCodeTestToolRunner.execSync(options);
   tl.writeFile(jsonReportOutputPath, snykCodeTestResult.stdout);
+
+  if (isDebugMode()) {
+    console.log(snykCodeTestResult);
+  }
 }
 
 async function runSnykTest(
