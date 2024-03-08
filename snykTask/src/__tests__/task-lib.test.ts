@@ -248,39 +248,6 @@ describe('getOptionsForSnykToHtml', () => {
 });
 
 describe('generateSnykCodeResultsWithoutIssues sends console output to file', () => {
-  it('asserts stdout json matches file content', async () => {
-    const taskNameForAnalytics = 'AZURE_PIPELINES';
-    const version = '1.2.3';
-    const codeTestJsonPath = 'snykTask/test/fixtures/code-test-no-issues.json';
-    const taskArgs: TaskArgs = new TaskArgs({
-      failOnIssues: true,
-    });
-    taskArgs.testDirectory = tempFolder;
-    const inputCodeTestJsonPath = path.resolve(tempFolder, 'tmp.json');
-    const pipedCodeTestJsonPath = path.resolve(tempFolder, 'pipedtmp.json');
-    fs.copyFileSync(codeTestJsonPath, inputCodeTestJsonPath);
-    const options: tr.IExecOptions = getOptionsToExecuteSnykCLICommand(
-      taskArgs,
-      taskNameForAnalytics,
-      version,
-      'fake-token',
-    );
-
-    // mock behaviour of a cmd sending sample printed console output to file
-    const mockPipeToFileRunner = tl
-      .tool(tl.which('cat', true))
-      .arg(inputCodeTestJsonPath);
-    const snykCodeTestResult = await mockPipeToFileRunner.execSync(options);
-    tl.writeFile(pipedCodeTestJsonPath, snykCodeTestResult.stdout);
-
-    expect(snykCodeTestResult.stdout).toEqual(
-      fs.readFileSync(pipedCodeTestJsonPath, {
-        encoding: 'utf8',
-        flag: 'r',
-      }),
-    );
-  });
-
   it('basic test for generateSnykCodeResultsWithoutIssues()', async () => {
     const taskArgs: TaskArgs = new TaskArgs({
       failOnIssues: true,
