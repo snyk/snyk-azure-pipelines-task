@@ -140,6 +140,44 @@ async function showDirectoryListing(
   }
 }
 
+export async function generateSnykCodeResultsWithoutIssues(
+  snykPath: string,
+  taskArgs: TaskArgs,
+  jsonReportOutputPath: string,
+  snykToken: string,
+) {
+  const projectNameArg = taskArgs.getProjectNameParameter();
+
+  const options = getOptionsToExecuteSnykCLICommand(
+    taskArgs,
+    taskNameForAnalytics,
+    taskVersion,
+    snykToken,
+  );
+
+  const snykCodeTestToolRunner = tl
+    .tool(snykPath)
+    .arg('code')
+    .arg('test')
+    .arg('--json')
+    .argIf(
+      taskArgs.codeSeverityThreshold,
+      `--severity-threshold=${taskArgs.codeSeverityThreshold}`,
+    )
+    .argIf(taskArgs.ignoreUnknownCA, `--insecure`)
+    .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
+    .argIf(taskArgs.projectName, `--project-name=${projectNameArg}`)
+    .line(taskArgs.additionalArguments);
+
+  const snykCodeTestResult: tr.IExecSyncResult =
+    snykCodeTestToolRunner.execSync(options);
+  tl.writeFile(jsonReportOutputPath, snykCodeTestResult.stdout);
+
+  if (isDebugMode()) {
+    console.log(snykCodeTestResult);
+  }
+}
+
 async function runSnykTest(
   snykPath: string,
   taskArgs: TaskArgs,
@@ -199,28 +237,20 @@ async function runSnykTest(
   }
   const snykOutput: SnykOutput = { code: code, message: errorMsg };
 
-  // handle snyk code no-issues-found non-existent json by rerunning --json stdout to piped file
+  // handle inconsistency in snyk CLI for code test, when --json-file-output is specified
+  // and the test results in no issues found, no JSON is produced when it should still be
+  // just with an empty set of issues
   if (
     taskArgs.testType == TestType.CODE &&
     !fs.existsSync(jsonReportOutputPath) &&
     snykTestExitCode === CLI_EXIT_CODE_SUCCESS
   ) {
-    const echoToolRunner = tl.tool('echo');
-    const snykCodeTestToolRunner = tl
-      .tool(snykPath)
-      .arg('code')
-      .arg('test')
-      .arg('--json')
-      .argIf(
-        taskArgs.codeSeverityThreshold,
-        `--severity-threshold=${taskArgs.codeSeverityThreshold}`,
-      )
-      .argIf(taskArgs.ignoreUnknownCA, `--insecure`)
-      .argIf(taskArgs.organization, `--org=${taskArgs.organization}`)
-      .argIf(taskArgs.projectName, `--project-name=${projectNameArg}`)
-      .line(taskArgs.additionalArguments)
-      .pipeExecOutputToTool(echoToolRunner, jsonReportOutputPath);
-    await snykCodeTestToolRunner.exec(options);
+    await generateSnykCodeResultsWithoutIssues(
+      snykPath,
+      taskArgs,
+      jsonReportOutputPath,
+      snykToken,
+    );
   }
 
   removeRegexFromFile(

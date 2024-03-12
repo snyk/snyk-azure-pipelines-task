@@ -20,6 +20,10 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as fse from 'fs-extra';
+import { generateSnykCodeResultsWithoutIssues } from '../index';
+import { getSnykDownloadInfo, downloadExecutable } from '../install';
+
+jest.setTimeout(120_000);
 
 import stream = require('stream');
 
@@ -33,12 +37,29 @@ import {
   doVulnerabilitiesExistForFailureThreshold,
 } from '../task-lib';
 import { TaskArgs } from '../task-args';
+import { execSync } from 'child_process';
 
 let tempFolder = '';
+let snykCliPath = '';
+
+function getTestToken(): string {
+  if (process.env.SNYK_TOKEN === undefined) {
+    const output = execSync(snykCliPath + ' config get api');
+    return output.toString().trim();
+  }
+
+  return process.env.SNYK_TOKEN;
+}
+
 beforeAll(async () => {
   tempFolder = await fse.promises.mkdtemp(
     path.resolve(os.tmpdir(), 'snyk-azure-pipelines-task-test'),
   );
+
+  const dlInfo = getSnykDownloadInfo(tl.getPlatform());
+  await downloadExecutable(tempFolder, dlInfo.snyk);
+
+  snykCliPath = path.resolve(tempFolder, dlInfo.snyk.filename);
 });
 
 afterEach(() => {
@@ -223,6 +244,51 @@ describe('getOptionsForSnykToHtml', () => {
     expect(options.failOnStdErr).toBe(false);
     expect(options.ignoreReturnCode).toBe(true);
     expect(options.outStream).toBeInstanceOf(stream.Writable);
+  });
+});
+
+describe('generateSnykCodeResultsWithoutIssues sends console output to file', () => {
+  it('basic test for generateSnykCodeResultsWithoutIssues()', async () => {
+    const taskArgs: TaskArgs = new TaskArgs({
+      failOnIssues: true,
+    });
+
+    taskArgs.testDirectory = path.join(
+      __dirname,
+      '..',
+      '..',
+      'test',
+      'fixtures',
+      'golang-no-code-issues',
+    );
+    console.debug(taskArgs.testDirectory);
+
+    const outputPath = path.join(
+      tempFolder,
+      'generateSnykCodeResultsWithoutIssues_test.json',
+    );
+    const testToken = getTestToken();
+
+    expect(fs.existsSync(outputPath)).toBeFalsy();
+
+    // call method under test
+    await generateSnykCodeResultsWithoutIssues(
+      snykCliPath,
+      taskArgs,
+      outputPath,
+      testToken,
+    );
+
+    // check expected output
+    const actualFileStat = fs.statSync(outputPath);
+    expect(actualFileStat.isFile()).toBeTruthy();
+    expect(actualFileStat.size).toBeGreaterThan(0);
+
+    const actualFileContent = fs.readFileSync(outputPath);
+    const obj = JSON.parse(actualFileContent.toString());
+    expect(obj).not.toBeNull();
+
+    console.debug(obj);
   });
 });
 

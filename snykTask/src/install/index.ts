@@ -73,7 +73,7 @@ export async function downloadExecutable(
   const doDownload = () =>
     new Promise<void>((resolve, reject) => {
       https.get(executable.downloadUrl, (response) => {
-        response.on('end', () => resolve());
+        fileWriter.on('close', () => resolve());
         response.on('error', (err) => {
           console.error(
             `Download of ${executable.filename} failed: ${err.message}`,
