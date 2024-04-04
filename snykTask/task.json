@@ -162,6 +162,18 @@
       "defaultValue": "",
       "helpMarkDown": "Additional command-line args for Snyk CLI (advanced)",
       "groupName": "advanced"
+    },
+    {
+      "name": "distributionChannel",
+      "label": "CLI Distribution channel",
+      "type": "pickList",
+      "options": {
+        "stable": "Stable",
+        "preview": "Preview"
+      },
+      "required": false,
+      "defaultValue": "stable",
+      "helpMarkDown": "Defaults to 'stable', but can be set to 'preview' for early access to new features"
     }
   ],
   "execution": {

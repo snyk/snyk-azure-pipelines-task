@@ -29,7 +29,10 @@ export type SnykDownloads = {
   snykToHtml: Executable;
 };
 
-export function getSnykDownloadInfo(platform: Platform): SnykDownloads {
+export function getSnykDownloadInfo(
+  platform: Platform,
+  distributionChannel: 'stable' | 'preview' = 'stable',
+): SnykDownloads {
   const baseUrl = 'https://static.snyk.io';
 
   const filenameSuffixes: Record<Platform, string> = {
@@ -38,10 +41,16 @@ export function getSnykDownloadInfo(platform: Platform): SnykDownloads {
     [Platform.MacOS]: 'macos',
   };
 
+  const validDistributionChannels = ['stable', 'preview'];
+
+  if (!validDistributionChannels.includes(distributionChannel)) {
+    distributionChannel = 'stable';
+  }
+
   return {
     snyk: {
       filename: `snyk-${filenameSuffixes[platform]}`,
-      downloadUrl: `${baseUrl}/cli/latest/snyk-${filenameSuffixes[platform]}`,
+      downloadUrl: `${baseUrl}/cli/${distributionChannel}/snyk-${filenameSuffixes[platform]}`,
     },
     snykToHtml: {
       filename: `snyk-to-html-${filenameSuffixes[platform]}`,

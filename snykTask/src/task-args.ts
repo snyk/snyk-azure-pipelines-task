@@ -40,6 +40,12 @@ class TaskArgs {
 
   delayAfterReportGenerationSeconds: number = 0;
 
+  /**
+   * The distribution channel to use for the Snyk CLI.
+   * Defaults to 'stable', but can be set to 'preview' for early access to new features.
+   */
+  distributionChannel: 'preview' | 'stable' | undefined = 'stable';
+
   // the params here are the ones which are mandatory
   constructor(params: { failOnIssues: boolean }) {
     this.failOnIssues = params.failOnIssues;
@@ -109,6 +115,19 @@ class TaskArgs {
     }
 
     return this.projectName;
+  }
+
+  public getDistributionChannel(): 'stable' | 'preview' {
+    if (!this.distributionChannel) {
+      this.distributionChannel = 'stable';
+    }
+
+    const validDistributionChannels = ['stable', 'preview'];
+    if (!validDistributionChannels.includes(this.distributionChannel)) {
+      this.distributionChannel = 'stable';
+    }
+
+    return this.distributionChannel;
   }
 
   // validate based on testTypeSeverityThreshold applicable thresholds

@@ -122,6 +122,11 @@ test('ensure that ignoreUnknownCA is false by default', () => {
   expect(args.ignoreUnknownCA).toBe(false);
 });
 
+test('ensure that distributionChannel is stable by default', () => {
+  const args = defaultTaskArgs();
+  expect(args.getDistributionChannel()).toBe('stable');
+});
+
 describe('TaskArgs.setMonitorWhen', () => {
   const args = defaultTaskArgs();
 
