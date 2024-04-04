@@ -16,6 +16,7 @@
 
 import * as tl from 'azure-pipelines-task-lib';
 import { Severity, TestType, testTypeSeverityThreshold } from './task-lib';
+import { CliDistributionChannel } from './types';
 export type MonitorWhen = 'never' | 'noIssuesFound' | 'always';
 class TaskArgs {
   testType: string | undefined = 'app';
@@ -44,7 +45,7 @@ class TaskArgs {
    * The distribution channel to use for the Snyk CLI.
    * Defaults to 'stable', but can be set to 'preview' for early access to new features.
    */
-  distributionChannel: 'preview' | 'stable' | undefined = 'stable';
+  distributionChannel: CliDistributionChannel | undefined = 'stable';
 
   // the params here are the ones which are mandatory
   constructor(params: { failOnIssues: boolean }) {
@@ -117,7 +118,7 @@ class TaskArgs {
     return this.projectName;
   }
 
-  public getDistributionChannel(): 'stable' | 'preview' {
+  public getDistributionChannel(): CliDistributionChannel {
     if (!this.distributionChannel) {
       this.distributionChannel = 'stable';
     }

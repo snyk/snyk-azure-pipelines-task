@@ -18,6 +18,7 @@ import { Platform } from 'azure-pipelines-task-lib/task';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
+import { CliDistributionChannel } from '../types';
 
 export type Executable = {
   filename: string;
@@ -31,7 +32,7 @@ export type SnykDownloads = {
 
 export function getSnykDownloadInfo(
   platform: Platform,
-  distributionChannel: 'stable' | 'preview' = 'stable',
+  distributionChannel: CliDistributionChannel = 'stable',
 ): SnykDownloads {
   const baseUrl = 'https://static.snyk.io';
 

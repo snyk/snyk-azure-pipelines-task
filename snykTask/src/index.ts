@@ -35,6 +35,7 @@ import {
 import * as fs from 'fs';
 import * as path from 'path';
 import { getSnykDownloadInfo, downloadExecutable } from './install';
+import { CliDistributionChannel } from './types';
 
 class SnykError extends Error {
   constructor(message?: string) {
@@ -97,7 +98,7 @@ function parseInputArgs(): TaskArgs {
     tl.getInput('failOnThreshold', false) || Severity.LOW;
   taskArgs.ignoreUnknownCA = tl.getBoolInput('ignoreUnknownCA', false);
   taskArgs.distributionChannel = (tl.getInput('distributionChannel', false) ||
-    'stable') as 'preview' | 'stable';
+    'stable') as CliDistributionChannel;
 
   if (isDebugMode()) {
     logAllTaskArgs(taskArgs);
