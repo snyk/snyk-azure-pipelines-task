@@ -23,7 +23,7 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-linux',
-        downloadUrl: 'https://static.snyk.io/cli/latest/snyk-linux',
+        downloadUrl: 'https://static.snyk.io/cli/stable/snyk-linux',
       },
       snykToHtml: {
         filename: 'snyk-to-html-linux',
@@ -38,7 +38,7 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-win.exe',
-        downloadUrl: 'https://static.snyk.io/cli/latest/snyk-win.exe',
+        downloadUrl: 'https://static.snyk.io/cli/stable/snyk-win.exe',
       },
       snykToHtml: {
         filename: 'snyk-to-html-win.exe',
@@ -53,7 +53,40 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
-        downloadUrl: 'https://static.snyk.io/cli/latest/snyk-macos',
+        downloadUrl: 'https://static.snyk.io/cli/stable/snyk-macos',
+      },
+      snykToHtml: {
+        filename: 'snyk-to-html-macos',
+        downloadUrl:
+          'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+      },
+    });
+  });
+
+  it('retrieves the correct download info a preview release', () => {
+    const dlInfo = getSnykDownloadInfo(Platform.MacOS, 'preview');
+    expect(dlInfo).toEqual({
+      snyk: {
+        filename: 'snyk-macos',
+        downloadUrl: 'https://static.snyk.io/cli/preview/snyk-macos',
+      },
+      snykToHtml: {
+        filename: 'snyk-to-html-macos',
+        downloadUrl:
+          'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+      },
+    });
+  });
+
+  it('ignores invalid distribution channels', () => {
+    const dlInfo = getSnykDownloadInfo(
+      Platform.MacOS,
+      'invalid-channel' as any,
+    );
+    expect(dlInfo).toEqual({
+      snyk: {
+        filename: 'snyk-macos',
+        downloadUrl: 'https://static.snyk.io/cli/stable/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',

@@ -11,9 +11,9 @@ To run the code, a GitHub PR against `develop` should be raised with the committ
 
 ### Local debugging
 
-A number of environment variable are required for debugging, here's an example launch config for `VSCode` that sets mandatory parameters such as `AGENT_TEMPDIRECTORY`, `INPUT_failOnIssues` and `INPUT_authToken`
+A number of environment variable are required for debugging, here's an example launch config for `Visual Studio Code` that sets mandatory parameters such as `AGENT_TEMPDIRECTORY`, `INPUT_failOnIssues` and `INPUT_authToken`
 
-```
+```json
 {
     "version": "0.2.0",
     "configurations": [

@@ -35,6 +35,7 @@ import {
 import * as fs from 'fs';
 import * as path from 'path';
 import { getSnykDownloadInfo, downloadExecutable } from './install';
+import { CliDistributionChannel } from './types';
 
 class SnykError extends Error {
   constructor(message?: string) {
@@ -96,6 +97,8 @@ function parseInputArgs(): TaskArgs {
   taskArgs.failOnThreshold =
     tl.getInput('failOnThreshold', false) || Severity.LOW;
   taskArgs.ignoreUnknownCA = tl.getBoolInput('ignoreUnknownCA', false);
+  taskArgs.distributionChannel = (tl.getInput('distributionChannel', false) ||
+    'stable') as CliDistributionChannel;
 
   if (isDebugMode()) {
     logAllTaskArgs(taskArgs);
@@ -403,6 +406,7 @@ async function run() {
     }
 
     const taskArgs: TaskArgs = parseInputArgs();
+    const distributionChannel = taskArgs.getDistributionChannel();
     const snykToken = getAuthToken();
     if (!snykToken) {
       const errorMsg =
@@ -411,9 +415,15 @@ async function run() {
     }
 
     const platform: tl.Platform = tl.getPlatform();
-    if (isDebugMode()) console.log(`platform: ${platform}`);
+    if (isDebugMode()) {
+      console.log(`platform: ${platform}`);
+      console.log(`distributionChannel: ${distributionChannel}`);
+    }
 
-    const snykToolDownloads = getSnykDownloadInfo(platform);
+    const snykToolDownloads = getSnykDownloadInfo(
+      platform,
+      distributionChannel,
+    );
     await downloadExecutable(agentTempDirectory, snykToolDownloads.snyk);
     await downloadExecutable(agentTempDirectory, snykToolDownloads.snykToHtml);
     const snykPath = path.resolve(
