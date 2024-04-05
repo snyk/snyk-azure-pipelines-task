@@ -45,7 +45,7 @@ class TaskArgs {
    * The cli version to use
    * Defaults to 'stable', but can be set to 'preview' or a specific version such as '1.1287.0'
    */
-  cliVersion: string = 'stable';
+  distributionChannel: string = 'stable';
 
   // the params here are the ones which are mandatory
   constructor(params: { failOnIssues: boolean }) {
@@ -118,8 +118,8 @@ class TaskArgs {
     return this.projectName;
   }
 
-  public getCliVersion(): string {
-    return this.cliVersion;
+  public getDistributionChannel(): string {
+    return this.distributionChannel;
   }
 
   // validate based on testTypeSeverityThreshold applicable thresholds

@@ -164,8 +164,8 @@
       "groupName": "advanced"
     },
     {
-      "name": "cliVersion",
-      "label": "CLI version",
+      "name": "distributionChannel",
+      "label": "Distribution channel",
       "type": "string",
       "required": false,
       "defaultValue": "stable",

@@ -35,7 +35,7 @@ export function getSnykDownloadInfo(
   versionString: string = 'stable',
 ): SnykDownloads {
   const baseUrl = 'https://static.snyk.io';
-  const cliVersion = sanitizeVersionInput(versionString);
+  const distributionChannel = sanitizeVersionInput(versionString);
 
   const filenameSuffixes: Record<Platform, string> = {
     [Platform.Linux]: 'linux',
@@ -46,7 +46,7 @@ export function getSnykDownloadInfo(
   return {
     snyk: {
       filename: `snyk-${filenameSuffixes[platform]}`,
-      downloadUrl: `${baseUrl}/cli/${cliVersion}/snyk-${filenameSuffixes[platform]}`,
+      downloadUrl: `${baseUrl}/cli/${distributionChannel}/snyk-${filenameSuffixes[platform]}`,
     },
     snykToHtml: {
       filename: `snyk-to-html-${filenameSuffixes[platform]}`,

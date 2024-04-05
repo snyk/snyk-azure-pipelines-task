@@ -97,7 +97,9 @@ function parseInputArgs(): TaskArgs {
   taskArgs.failOnThreshold =
     tl.getInput('failOnThreshold', false) || Severity.LOW;
   taskArgs.ignoreUnknownCA = tl.getBoolInput('ignoreUnknownCA', false);
-  taskArgs.cliVersion = sanitizeVersionInput(tl.getInput('cliVersion', false));
+  taskArgs.distributionChannel = sanitizeVersionInput(
+    tl.getInput('distributionChannel', false),
+  );
 
   if (isDebugMode()) {
     logAllTaskArgs(taskArgs);
@@ -405,7 +407,7 @@ async function run() {
     }
 
     const taskArgs: TaskArgs = parseInputArgs();
-    const cliVersion = taskArgs.getCliVersion();
+    const distributionChannel = taskArgs.getDistributionChannel();
     const snykToken = getAuthToken();
     if (!snykToken) {
       const errorMsg =
@@ -416,10 +418,13 @@ async function run() {
     const platform: tl.Platform = tl.getPlatform();
     if (isDebugMode()) {
       console.log(`platform: ${platform}`);
-      console.log(`cliVersion: ${cliVersion}`);
+      console.log(`distributionChannel: ${distributionChannel}`);
     }
 
-    const snykToolDownloads = getSnykDownloadInfo(platform, cliVersion);
+    const snykToolDownloads = getSnykDownloadInfo(
+      platform,
+      distributionChannel,
+    );
     await downloadExecutable(agentTempDirectory, snykToolDownloads.snyk);
     await downloadExecutable(agentTempDirectory, snykToolDownloads.snykToHtml);
     const snykPath = path.resolve(
