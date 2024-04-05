@@ -173,7 +173,8 @@
       },
       "required": false,
       "defaultValue": "stable",
-      "helpMarkDown": "Defaults to 'stable', but can be set to 'preview' for early access to new features"
+      "helpMarkDown": "Defaults to 'stable', but can be set to 'preview' for early access to new features",
+      "groupName": "advanced"
     }
   ],
   "execution": {
