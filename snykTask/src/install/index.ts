@@ -77,16 +77,40 @@ export async function downloadExecutable(
   // Wrapping the download in a function for easy retrying
   const doDownload = () =>
     new Promise<void>((resolve, reject) => {
-      https.get(executable.downloadUrl, (response) => {
-        fileWriter.on('close', () => resolve());
-        response.on('error', (err) => {
+      https
+        .get(executable.downloadUrl, (response) => {
+          const isResponseError = response.statusCode !== 200;
+
+          response.on('error', (err) => {
+            console.error(
+              `Download of ${executable.filename} failed: ${err.message}`,
+            );
+            reject(err);
+          });
+
+          if (response.statusCode !== 200) {
+            fileWriter.close();
+          }
+
+          fileWriter.on('close', () => {
+            console.log(
+              `File.close ${executable.filename} saved to ${filePath}`,
+            );
+            if (isResponseError) {
+              reject(new Error(`HTTP ${response.statusCode}`));
+            } else {
+              resolve();
+            }
+          });
+
+          response.pipe(fileWriter);
+        })
+        .on('error', (err) => {
           console.error(
-            `Download of ${executable.filename} failed: ${err.message}`,
+            `Request for ${executable.filename} failed: ${err.message}`,
           );
           reject(err);
         });
-        response.pipe(fileWriter);
-      });
     });
 
   // Try to download the file, retry up to `maxRetries` times if the attempt fails

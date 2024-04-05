@@ -47,10 +47,12 @@
     "fs-extra": "^9.1.0",
     "jest": "^26.4.2",
     "mock-fs": "^4.10.4",
+    "nock": "^13.5.4",
     "prettier": "^2.3.1",
     "semantic-release": "^17.0.4",
     "tfx-cli": "^0.7.11",
     "ts-jest": "^26.3.0",
-    "typescript": "^4.5.2"
+    "typescript": "^4.5.2",
+    "uuid": "^9.0.1"
   }
 }
