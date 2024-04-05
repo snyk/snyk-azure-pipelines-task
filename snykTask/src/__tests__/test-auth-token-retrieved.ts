@@ -31,7 +31,7 @@ test('test auth token pulled from service connection', () => {
   jest.doMock('azure-pipelines-task-lib/task', () => {
     return {
       // getInput: jest.fn((name: string, required?: boolean) => "mockValue")
-      getInput: jest.fn((name: string, required?: boolean) => {
+      getInput: jest.fn((name: string) => {
         if (name === 'serviceConnectionEndpoint') {
           return 'some-serviceConnectionEndpoint';
         } else if (name === 'authToken') {
@@ -65,7 +65,7 @@ test('test auth token pulled from serviceConnectionEndpoint if both authToken an
   jest.doMock('azure-pipelines-task-lib/task', () => {
     return {
       // getInput: jest.fn((name: string, required?: boolean) => "mockValue")
-      getInput: jest.fn((name: string, required?: boolean) => {
+      getInput: jest.fn((name: string) => {
         if (name === 'serviceConnectionEndpoint') {
           return 'some-serviceConnectionEndpoint';
         } else if (name === 'authToken') {
@@ -99,7 +99,7 @@ test('test auth token pulled from authToken if both authToken set and serviceCon
   jest.doMock('azure-pipelines-task-lib/task', () => {
     return {
       // getInput: jest.fn((name: string, required?: boolean) => "mockValue")
-      getInput: jest.fn((name: string, required?: boolean) => {
+      getInput: jest.fn((name: string) => {
         if (name === 'serviceConnectionEndpoint') {
           return null;
         } else if (name === 'authToken') {
@@ -133,7 +133,7 @@ test('test auth token returns empty string if both authToken set and serviceConn
   jest.doMock('azure-pipelines-task-lib/task', () => {
     return {
       // getInput: jest.fn((name: string, required?: boolean) => "mockValue")
-      getInput: jest.fn((name: string, required?: boolean) => {
+      getInput: jest.fn((name: string) => {
         if (name === 'serviceConnectionEndpoint') {
           return null;
         } else if (name === 'authToken') {
