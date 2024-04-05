@@ -415,7 +415,10 @@ async function run() {
     }
 
     const platform: tl.Platform = tl.getPlatform();
-    if (isDebugMode()) console.log(`platform: ${platform}`);
+    if (isDebugMode()) {
+      console.log(`platform: ${platform}`);
+      console.log(`distributionChannel: ${distributionChannel}`);
+    }
 
     const snykToolDownloads = getSnykDownloadInfo(
       platform,
