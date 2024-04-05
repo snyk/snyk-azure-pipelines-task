@@ -28,6 +28,7 @@
   "dependencies": {
     "azure-pipelines-task-lib": "^3.4.0",
     "jquery": "^3.4.1",
+    "semver": "^7.6.0",
     "vss-web-extension-sdk": "^5.141.0"
   },
   "devDependencies": {

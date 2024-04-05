@@ -18,7 +18,7 @@ import { Platform } from 'azure-pipelines-task-lib/task';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
-import { CliDistributionChannel } from '../types';
+import { sanitizeVersionInput } from '../lib/sanitize-version-input';
 
 export type Executable = {
   filename: string;
@@ -32,9 +32,10 @@ export type SnykDownloads = {
 
 export function getSnykDownloadInfo(
   platform: Platform,
-  distributionChannel: CliDistributionChannel = 'stable',
+  versionString: string = 'stable',
 ): SnykDownloads {
   const baseUrl = 'https://static.snyk.io';
+  const cliVersion = sanitizeVersionInput(versionString);
 
   const filenameSuffixes: Record<Platform, string> = {
     [Platform.Linux]: 'linux',
@@ -42,16 +43,10 @@ export function getSnykDownloadInfo(
     [Platform.MacOS]: 'macos',
   };
 
-  const validDistributionChannels = ['stable', 'preview'];
-
-  if (!validDistributionChannels.includes(distributionChannel)) {
-    distributionChannel = 'stable';
-  }
-
   return {
     snyk: {
       filename: `snyk-${filenameSuffixes[platform]}`,
-      downloadUrl: `${baseUrl}/cli/${distributionChannel}/snyk-${filenameSuffixes[platform]}`,
+      downloadUrl: `${baseUrl}/cli/${cliVersion}/snyk-${filenameSuffixes[platform]}`,
     },
     snykToHtml: {
       filename: `snyk-to-html-${filenameSuffixes[platform]}`,

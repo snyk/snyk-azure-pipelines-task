@@ -64,7 +64,7 @@ describe('getSnykDownloadInfo', () => {
   });
 
   it('retrieves the correct download info a preview release', () => {
-    const dlInfo = getSnykDownloadInfo(Platform.MacOS, 'preview');
+    const dlInfo = getSnykDownloadInfo(Platform.MacOS, 'preview ');
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
@@ -78,11 +78,38 @@ describe('getSnykDownloadInfo', () => {
     });
   });
 
-  it('ignores invalid distribution channels', () => {
-    const dlInfo = getSnykDownloadInfo(
-      Platform.MacOS,
-      'invalid-channel' as any,
-    );
+  it('retrieves the correct download info for a valid semver', () => {
+    const dlInfo = getSnykDownloadInfo(Platform.MacOS, '1.1287.0');
+    expect(dlInfo).toEqual({
+      snyk: {
+        filename: 'snyk-macos',
+        downloadUrl: 'https://static.snyk.io/cli/v1.1287.0/snyk-macos',
+      },
+      snykToHtml: {
+        filename: 'snyk-to-html-macos',
+        downloadUrl:
+          'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+      },
+    });
+  });
+
+  it('retrieves the correct download info for a valid semver and sanitizes input', () => {
+    const dlInfo = getSnykDownloadInfo(Platform.MacOS, 'v1.1287.0  ');
+    expect(dlInfo).toEqual({
+      snyk: {
+        filename: 'snyk-macos',
+        downloadUrl: 'https://static.snyk.io/cli/v1.1287.0/snyk-macos',
+      },
+      snykToHtml: {
+        filename: 'snyk-to-html-macos',
+        downloadUrl:
+          'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+      },
+    });
+  });
+
+  it('ignores invalid versions', () => {
+    const dlInfo = getSnykDownloadInfo(Platform.MacOS, 'invalid-channel');
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
