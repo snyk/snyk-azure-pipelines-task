@@ -165,15 +165,11 @@
     },
     {
       "name": "distributionChannel",
-      "label": "CLI Distribution channel",
-      "type": "pickList",
-      "options": {
-        "stable": "Stable",
-        "preview": "Preview"
-      },
+      "label": "Distribution channel",
+      "type": "string",
       "required": false,
       "defaultValue": "stable",
-      "helpMarkDown": "Defaults to 'stable', but can be set to 'preview' for early access to new features",
+      "helpMarkDown": "Defaults to 'stable', but can be set to 'preview' or a specific version such as '1.1287.0'",
       "groupName": "advanced"
     }
   ],

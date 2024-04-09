@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-import { getSnykDownloadInfo } from '../../install';
+import { downloadExecutable, getSnykDownloadInfo } from '../../install';
 import { Platform } from 'azure-pipelines-task-lib/task';
+import * as nock from 'nock';
+import * as os from 'os';
+import * as path from 'path';
+import * as uuid from 'uuid/v4';
 
 describe('getSnykDownloadInfo', () => {
   it('retrieves the correct download info for Linux', () => {
@@ -64,7 +68,7 @@ describe('getSnykDownloadInfo', () => {
   });
 
   it('retrieves the correct download info a preview release', () => {
-    const dlInfo = getSnykDownloadInfo(Platform.MacOS, 'preview');
+    const dlInfo = getSnykDownloadInfo(Platform.MacOS, 'preview ');
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
@@ -78,11 +82,38 @@ describe('getSnykDownloadInfo', () => {
     });
   });
 
-  it('ignores invalid distribution channels', () => {
-    const dlInfo = getSnykDownloadInfo(
-      Platform.MacOS,
-      'invalid-channel' as any,
-    );
+  it('retrieves the correct download info for a valid semver', () => {
+    const dlInfo = getSnykDownloadInfo(Platform.MacOS, '1.1287.0');
+    expect(dlInfo).toEqual({
+      snyk: {
+        filename: 'snyk-macos',
+        downloadUrl: 'https://static.snyk.io/cli/v1.1287.0/snyk-macos',
+      },
+      snykToHtml: {
+        filename: 'snyk-to-html-macos',
+        downloadUrl:
+          'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+      },
+    });
+  });
+
+  it('retrieves the correct download info for a valid semver and sanitizes input', () => {
+    const dlInfo = getSnykDownloadInfo(Platform.MacOS, 'v1.1287.0  ');
+    expect(dlInfo).toEqual({
+      snyk: {
+        filename: 'snyk-macos',
+        downloadUrl: 'https://static.snyk.io/cli/v1.1287.0/snyk-macos',
+      },
+      snykToHtml: {
+        filename: 'snyk-to-html-macos',
+        downloadUrl:
+          'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+      },
+    });
+  });
+
+  it('ignores invalid versions', () => {
+    const dlInfo = getSnykDownloadInfo(Platform.MacOS, 'invalid-channel');
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
@@ -94,5 +125,82 @@ describe('getSnykDownloadInfo', () => {
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
     });
+  });
+});
+
+describe('downloadExecutable', () => {
+  // Define a mock Executable object for testing
+  const mockExecutable = {
+    filename: 'test-file.exe',
+    downloadUrl: 'https://example.com/test-file.exe',
+  };
+
+  let mockConsoleError: jest.SpyInstance;
+
+  beforeAll(() => {
+    // Mock console.error to prevent logging during tests
+    mockConsoleError = jest.spyOn(console, 'error').mockImplementation();
+  });
+
+  beforeEach(() => {
+    // Clear any existing mock server configuration
+    nock.cleanAll();
+    mockConsoleError.mockClear();
+  });
+
+  afterAll(() => {
+    // Clean up any remaining nock interceptors
+    nock.cleanAll();
+  });
+
+  jest.setTimeout(30_000);
+  it('gives up after all retries fail with 500 errors with meaningful error', async () => {
+    // Mock the server to always respond with 500 errors
+    const fileName = `test-file-${uuid()}.exe`;
+    nock('https://example.com')
+      .get('/' + fileName)
+      .reply(500);
+
+    const targetDirectory = path.join(os.tmpdir());
+
+    await downloadExecutable(
+      targetDirectory,
+      {
+        filename: fileName,
+        downloadUrl: 'https://example.com/' + fileName,
+      },
+      1,
+    );
+
+    // Assert that the file was not created
+    const calls = mockConsoleError.mock.calls;
+    expect(mockConsoleError).toBeCalledTimes(2);
+    expect(calls[0]).toEqual([`Download of ${fileName} failed: HTTP 500`]);
+    expect(calls[1]).toEqual([`All retries failed for ${fileName}: HTTP 500`]);
+  });
+
+  it('gives up after all retries fail with 404 errors with meaningful error', async () => {
+    // Mock the server to always respond with 404 errors
+    const fileName = `test-file-${uuid()}.exe`;
+    nock('https://example.com')
+      .get('/' + fileName)
+      .reply(404);
+
+    const targetDirectory = path.join(os.tmpdir());
+
+    await downloadExecutable(
+      targetDirectory,
+      {
+        filename: fileName,
+        downloadUrl: 'https://example.com/' + fileName,
+      },
+      1,
+    );
+
+    // Assert that the file was not created
+    const calls = mockConsoleError.mock.calls;
+    expect(mockConsoleError).toBeCalledTimes(2);
+    expect(calls[0]).toEqual([`Download of ${fileName} failed: HTTP 404`]);
+    expect(calls[1]).toEqual([`All retries failed for ${fileName}: HTTP 404`]);
   });
 });
