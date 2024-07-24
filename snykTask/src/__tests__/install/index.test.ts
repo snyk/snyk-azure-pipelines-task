@@ -171,7 +171,9 @@ describe('downloadExecutable', () => {
     // Assert that the file was not created
     const calls = mockConsoleError.mock.calls;
     expect(mockConsoleError).toBeCalledTimes(3);
-    expect(calls[0]).toEqual([`Download of ${fileName} from main URL failed: HTTP 500`]);
+    expect(calls[0]).toEqual([
+      `Download of ${fileName} from main URL failed: HTTP 500`,
+    ]);
     expect(calls[2]).toEqual([`All retries failed for ${fileName}: HTTP 500`]);
   });
 
@@ -197,7 +199,9 @@ describe('downloadExecutable', () => {
     // Assert that the file was not created
     const calls = mockConsoleError.mock.calls;
     expect(mockConsoleError).toBeCalledTimes(3);
-    expect(calls[0]).toEqual([`Download of ${fileName} from main URL failed: HTTP 404`]);
+    expect(calls[0]).toEqual([
+      `Download of ${fileName} from main URL failed: HTTP 404`,
+    ]);
     expect(calls[2]).toEqual([`All retries failed for ${fileName}: HTTP 404`]);
   });
 

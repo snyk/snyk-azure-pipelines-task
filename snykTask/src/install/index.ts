@@ -128,7 +128,10 @@ export async function downloadExecutable(
         );
         await new Promise((resolve) => setTimeout(resolve, 5000));
       } else {
-        console.error(`All retries failed for ${executable.filename}: ${err.message}`);      }
+        console.error(
+          `All retries failed for ${executable.filename}: ${err.message}`,
+        );
+      }
     }
   }
 }
