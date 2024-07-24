@@ -20,6 +20,7 @@ import * as nock from 'nock';
 import * as os from 'os';
 import * as path from 'path';
 import * as uuid from 'uuid/v4';
+import * as fs from 'fs';
 
 describe('getSnykDownloadInfo', () => {
   it('retrieves the correct download info for Linux', () => {
@@ -129,12 +130,6 @@ describe('getSnykDownloadInfo', () => {
 });
 
 describe('downloadExecutable', () => {
-  // Define a mock Executable object for testing
-  const mockExecutable = {
-    filename: 'test-file.exe',
-    downloadUrl: 'https://example.com/test-file.exe',
-  };
-
   let mockConsoleError: jest.SpyInstance;
 
   beforeAll(() => {
@@ -168,15 +163,16 @@ describe('downloadExecutable', () => {
       {
         filename: fileName,
         downloadUrl: 'https://example.com/' + fileName,
+        backupUrl: 'https://example.com/' + fileName,
       },
       1,
     );
 
     // Assert that the file was not created
     const calls = mockConsoleError.mock.calls;
-    expect(mockConsoleError).toBeCalledTimes(2);
-    expect(calls[0]).toEqual([`Download of ${fileName} failed: HTTP 500`]);
-    expect(calls[1]).toEqual([`All retries failed for ${fileName}: HTTP 500`]);
+    expect(mockConsoleError).toBeCalledTimes(3);
+    expect(calls[0]).toEqual([`Download of ${fileName} from main URL failed: HTTP 500`]);
+    expect(calls[2]).toEqual([`All retries failed for ${fileName}: HTTP 500`]);
   });
 
   it('gives up after all retries fail with 404 errors with meaningful error', async () => {
@@ -193,14 +189,93 @@ describe('downloadExecutable', () => {
       {
         filename: fileName,
         downloadUrl: 'https://example.com/' + fileName,
+        backupUrl: 'https://example.com/' + fileName,
       },
       1,
     );
 
     // Assert that the file was not created
     const calls = mockConsoleError.mock.calls;
-    expect(mockConsoleError).toBeCalledTimes(2);
-    expect(calls[0]).toEqual([`Download of ${fileName} failed: HTTP 404`]);
-    expect(calls[1]).toEqual([`All retries failed for ${fileName}: HTTP 404`]);
+    expect(mockConsoleError).toBeCalledTimes(3);
+    expect(calls[0]).toEqual([`Download of ${fileName} from main URL failed: HTTP 404`]);
+    expect(calls[2]).toEqual([`All retries failed for ${fileName}: HTTP 404`]);
+  });
+
+  it('gives up after all retries fail with 404 errors with meaningful error', async () => {
+    // Mock the server to always respond with 404 errors
+    const fileName = `test-file-${uuid()}.exe`;
+    nock('https://example.com')
+      .get('/' + fileName)
+      .times(2)
+      .reply(404);
+
+    const targetDirectory = path.join(os.tmpdir());
+
+    await downloadExecutable(
+      targetDirectory,
+      {
+        filename: fileName,
+        downloadUrl: 'https://example.com/' + fileName,
+        backupUrl: 'https://example.com/' + fileName,
+      },
+      1,
+    );
+
+    // Assert that the file was not created
+    const calls = mockConsoleError.mock.calls;
+    expect(mockConsoleError).toBeCalledTimes(3);
+    expect(calls[0]).toEqual([
+      `Download of ${fileName} from main URL failed: HTTP 404`,
+    ]);
+    expect(calls[1]).toEqual([
+      `Download of ${fileName} from backup URL failed: HTTP 404`,
+    ]);
+    expect(calls[2]).toEqual([`All retries failed for ${fileName}: HTTP 404`]);
+  });
+
+  it('attempts to download from backup url when main url fails', async () => {
+    // Mock the server to respond with 404 errors for the main URL
+    const fileName = `test-file-${uuid()}.exe`;
+    const fileContent = Buffer.from('This is a test file content');
+
+    nock('https://example.com')
+      .get('/' + fileName)
+      .reply(404);
+
+    // Mock the server to respond with 200 and actual file content for the backup URL
+    nock('https://backup.example.com')
+      .get('/' + fileName)
+      .reply(200, fileContent, {
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': fileContent.length.toString(),
+      });
+
+    const targetDirectory = path.join(os.tmpdir());
+
+    await expect(
+      downloadExecutable(
+        targetDirectory,
+        {
+          filename: fileName,
+          downloadUrl: 'https://example.com/' + fileName,
+          backupUrl: 'https://backup.example.com/' + fileName,
+        },
+        1,
+      ),
+    ).resolves.not.toThrow();
+
+    // Assert that the file was created
+    const filePath = path.join(targetDirectory, fileName);
+    expect(fs.existsSync(filePath)).toBe(true);
+
+    // Assert that the console error was called for the main URL failure
+    const calls = mockConsoleError.mock.calls;
+    expect(mockConsoleError).toHaveBeenCalledTimes(1);
+    expect(calls[0]).toEqual([
+      `Download of ${fileName} from main URL failed: HTTP 404`,
+    ]);
+
+    // Clean up: remove the downloaded file
+    fs.unlinkSync(filePath);
   });
 });

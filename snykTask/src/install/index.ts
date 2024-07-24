@@ -23,6 +23,7 @@ import { sanitizeVersionInput } from '../lib/sanitize-version-input';
 export type Executable = {
   filename: string;
   downloadUrl: string;
+  backupUrl: string;
 };
 
 export type SnykDownloads = {
@@ -34,7 +35,8 @@ export function getSnykDownloadInfo(
   platform: Platform,
   versionString: string = 'stable',
 ): SnykDownloads {
-  const baseUrl = 'https://static.snyk.io';
+  const baseUrl = 'https://downloads.snyk.io';
+  const backupUrl = 'https://static.snyk.io';
   const distributionChannel = sanitizeVersionInput(versionString);
 
   const filenameSuffixes: Record<Platform, string> = {
@@ -47,10 +49,12 @@ export function getSnykDownloadInfo(
     snyk: {
       filename: `snyk-${filenameSuffixes[platform]}`,
       downloadUrl: `${baseUrl}/cli/${distributionChannel}/snyk-${filenameSuffixes[platform]}`,
+      backupUrl: `${backupUrl}/cli/${distributionChannel}/snyk-${filenameSuffixes[platform]}`,
     },
     snykToHtml: {
       filename: `snyk-to-html-${filenameSuffixes[platform]}`,
       downloadUrl: `${baseUrl}/snyk-to-html/latest/snyk-to-html-${filenameSuffixes[platform]}`,
+      backupUrl: `${backupUrl}/snyk-to-html/latest/snyk-to-html-${filenameSuffixes[platform]}`,
     },
   };
 }
@@ -62,7 +66,6 @@ export async function downloadExecutable(
 ) {
   const filePath = path.join(targetDirectory, executable.filename);
 
-  // Check if the file already exists
   if (fs.existsSync(filePath)) {
     console.log(
       `File ${executable.filename} already exists, skipping download.`,
@@ -70,71 +73,62 @@ export async function downloadExecutable(
     return;
   }
 
-  const fileWriter = fs.createWriteStream(filePath, {
-    mode: 0o766,
-  });
-
-  // Wrapping the download in a function for easy retrying
-  const doDownload = () =>
+  const doDownload = (url: string) =>
     new Promise<void>((resolve, reject) => {
+      const fileWriter = fs.createWriteStream(filePath, { mode: 0o766 });
+
       https
-        .get(executable.downloadUrl, (response) => {
-          const isResponseError = response.statusCode !== 200;
-
-          response.on('error', (err) => {
-            console.error(
-              `Download of ${executable.filename} failed: ${err.message}`,
-            );
-            reject(err);
-          });
-
+        .get(url, (response) => {
           if (response.statusCode !== 200) {
             fileWriter.close();
+            reject(new Error(`HTTP ${response.statusCode}`));
+            return;
           }
 
-          fileWriter.on('close', () => {
-            console.log(
-              `File.close ${executable.filename} saved to ${filePath}`,
-            );
-            if (isResponseError) {
-              reject(new Error(`HTTP ${response.statusCode}`));
-            } else {
-              resolve();
-            }
-          });
-
           response.pipe(fileWriter);
+
+          fileWriter.on('finish', () => {
+            fileWriter.close();
+            console.log(`File ${executable.filename} saved to ${filePath}`);
+            resolve();
+          });
         })
         .on('error', (err) => {
-          console.error(
-            `Request for ${executable.filename} failed: ${err.message}`,
-          );
+          fileWriter.close();
+          fs.unlinkSync(filePath); // Delete partially downloaded file
           reject(err);
         });
     });
 
-  // Try to download the file, retry up to `maxRetries` times if the attempt fails
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      await doDownload();
+      await doDownload(executable.downloadUrl);
       console.log(`Download successful for ${executable.filename}`);
-      break;
+      return; // Exit function on successful download
     } catch (err) {
       console.error(
-        `Download of ${executable.filename} failed: ${err.message}`,
+        `Download of ${executable.filename} from main URL failed: ${err.message}`,
       );
 
-      // Don't wait before retrying the last attempt
+      try {
+        await doDownload(executable.backupUrl);
+        console.log(
+          `Download successful for ${executable.filename} from backup URL`,
+        );
+        return; // Exit function on successful download from backup
+      } catch (backupErr) {
+        console.error(
+          `Download of ${executable.filename} from backup URL failed: ${backupErr.message}`,
+        );
+      }
+
       if (attempt < maxRetries - 1) {
         console.log(
           `Retrying download of ${executable.filename} after 5 seconds...`,
         );
         await new Promise((resolve) => setTimeout(resolve, 5000));
       } else {
-        console.error(
-          `All retries failed for ${executable.filename}: ${err.message}`,
-        );
-      }
+        console.error(`All retries failed for ${executable.filename}: ${err.message}`);      }
     }
   }
 }
