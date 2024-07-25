@@ -193,37 +193,9 @@ describe('downloadExecutable', () => {
     const calls = mockConsoleError.mock.calls;
     expect(mockConsoleError).toBeCalledTimes(3);
     expect(calls[0]).toEqual([
-      `Download of ${fileName} from main URL failed: HTTP 500`,
+      `Download of ${fileName} from main URL failed: HTTP 500! Attempting to download from backup URL...`,
     ]);
     expect(calls[2]).toEqual([`All retries failed for ${fileName}: HTTP 500`]);
-  });
-
-  it('gives up after all retries fail with 404 errors with meaningful error', async () => {
-    // Mock the server to always respond with 404 errors
-    const fileName = `test-file-${uuid()}.exe`;
-    nock('https://example.com')
-      .get('/' + fileName)
-      .reply(404);
-
-    const targetDirectory = path.join(os.tmpdir());
-
-    await downloadExecutable(
-      targetDirectory,
-      {
-        filename: fileName,
-        downloadUrl: 'https://example.com/' + fileName,
-        backupUrl: 'https://example.com/' + fileName,
-      },
-      1,
-    );
-
-    // Assert that the file was not created
-    const calls = mockConsoleError.mock.calls;
-    expect(mockConsoleError).toBeCalledTimes(3);
-    expect(calls[0]).toEqual([
-      `Download of ${fileName} from main URL failed: HTTP 404`,
-    ]);
-    expect(calls[2]).toEqual([`All retries failed for ${fileName}: HTTP 404`]);
   });
 
   it('gives up after all retries fail with 404 errors with meaningful error', async () => {
@@ -250,7 +222,7 @@ describe('downloadExecutable', () => {
     const calls = mockConsoleError.mock.calls;
     expect(mockConsoleError).toBeCalledTimes(3);
     expect(calls[0]).toEqual([
-      `Download of ${fileName} from main URL failed: HTTP 404`,
+      `Download of ${fileName} from main URL failed: HTTP 404! Attempting to download from backup URL...`,
     ]);
     expect(calls[1]).toEqual([
       `Download of ${fileName} from backup URL failed: HTTP 404`,
@@ -297,7 +269,7 @@ describe('downloadExecutable', () => {
     const calls = mockConsoleError.mock.calls;
     expect(mockConsoleError).toHaveBeenCalledTimes(1);
     expect(calls[0]).toEqual([
-      `Download of ${fileName} from main URL failed: HTTP 404`,
+      `Download of ${fileName} from main URL failed: HTTP 404! Attempting to download from backup URL...`,
     ]);
 
     // Clean up: remove the downloaded file

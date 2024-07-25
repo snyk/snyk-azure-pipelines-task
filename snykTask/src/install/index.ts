@@ -107,7 +107,7 @@ export async function downloadExecutable(
       return; // Exit function on successful download
     } catch (err) {
       console.error(
-        `Download of ${executable.filename} from main URL failed: ${err.message}`,
+        `Download of ${executable.filename} from main URL failed: ${err.message}! Attempting to download from backup URL...`,
       );
 
       try {
