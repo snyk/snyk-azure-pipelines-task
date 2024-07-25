@@ -28,11 +28,14 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-linux',
-        downloadUrl: 'https://static.snyk.io/cli/stable/snyk-linux',
+        downloadUrl: 'https://downloads.snyk.io/cli/stable/snyk-linux',
+        backupUrl: 'https://static.snyk.io/cli/stable/snyk-linux',
       },
       snykToHtml: {
         filename: 'snyk-to-html-linux',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-linux',
+        backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-linux',
       },
     });
@@ -43,11 +46,14 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-win.exe',
-        downloadUrl: 'https://static.snyk.io/cli/stable/snyk-win.exe',
+        downloadUrl: 'https://downloads.snyk.io/cli/stable/snyk-win.exe',
+        backupUrl: 'https://static.snyk.io/cli/stable/snyk-win.exe',
       },
       snykToHtml: {
         filename: 'snyk-to-html-win.exe',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-win.exe',
+        backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-win.exe',
       },
     });
@@ -58,11 +64,14 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
-        downloadUrl: 'https://static.snyk.io/cli/stable/snyk-macos',
+        downloadUrl: 'https://downloads.snyk.io/cli/stable/snyk-macos',
+        backupUrl: 'https://static.snyk.io/cli/stable/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+        backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
     });
@@ -73,11 +82,14 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
-        downloadUrl: 'https://static.snyk.io/cli/preview/snyk-macos',
+        downloadUrl: 'https://downloads.snyk.io/cli/preview/snyk-macos',
+        backupUrl: 'https://static.snyk.io/cli/preview/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+        backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
     });
@@ -88,11 +100,14 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
-        downloadUrl: 'https://static.snyk.io/cli/v1.1287.0/snyk-macos',
+        downloadUrl: 'https://downloads.snyk.io/cli/v1.1287.0/snyk-macos',
+        backupUrl: 'https://static.snyk.io/cli/v1.1287.0/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+        backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
     });
@@ -103,11 +118,14 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
-        downloadUrl: 'https://static.snyk.io/cli/v1.1287.0/snyk-macos',
+        downloadUrl: 'https://downloads.snyk.io/cli/v1.1287.0/snyk-macos',
+        backupUrl: 'https://static.snyk.io/cli/v1.1287.0/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+        backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
     });
@@ -118,11 +136,14 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
-        downloadUrl: 'https://static.snyk.io/cli/stable/snyk-macos',
+        downloadUrl: 'https://downloads.snyk.io/cli/stable/snyk-macos',
+        backupUrl: 'https://static.snyk.io/cli/stable/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+        backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
     });
