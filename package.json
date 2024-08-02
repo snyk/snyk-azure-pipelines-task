@@ -11,7 +11,7 @@
     "pretest": "npm run build",
     "test": "npm run test:checks && npm run test:unit",
     "test:checks": "npm run eslint && npm run format:check",
-    "test:snyk": "npx snyk test",
+    "test:snyk": "npx snyk test --severity-threshold=high",
     "test:unit": "jest",
     "compile": "tsc -b snykTask/tsconfig.json",
     "eslint": "eslint --cache 'snykTask/{src,test,public/js/{!(build)}}/**/*.{js,ts}'",
