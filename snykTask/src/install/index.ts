@@ -48,12 +48,12 @@ export function getSnykDownloadInfo(
   return {
     snyk: {
       filename: `snyk-${filenameSuffixes[platform]}`,
-      downloadUrl: `${baseUrl}/cli/${distributionChannel}/snyk-${filenameSuffixes[platform]}`,
+      downloadUrl: `${baseUrl}/cli/${distributionChannel}/snyk-${filenameSuffixes[platform]}?utm_source=AZURE_DEVOPS`,
       backupUrl: `${backupUrl}/cli/${distributionChannel}/snyk-${filenameSuffixes[platform]}`,
     },
     snykToHtml: {
       filename: `snyk-to-html-${filenameSuffixes[platform]}`,
-      downloadUrl: `${baseUrl}/snyk-to-html/latest/snyk-to-html-${filenameSuffixes[platform]}`,
+      downloadUrl: `${baseUrl}/snyk-to-html/latest/snyk-to-html-${filenameSuffixes[platform]}?utm_source=AZURE_DEVOPS`,
       backupUrl: `${backupUrl}/snyk-to-html/latest/snyk-to-html-${filenameSuffixes[platform]}`,
     },
   };
