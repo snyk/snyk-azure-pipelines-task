@@ -136,7 +136,7 @@ async function showDirectoryListing(
   const lsPath = tl.which('ls');
   const lsToolRunner: tr.ToolRunner = tl.tool(lsPath);
   lsToolRunner.arg('-la');
-  lsToolRunner.argIf(dirToShow, dirToShow);
+  lsToolRunner.argIf(dirToShow, dirToShow as string);
   try {
     await lsToolRunner.exec(options);
   } catch (err) {
