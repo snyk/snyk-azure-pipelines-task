@@ -29,13 +29,13 @@ describe('getSnykDownloadInfo', () => {
       snyk: {
         filename: 'snyk-linux',
         downloadUrl:
-          'https://downloads.snyk.io/cli/stable/snyk-linux?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/cli/stable/snyk-linux?utm_source=AZURE_PIPELINES',
         backupUrl: 'https://static.snyk.io/cli/stable/snyk-linux',
       },
       snykToHtml: {
         filename: 'snyk-to-html-linux',
         downloadUrl:
-          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-linux?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-linux?utm_source=AZURE_PIPELINES',
         backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-linux',
       },
@@ -48,13 +48,13 @@ describe('getSnykDownloadInfo', () => {
       snyk: {
         filename: 'snyk-win.exe',
         downloadUrl:
-          'https://downloads.snyk.io/cli/stable/snyk-win.exe?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/cli/stable/snyk-win.exe?utm_source=AZURE_PIPELINES',
         backupUrl: 'https://static.snyk.io/cli/stable/snyk-win.exe',
       },
       snykToHtml: {
         filename: 'snyk-to-html-win.exe',
         downloadUrl:
-          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-win.exe?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-win.exe?utm_source=AZURE_PIPELINES',
         backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-win.exe',
       },
@@ -67,13 +67,13 @@ describe('getSnykDownloadInfo', () => {
       snyk: {
         filename: 'snyk-macos',
         downloadUrl:
-          'https://downloads.snyk.io/cli/stable/snyk-macos?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/cli/stable/snyk-macos?utm_source=AZURE_PIPELINES',
         backupUrl: 'https://static.snyk.io/cli/stable/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
-          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
         backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
@@ -86,13 +86,13 @@ describe('getSnykDownloadInfo', () => {
       snyk: {
         filename: 'snyk-macos',
         downloadUrl:
-          'https://downloads.snyk.io/cli/preview/snyk-macos?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/cli/preview/snyk-macos?utm_source=AZURE_PIPELINES',
         backupUrl: 'https://static.snyk.io/cli/preview/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
-          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
         backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
@@ -105,13 +105,13 @@ describe('getSnykDownloadInfo', () => {
       snyk: {
         filename: 'snyk-macos',
         downloadUrl:
-          'https://downloads.snyk.io/cli/v1.1287.0/snyk-macos?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/cli/v1.1287.0/snyk-macos?utm_source=AZURE_PIPELINES',
         backupUrl: 'https://static.snyk.io/cli/v1.1287.0/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
-          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
         backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
@@ -124,13 +124,13 @@ describe('getSnykDownloadInfo', () => {
       snyk: {
         filename: 'snyk-macos',
         downloadUrl:
-          'https://downloads.snyk.io/cli/v1.1287.0/snyk-macos?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/cli/v1.1287.0/snyk-macos?utm_source=AZURE_PIPELINES',
         backupUrl: 'https://static.snyk.io/cli/v1.1287.0/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
-          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
         backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
@@ -143,13 +143,13 @@ describe('getSnykDownloadInfo', () => {
       snyk: {
         filename: 'snyk-macos',
         downloadUrl:
-          'https://downloads.snyk.io/cli/stable/snyk-macos?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/cli/stable/snyk-macos?utm_source=AZURE_PIPELINES',
         backupUrl: 'https://static.snyk.io/cli/stable/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
-          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_DEVOPS',
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
         backupUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
