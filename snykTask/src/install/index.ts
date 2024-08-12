@@ -23,6 +23,7 @@ import { sanitizeVersionInput } from '../lib/sanitize-version-input';
 export type Executable = {
   filename: string;
   downloadUrl: string;
+  fallbackUrl: string;
 };
 
 export type SnykDownloads = {
@@ -34,7 +35,8 @@ export function getSnykDownloadInfo(
   platform: Platform,
   versionString: string = 'stable',
 ): SnykDownloads {
-  const baseUrl = 'https://static.snyk.io';
+  const baseUrl = 'https://downloads.snyk.io';
+  const fallbackUrl = 'https://static.snyk.io';
   const distributionChannel = sanitizeVersionInput(versionString);
 
   const filenameSuffixes: Record<Platform, string> = {
@@ -46,11 +48,13 @@ export function getSnykDownloadInfo(
   return {
     snyk: {
       filename: `snyk-${filenameSuffixes[platform]}`,
-      downloadUrl: `${baseUrl}/cli/${distributionChannel}/snyk-${filenameSuffixes[platform]}`,
+      downloadUrl: `${baseUrl}/cli/${distributionChannel}/snyk-${filenameSuffixes[platform]}?utm_source=AZURE_PIPELINES`,
+      fallbackUrl: `${fallbackUrl}/cli/latest/snyk-${filenameSuffixes[platform]}`,
     },
     snykToHtml: {
       filename: `snyk-to-html-${filenameSuffixes[platform]}`,
-      downloadUrl: `${baseUrl}/snyk-to-html/latest/snyk-to-html-${filenameSuffixes[platform]}`,
+      downloadUrl: `${baseUrl}/snyk-to-html/latest/snyk-to-html-${filenameSuffixes[platform]}?utm_source=AZURE_PIPELINES`,
+      fallbackUrl: `${fallbackUrl}/snyk-to-html/latest/snyk-to-html-${filenameSuffixes[platform]}`,
     },
   };
 }
@@ -75,16 +79,14 @@ export async function downloadExecutable(
   });
 
   // Wrapping the download in a function for easy retrying
-  const doDownload = () =>
+  const doDownload = (url, filename) =>
     new Promise<void>((resolve, reject) => {
       https
-        .get(executable.downloadUrl, (response) => {
+        .get(url, (response) => {
           const isResponseError = response.statusCode !== 200;
 
           response.on('error', (err) => {
-            console.error(
-              `Download of ${executable.filename} failed: ${err.message}`,
-            );
+            console.error(`Download of ${filename} failed: ${err.message}`);
             reject(err);
           });
 
@@ -93,9 +95,7 @@ export async function downloadExecutable(
           }
 
           fileWriter.on('close', () => {
-            console.log(
-              `File.close ${executable.filename} saved to ${filePath}`,
-            );
+            console.log(`File.close ${filename} saved to ${filePath}`);
             if (isResponseError) {
               reject(new Error(`HTTP ${response.statusCode}`));
             } else {
@@ -106,9 +106,7 @@ export async function downloadExecutable(
           response.pipe(fileWriter);
         })
         .on('error', (err) => {
-          console.error(
-            `Request for ${executable.filename} failed: ${err.message}`,
-          );
+          console.error(`Request for ${filename} failed: ${err.message}`);
           reject(err);
         });
     });
@@ -116,9 +114,9 @@ export async function downloadExecutable(
   // Try to download the file, retry up to `maxRetries` times if the attempt fails
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      await doDownload();
+      await doDownload(executable.downloadUrl, executable.filename);
       console.log(`Download successful for ${executable.filename}`);
-      break;
+      return;
     } catch (err) {
       console.error(
         `Download of ${executable.filename} failed: ${err.message}`,
@@ -127,12 +125,37 @@ export async function downloadExecutable(
       // Don't wait before retrying the last attempt
       if (attempt < maxRetries - 1) {
         console.log(
-          `Retrying download of ${executable.filename} after 5 seconds...`,
+          `Retrying download of ${executable.filename} from ${executable.downloadUrl} after 5 seconds...`,
         );
         await new Promise((resolve) => setTimeout(resolve, 5000));
       } else {
         console.error(
-          `All retries failed for ${executable.filename}: ${err.message}`,
+          `All retries failed for ${executable.filename} from ${executable.downloadUrl}: ${err.message}`,
+        );
+      }
+    }
+  }
+
+  // Try to download the file from fallback url, retry up to `maxRetries` times if the attempt fails
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      await doDownload(executable.fallbackUrl, executable.filename);
+      console.log(`Download successful for ${executable.filename}`);
+      return;
+    } catch (err) {
+      console.error(
+        `Download of ${executable.filename} failed: ${err.message}`,
+      );
+
+      // Don't wait before retrying the last attempt
+      if (attempt < maxRetries - 1) {
+        console.log(
+          `Retrying download of ${executable.filename} from ${executable.fallbackUrl} after 5 seconds...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      } else {
+        console.error(
+          `All retries failed for ${executable.filename} from ${executable.fallbackUrl}: ${err.message}`,
         );
       }
     }
