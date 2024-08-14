@@ -27,11 +27,15 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-linux',
-        downloadUrl: 'https://static.snyk.io/cli/stable/snyk-linux',
+        downloadUrl:
+          'https://downloads.snyk.io/cli/stable/snyk-linux?utm_source=AZURE_PIPELINES',
+        fallbackUrl: 'https://static.snyk.io/cli/latest/snyk-linux',
       },
       snykToHtml: {
         filename: 'snyk-to-html-linux',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-linux?utm_source=AZURE_PIPELINES',
+        fallbackUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-linux',
       },
     });
@@ -42,11 +46,15 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-win.exe',
-        downloadUrl: 'https://static.snyk.io/cli/stable/snyk-win.exe',
+        downloadUrl:
+          'https://downloads.snyk.io/cli/stable/snyk-win.exe?utm_source=AZURE_PIPELINES',
+        fallbackUrl: 'https://static.snyk.io/cli/latest/snyk-win.exe',
       },
       snykToHtml: {
         filename: 'snyk-to-html-win.exe',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-win.exe?utm_source=AZURE_PIPELINES',
+        fallbackUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-win.exe',
       },
     });
@@ -57,11 +65,15 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
-        downloadUrl: 'https://static.snyk.io/cli/stable/snyk-macos',
+        downloadUrl:
+          'https://downloads.snyk.io/cli/stable/snyk-macos?utm_source=AZURE_PIPELINES',
+        fallbackUrl: 'https://static.snyk.io/cli/latest/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
+        fallbackUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
     });
@@ -72,11 +84,15 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
-        downloadUrl: 'https://static.snyk.io/cli/preview/snyk-macos',
+        downloadUrl:
+          'https://downloads.snyk.io/cli/preview/snyk-macos?utm_source=AZURE_PIPELINES',
+        fallbackUrl: 'https://static.snyk.io/cli/latest/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
+        fallbackUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
     });
@@ -87,11 +103,15 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
-        downloadUrl: 'https://static.snyk.io/cli/v1.1287.0/snyk-macos',
+        downloadUrl:
+          'https://downloads.snyk.io/cli/v1.1287.0/snyk-macos?utm_source=AZURE_PIPELINES',
+        fallbackUrl: 'https://static.snyk.io/cli/latest/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
+        fallbackUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
     });
@@ -102,11 +122,15 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
-        downloadUrl: 'https://static.snyk.io/cli/v1.1287.0/snyk-macos',
+        downloadUrl:
+          'https://downloads.snyk.io/cli/v1.1287.0/snyk-macos?utm_source=AZURE_PIPELINES',
+        fallbackUrl: 'https://static.snyk.io/cli/latest/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
+        fallbackUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
     });
@@ -117,11 +141,15 @@ describe('getSnykDownloadInfo', () => {
     expect(dlInfo).toEqual({
       snyk: {
         filename: 'snyk-macos',
-        downloadUrl: 'https://static.snyk.io/cli/stable/snyk-macos',
+        downloadUrl:
+          'https://downloads.snyk.io/cli/stable/snyk-macos?utm_source=AZURE_PIPELINES',
+        fallbackUrl: 'https://static.snyk.io/cli/latest/snyk-macos',
       },
       snykToHtml: {
         filename: 'snyk-to-html-macos',
         downloadUrl:
+          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
+        fallbackUrl:
           'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
       },
     });
@@ -129,12 +157,6 @@ describe('getSnykDownloadInfo', () => {
 });
 
 describe('downloadExecutable', () => {
-  // Define a mock Executable object for testing
-  const mockExecutable = {
-    filename: 'test-file.exe',
-    downloadUrl: 'https://example.com/test-file.exe',
-  };
-
   let mockConsoleError: jest.SpyInstance;
 
   beforeAll(() => {
@@ -168,15 +190,19 @@ describe('downloadExecutable', () => {
       {
         filename: fileName,
         downloadUrl: 'https://example.com/' + fileName,
+        fallbackUrl: '',
       },
       1,
     );
 
     // Assert that the file was not created
     const calls = mockConsoleError.mock.calls;
-    expect(mockConsoleError).toBeCalledTimes(2);
+    console.log(mockConsoleError.mock.calls);
+    expect(mockConsoleError).toBeCalledTimes(4);
     expect(calls[0]).toEqual([`Download of ${fileName} failed: HTTP 500`]);
-    expect(calls[1]).toEqual([`All retries failed for ${fileName}: HTTP 500`]);
+    expect(calls[1]).toEqual([
+      `All retries failed for ${fileName} from https://example.com/${fileName}: HTTP 500`,
+    ]);
   });
 
   it('gives up after all retries fail with 404 errors with meaningful error', async () => {
@@ -184,6 +210,7 @@ describe('downloadExecutable', () => {
     const fileName = `test-file-${uuid()}.exe`;
     nock('https://example.com')
       .get('/' + fileName)
+      .times(2)
       .reply(404);
 
     const targetDirectory = path.join(os.tmpdir());
@@ -193,14 +220,17 @@ describe('downloadExecutable', () => {
       {
         filename: fileName,
         downloadUrl: 'https://example.com/' + fileName,
+        fallbackUrl: '' + fileName,
       },
       1,
     );
 
     // Assert that the file was not created
     const calls = mockConsoleError.mock.calls;
-    expect(mockConsoleError).toBeCalledTimes(2);
+    expect(mockConsoleError).toBeCalledTimes(4);
     expect(calls[0]).toEqual([`Download of ${fileName} failed: HTTP 404`]);
-    expect(calls[1]).toEqual([`All retries failed for ${fileName}: HTTP 404`]);
+    expect(calls[1]).toEqual([
+      `All retries failed for ${fileName} from https://example.com/${fileName}: HTTP 404`,
+    ]);
   });
 });
