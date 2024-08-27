@@ -19,7 +19,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
 import { sanitizeVersionInput } from '../lib/sanitize-version-input';
-import { isDebugMode } from '..';
 
 export type Executable = {
   filename: string;
@@ -36,11 +35,9 @@ export function getSnykDownloadInfo(
   platform: Platform,
   versionString: string = 'stable',
 ): SnykDownloads {
-  if (isDebugMode()) {
-    console.log(
-      `Getting Snyk download info for platform: ${platform} version: ${versionString}`,
-    );
-  }
+  console.log(
+    `Getting Snyk download info for platform: ${platform} version: ${versionString}`,
+  );
 
   const baseUrl = 'https://downloads.snyk.io';
   const fallbackUrl = 'https://static.snyk.io';
@@ -72,9 +69,7 @@ export async function downloadExecutable(
   maxRetries = 5,
 ) {
   const filePath = path.join(targetDirectory, executable.filename);
-  if (isDebugMode()) {
-    console.log(`Downloading executable to: ${filePath}`);
-  }
+  console.log(`Downloading executable to: ${filePath}`);
 
   // Check if the file already exists
   if (fs.existsSync(filePath)) {
@@ -89,12 +84,8 @@ export async function downloadExecutable(
   });
 
   // Wrapping the download in a function for easy retrying
-  const doDownload = (urlString, filename) => {
-    if (isDebugMode()) {
-      console.log(`Downloading file from ${urlString}`);
-    }
-
-    return new Promise<void>((resolve, reject) => {
+  const doDownload = (urlString, filename) =>
+    new Promise<void>((resolve, reject) => {
       const url = new URL(urlString);
       const requestOpts: https.RequestOptions = {
         host: url.hostname,
@@ -106,22 +97,17 @@ export async function downloadExecutable(
           const isResponseError = response.statusCode !== 200;
 
           response.on('finish', () => {
-            console.log('Response finished');
+            console.log(`Response finished for ${urlString}`);
           });
-
+          response.on('close', () => {
+            console.log(`Download connection closed for ${urlString}`);
+          });
           response.on('error', (err) => {
             console.error(`Download of ${filename} failed: ${err.message}`);
             reject(err);
           });
 
-          response.on('close', () => {
-            console.log(`Download connection closed for ${urlString}`);
-          });
-
           if (response.statusCode !== 200) {
-            console.error(
-              `Received non-200 status code: ${response.statusCode}`,
-            );
             fileWriter.close();
           }
 
@@ -145,12 +131,13 @@ export async function downloadExecutable(
           reject(err);
         });
     });
-  };
 
   // Try to download the file, retry up to `maxRetries` times if the attempt fails
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      console.log(`Downloading ${executable.filename}`);
+      console.log(
+        `Downloading: ${executable.filename} from: ${executable.downloadUrl}`,
+      );
       await doDownload(executable.downloadUrl, executable.filename);
       console.log(`Download successful for ${executable.filename}`);
       return;
@@ -176,7 +163,9 @@ export async function downloadExecutable(
   // Try to download the file from fallback url, retry up to `maxRetries` times if the attempt fails
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      console.log(`Downloading ${executable.filename}`);
+      console.log(
+        `Downloading: ${executable.filename} from: ${executable.downloadUrl}`,
+      );
       await doDownload(executable.fallbackUrl, executable.filename);
       console.log(`Download successful for ${executable.filename}`);
       return;

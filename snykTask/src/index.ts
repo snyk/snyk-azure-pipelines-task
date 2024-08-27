@@ -60,7 +60,7 @@ const taskNameForAnalytics = 'AZURE_PIPELINES';
 const taskJsonPath = path.join(__dirname, '..', 'task.json');
 const taskVersion = getTaskVersion(taskJsonPath);
 
-export const isDebugMode = () => tl.getBoolInput('debug', false);
+const isDebugMode = () => tl.getBoolInput('debug', false);
 
 if (isDebugMode()) {
   console.log(`taskNameForAnalytics: ${taskNameForAnalytics}`);
