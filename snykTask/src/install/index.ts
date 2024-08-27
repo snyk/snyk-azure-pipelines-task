@@ -37,7 +37,9 @@ export function getSnykDownloadInfo(
   versionString: string = 'stable',
 ): SnykDownloads {
   if (isDebugMode()) {
-    console.log(`Getting Snyk download info for platform: ${platform} version: ${versionString}`);
+    console.log(
+      `Getting Snyk download info for platform: ${platform} version: ${versionString}`,
+    );
   }
 
   const baseUrl = 'https://downloads.snyk.io';
@@ -97,8 +99,8 @@ export async function downloadExecutable(
       const requestOpts: https.RequestOptions = {
         host: url.hostname,
         path: url.pathname,
-        timeout: 300000 // 5mins
-      }
+        timeout: 300000, // 5mins
+      };
       https
         .get(requestOpts, (response) => {
           const isResponseError = response.statusCode !== 200;
@@ -117,7 +119,9 @@ export async function downloadExecutable(
           });
 
           if (response.statusCode !== 200) {
-            console.error(`Received non-200 status code: ${response.statusCode}`);
+            console.error(
+              `Received non-200 status code: ${response.statusCode}`,
+            );
             fileWriter.close();
           }
 
@@ -141,7 +145,7 @@ export async function downloadExecutable(
           reject(err);
         });
     });
-  }
+  };
 
   // Try to download the file, retry up to `maxRetries` times if the attempt fails
   for (let attempt = 0; attempt < maxRetries; attempt++) {
