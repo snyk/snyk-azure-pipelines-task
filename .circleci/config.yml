@@ -160,7 +160,6 @@ workflows:
             branches:
               ignore: master
       - deploy_prod:
-          context: team-hammerhead-common-deploy-tokens
           requires:
             - test
           filters:
