@@ -173,7 +173,6 @@
       "groupName": "advanced"
     }
   ],
-  "minimumAgentVersion": "3.232.1",
   "execution": {
     "Node10": {
       "target": "./dist/index.js"
