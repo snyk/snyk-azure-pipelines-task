@@ -41,8 +41,8 @@
       "required": true,
       "helpMarkDown": "What do you want to test?",
       "options": {
-        "app": "Application",
-        "code": "Code",
+        "app": "Application dependencies (SCA)",
+        "code": "Code (SAST)",
         "container": "Container Image"
       },
       "properties": {
