@@ -1,0 +1,13 @@
+{
+  "vulnerabilities": [],
+  "ok": true,
+  "applications": [
+    {
+      "vulnerabilities": [
+        {
+          "severity": "critical"
+        }
+      ]
+    }
+  ]
+}
