@@ -184,16 +184,16 @@ export class SnykReportTab extends Controls.BaseControl {
 
   private fillReportIFrameContent = (content: string): void => {
     const container = document.getElementById('iframeID') as HTMLDivElement;
-    
+
     // Create a temporary container to parse the HTML content
     const temp = document.createElement('div');
     temp.innerHTML = content;
-    
+
     // Clear the target container
     while (container.firstChild) {
       container.removeChild(container.firstChild);
     }
-    
+
     // Process and append each element, handling scripts specially
     while (temp.firstChild) {
       const node = temp.firstChild;
