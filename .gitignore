@@ -14,3 +14,6 @@ snykTask/coverage
 .eslintcache
 .ops
 ops/deploy/dist
+.dccache
+build/
+.vscode/

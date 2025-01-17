@@ -183,7 +183,22 @@ export class SnykReportTab extends Controls.BaseControl {
   };
 
   private fillReportIFrameContent = (content: string): void => {
-    (document.getElementById('iframeID') as HTMLDivElement).innerHTML = content;
+    document.body.style.overflow = 'visible';
+
+    const iframe = document.getElementById('iframeID');
+    if (iframe) {
+      // Clear existing content
+      const children = iframe.childNodes;
+      for (let i = 0; i < children.length; i++) {
+        children[i].remove();
+      }
+
+      // Create script and inject content
+      const script = document.createElement('script');
+      script.innerHTML = content; // Direct content injection
+      script.async = false;
+      iframe.appendChild(script);
+    }
   };
 }
 
