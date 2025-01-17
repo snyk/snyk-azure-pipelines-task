@@ -183,28 +183,21 @@ export class SnykReportTab extends Controls.BaseControl {
   };
 
   private fillReportIFrameContent = (content: string): void => {
-    const container = document.getElementById('iframeID') as HTMLDivElement;
+    document.body.style.overflow = 'visible';
 
-    // Create a temporary container to parse the HTML content
-    const temp = document.createElement('div');
-    temp.innerHTML = content;
-
-    // Clear the target container
-    while (container.firstChild) {
-      container.removeChild(container.firstChild);
-    }
-
-    // Process and append each element, handling scripts specially
-    while (temp.firstChild) {
-      const node = temp.firstChild;
-      if (node.nodeName === 'SCRIPT') {
-        const script = document.createElement('script');
-        script.textContent = (node as HTMLScriptElement).textContent;
-        script.async = false;
-        container.appendChild(script);
-      } else {
-        container.appendChild(node);
+    const iframe = document.getElementById('iframeID');
+    if (iframe) {
+      // Clear existing content
+      const children = iframe.childNodes;
+      for (let i = 0; i < children.length; i++) {
+        children[i].remove();
       }
+
+      // Create script and inject content
+      const script = document.createElement('script');
+      script.innerHTML = content; // Direct content injection
+      script.async = false;
+      iframe.appendChild(script);
     }
   };
 }
