@@ -38,7 +38,7 @@ jobs:
 
   deploy_dev:
     docker:
-      - image: circleci/node:lts
+      - image: cimg/node:lts
         environment:
           DEV_AZ_EXTENSION_ID: 'dev-security-scan-test'
           DEV_AZ_EXTENSION_NAME: 'Dev - Snyk Security Scan'
