@@ -27,8 +27,9 @@
         height: 100%;
         overflow: auto;
       }
-      .iframeContainer {
+      .content {
         overflow: auto;
+        min-width: 100%;
         min-height: 100%;
       }
       .list {
@@ -84,11 +85,15 @@
     <script type="text/javascript">
       VSS.init();
     </script>
-    <h2>Reports:</h2>
-    <ul id="reportList" class="list"></ul>
-    <div class="iframeContainer">
-      <div id="iframeID" class="iframe"></div>
+    <div class="header">
+      <h2>Reports:</h2>
     </div>
-    <div id="snyk-report" class="container"></div>
+    <ul id="reportList" class="list"></ul>
+    <iframe
+      id="snyk-report"
+      class="content"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-presentation"
+      src="about:blank"
+    ></iframe>
   </body>
 </html>

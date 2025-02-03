@@ -183,7 +183,27 @@ export class SnykReportTab extends Controls.BaseControl {
   };
 
   private fillReportIFrameContent = (content: string): void => {
-    (document.getElementById('iframeID') as HTMLDivElement).innerHTML = content;
+    // Remove existing iframe and create a fresh one to avoid JS variable redeclaration issues
+    const oldIframe = document.getElementById('snyk-report');
+    if (oldIframe?.parentNode) {
+      oldIframe.parentNode.removeChild(oldIframe);
+    }
+
+    // Create new iframe
+    const newIframe = document.createElement('iframe');
+    newIframe.id = 'snyk-report';
+    newIframe.className = 'content';
+
+    // Add the new iframe to the document
+    document.body.appendChild(newIframe);
+
+    // Write content to the fresh iframe
+    const doc = newIframe.contentDocument || newIframe.contentWindow?.document;
+    if (doc) {
+      doc.open();
+      doc.write(content);
+      doc.close();
+    }
   };
 }
 
