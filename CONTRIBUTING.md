@@ -7,7 +7,7 @@ Run `npm run build` in the root folder. All tooling prerequisites (Node.js, Type
 ### Test and Run
 Unit tests can be run via `npm run test:unit` command.
 
-To run the code, a GitHub PR against `develop` should be raised with the committed code to the branch PR. The PR runs deployment script with deploy to development environment. The script builds the code that's added as part of your change and installs it in Azure DevOps organization as an extension that can be added to run a pipeline.
+To run the code, a GitHub PR against `master` should be raised with the committed code to the branch PR. The PR runs deployment script with deploy to development environment. The script builds the code that's added as part of your change and installs it in Azure DevOps organization as an extension that can be added to run a pipeline.
 
 ### Local debugging
 
@@ -42,7 +42,7 @@ A number of environment variable are required for debugging, here's an example l
 ```
 
 ## Release
-The release process is fully-automated: all you need to do is create a PR to merge `develop` into `master` and call the PR `Merge develop into master for release`.
+The release process is fully-automated: all you need to do is create a PR to merge into `master`.
 
 ## Contributor Agreement
 A pull-request will only be considered for merging into the upstream codebase after you have signed our [contributor agreement](https://github.com/snyk/snyk-azure-pipelines-task/blob/master/Contributor-Agreement.md), assigning us the rights to the contributed code and granting you a license to use it in return. If you submit a pull request, you will be prompted to review and sign the agreement with one click (we use [CLA assistant](https://cla-assistant.io/)).
