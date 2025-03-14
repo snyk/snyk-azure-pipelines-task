@@ -179,12 +179,26 @@ export class SnykReportTab extends Controls.BaseControl {
       .then((content) => {
         const data = new TextDecoder('utf-8').decode(new DataView(content));
         this.fillReportIFrameContent(data);
+        this.registerReportScripts();
       });
   };
 
   private fillReportIFrameContent = (content: string): void => {
     (document.getElementById('iframeID') as HTMLDivElement).innerHTML = content;
   };
+
+  private registerReportScripts() {
+    const target = document.getElementById('iframeID');
+    const scripts = target?.getElementsByTagName('script');
+    if (scripts && scripts.length > 0) {
+      for (const script of scripts) {
+        const newScript = document.createElement('script');
+        newScript.textContent = script.textContent;
+        document.body.appendChild(newScript);
+        target?.removeChild(script);
+      }
+    }
+  }
 }
 
 SnykReportTab.enhance(SnykReportTab, $('#snyk-report'), {});
