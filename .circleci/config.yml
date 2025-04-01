@@ -153,9 +153,16 @@ workflows:
           context: devex_cli
 
       - test
-      - deploy_dev:
+      - hold:
+          type: approval
           requires:
             - test
+          filters:
+            branches:
+              ignore: master
+      - deploy_dev:
+          requires:
+            - hold
           filters:
             branches:
               ignore: master
