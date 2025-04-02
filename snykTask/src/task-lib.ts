@@ -177,11 +177,30 @@ export function doVulnerabilitiesExistForFailureThreshold(
     if (hasMatchingVulnerabilities(json, thresholdOrdinal)) {
       return true;
     }
+    if (hasMatchingApplicationVulnerabilities(json, thresholdOrdinal)) {
+      return true;
+    }
   }
 
   console.log(
     `no vulnerabilities of at least '${threshold}' severity were detected, not failing build`,
   );
+  return false;
+}
+
+function hasMatchingApplicationVulnerabilities(
+  project: any,
+  thresholdOrdinal: number,
+) {
+  const applications = project['applications'];
+  if (Array.isArray(applications) && applications.length > 0) {
+    for (const proj of applications) {
+      if (hasMatchingVulnerabilities(proj, thresholdOrdinal)) {
+        return true;
+      }
+    }
+  }
+
   return false;
 }
 

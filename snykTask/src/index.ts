@@ -506,6 +506,8 @@ async function run() {
       handleSnykMonitorError(snykMonitorResult);
     }
 
+    // TODO: deprecate in the next major version of the plugin.
+    // The pipeline task will fail based on the CLI exit code.
     if (
       snykTestResult.code === CLI_EXIT_CODE_ISSUES_FOUND &&
       taskArgs.failOnIssues

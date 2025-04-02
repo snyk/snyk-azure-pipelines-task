@@ -21,11 +21,10 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fse from 'fs-extra';
 import { generateSnykCodeResultsWithoutIssues } from '../index';
+import * as stream from 'stream';
 import { getSnykDownloadInfo, downloadExecutable } from '../install';
 
 jest.setTimeout(120_000);
-
-import stream = require('stream');
 
 import {
   getOptionsToExecuteSnykCLICommand,
@@ -99,6 +98,16 @@ test('finds vulnerabilities greater than medium threshold in multi-project resul
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
     'medium',
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
+test('finds vulnerabilities greater than high threshold in docker applications', () => {
+  const fixturePath = 'snykTask/test/fixtures/docker-app-vulnerabilities.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    'high',
   );
 
   expect(itemsFound).toBe(true);
