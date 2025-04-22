@@ -1,0 +1,88 @@
+{
+  "manifestVersion": 1,
+  "id": "preview-snyk-security-scan",
+  "name": "(Preview) Snyk Security Scan",
+  "version": "0.0.0",
+  "publisher": "Snyk",
+  "targets": [
+    {
+      "id": "Microsoft.VisualStudio.Services"
+    }
+  ],
+  "description": "Snyk scan for open source vulnerabilities",
+  "categories": ["Azure Pipelines"],
+  "icons": {
+    "default": "images/extension-icon.png"
+  },
+  "scopes": ["vso.build_execute"],
+  "files": [
+    {
+      "path": "snykTask"
+    },
+    {
+      "path": "scripts/dist",
+      "addressable": true,
+      "packagePath": "scripts"
+    },
+    {
+      "path": "images",
+      "addressable": true,
+      "packagePath": "img"
+    },
+    {
+      "path": "ui/snyk-report-tab.html",
+      "addressable": true
+    },
+    {
+      "path": "node_modules/vss-web-extension-sdk/lib",
+      "addressable": true,
+      "packagePath": "lib"
+    },
+    {
+      "path": "LICENSE",
+      "addressable": true
+    }
+  ],
+  "content": {
+    "details": {
+      "path": "marketplace.md"
+    },
+    "license": {
+      "path": "LICENSE"
+    }
+  },
+  "links": {
+    "home": {
+      "uri": "https://snyk.io/"
+    },
+    "support": {
+      "uri": "https://support.snyk.io/"
+    },
+    "privacypolicy": {
+      "uri": "https://snyk.io/policies/privacy/"
+    },
+    "license": {
+      "uri": "./LICENSE"
+    }
+  },
+  "contributions": [
+    {
+      "id": "custom-build-release-task",
+      "type": "ms.vss-distributed-task.task",
+      "targets": ["ms.vss-distributed-task.tasks"],
+      "properties": {
+        "name": "snykTask"
+      }
+    },
+    {
+      "id": "snyk-report-tab",
+      "type": "ms.vss-build-web.build-results-tab",
+      "description": "Snyk Report",
+      "targets": ["ms.vss-build-web.build-results-view"],
+      "properties": {
+        "name": "Snyk Report",
+        "uri": "ui/snyk-report-tab.html"
+      }
+    }
+  ]
+}

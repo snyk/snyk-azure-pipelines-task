@@ -23,7 +23,7 @@ module.exports = {
   // },
   env: {
     node: true,
-    es6: true,
+    es2020: true,
     'jest/globals': true,
   },
   plugins: ['jest', '@typescript-eslint'],

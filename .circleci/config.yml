@@ -97,6 +97,44 @@ jobs:
           command: |
             node ./ops/deploy/dist/run-test-pipelines.js
 
+  deploy_preview:
+    docker:
+      - image: cimg/node:lts
+        environment:
+          AZ_EXTENSION_ID: 'preview-snyk-security-scan'
+          AZ_EXTENSION_NAME: '(Preview) Snyk Security Scan'
+          AZ_TASK_NAME: 'PreviewSnykSecurityScan'
+          AZ_TASK_FRIENDLY_NAME: '(Preview) Snyk Security Scan'
+          AZ_PUBLISHER: 'Snyk'
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: Show Node Environment
+          command: |
+            node --version
+            npm --version
+      - run:
+          name: Run Build
+          command: |
+            npm run build:clean
+      - run:
+          name: Build and Deploy to Preview Environment
+          command: |
+            export AZURE_DEVOPS_EXT_PAT=$PROD_AZURE_DEVOPS_EXT_PAT
+
+            echo PREVIEW_AZ_EXTENSION_ID: $AZ_EXTENSION_ID
+            echo PREVIEW_AZ_EXTENSION_NAME: $AZ_EXTENSION_NAME
+            echo PREVIEW_AZ_TASK_NAME: $AZ_TASK_NAME
+            echo PREVIEW_AZ_PUBLISHER: $AZ_PUBLISHER
+
+            npm run deploy:compile
+
+            VERSION=$(date +"%Y.%-m.%-d%H%M")
+            echo "Deploying to Preview: ${VERSION}"
+
+            chmod +x scripts/ci-deploy-preview.sh
+            scripts/ci-deploy-preview.sh $VERSION
   deploy_prod:
     docker:
       - image: circleci/node:lts
@@ -159,9 +197,24 @@ workflows:
           filters:
             branches:
               ignore: master
+
       - deploy_prod:
           requires:
             - test
           filters:
             branches:
               only: master
+  manual_approval:
+    jobs:
+      - approve-preview-deployment:
+          name: 'Deploy the branch as Preview?'
+          type: approval
+          filters:
+            branches:
+              ignore: master
+      - deploy_preview:
+          requires:
+            - 'Deploy the branch as Preview?'
+          filters:
+            branches:
+              ignore: master
