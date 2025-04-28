@@ -167,35 +167,28 @@ export function doVulnerabilitiesExistForFailureThreshold(
 
   if (isSnykCodeOutput(json)) {
     return hasMatchingCodeIssues(json['runs'][0]['results'], thresholdOrdinal);
-  } else if (Array.isArray(json)) {
-    for (let i = 0; i < json.length; i++) {
-      if (hasMatchingVulnerabilities(json[i], thresholdOrdinal)) {
-        return true;
-      }
-    }
-  } else {
-    if (hasMatchingVulnerabilities(json, thresholdOrdinal)) {
-      return true;
-    }
-    if (hasMatchingApplicationVulnerabilities(json, thresholdOrdinal)) {
-      return true;
-    }
   }
 
-  console.log(
-    `no vulnerabilities of at least '${threshold}' severity were detected, not failing build`,
+  if (Array.isArray(json)) {
+    return json.some((project) =>
+      hasMatchingVulnerabilities(project, threshold),
+    );
+  }
+
+  return (
+    hasMatchingVulnerabilities(json, threshold) ||
+    hasMatchingApplicationVulnerabilities(json, threshold)
   );
-  return false;
 }
 
 function hasMatchingApplicationVulnerabilities(
   project: any,
-  thresholdOrdinal: number,
+  threshold: string,
 ) {
   const applications = project['applications'];
   if (Array.isArray(applications) && applications.length > 0) {
     for (const proj of applications) {
-      if (hasMatchingVulnerabilities(proj, thresholdOrdinal)) {
+      if (hasMatchingVulnerabilities(proj, threshold)) {
         return true;
       }
     }
@@ -204,12 +197,16 @@ function hasMatchingApplicationVulnerabilities(
   return false;
 }
 
-function hasMatchingVulnerabilities(project: any, thresholdOrdinal: number) {
+function hasMatchingVulnerabilities(project: any, threshold: string) {
   for (const vulnerability of project['vulnerabilities']) {
-    if (getSeverityOrdinal(vulnerability['severity']) >= thresholdOrdinal) {
+    if (
+      getSeverityOrdinal(vulnerability['severity']) >=
+      getSeverityOrdinal(threshold)
+    ) {
       return true;
     }
   }
+
   return false;
 }
 

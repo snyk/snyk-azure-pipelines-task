@@ -521,6 +521,9 @@ async function run() {
       if (matchingVulnerabilitiesFound) {
         throw new SnykError(snykTestResult.message);
       }
+      console.log(
+        `no vulnerabilities of at least '${failureThreshold}' severity were detected, not failing build`,
+      );
     }
 
     tl.setResult(tl.TaskResult.Succeeded, 'Snyk Scan completed');
