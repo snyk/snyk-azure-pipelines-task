@@ -506,6 +506,8 @@ async function run() {
       handleSnykMonitorError(snykMonitorResult);
     }
 
+    // TODO: deprecate in the next major version of the plugin.
+    // The pipeline task will fail based on the CLI exit code.
     if (
       snykTestResult.code === CLI_EXIT_CODE_ISSUES_FOUND &&
       taskArgs.failOnIssues
@@ -519,6 +521,9 @@ async function run() {
       if (matchingVulnerabilitiesFound) {
         throw new SnykError(snykTestResult.message);
       }
+      console.log(
+        `no vulnerabilities of at least '${failureThreshold}' severity were detected, not failing build`,
+      );
     }
 
     tl.setResult(tl.TaskResult.Succeeded, 'Snyk Scan completed');

@@ -1,0 +1,25 @@
+{
+  "vulnerabilities": [
+    {
+      "severity": "low"
+    }
+  ],
+  "ok": true,
+  "dependencyCount": 0,
+  "org": "demo-applications",
+  "applications": [
+    {
+      "vulnerabilities": [
+        {
+          "severity": "medium"
+        },
+        {
+          "severity": "medium"
+        }
+      ],
+      "ok": true,
+      "dependencyCount": 0,
+      "org": "demo-applications"
+    }
+  ]
+}
