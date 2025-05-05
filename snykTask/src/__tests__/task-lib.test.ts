@@ -55,10 +55,11 @@ beforeAll(async () => {
     path.resolve(os.tmpdir(), 'snyk-azure-pipelines-task-test'),
   );
 
-  const dlInfo = getSnykDownloadInfo(tl.getPlatform());
-  await downloadExecutable(tempFolder, dlInfo.snyk);
+  process.env['AGENT_TEMPDIRECTORY'] = tempFolder;
 
-  snykCliPath = path.resolve(tempFolder, dlInfo.snyk.filename);
+  snykCliPath = await downloadExecutable(
+    getSnykDownloadInfo(tl.getPlatform()).snyk,
+  );
 });
 
 afterEach(() => {

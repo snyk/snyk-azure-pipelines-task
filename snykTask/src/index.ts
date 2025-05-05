@@ -425,16 +425,24 @@ async function run() {
       platform,
       distributionChannel,
     );
-    await downloadExecutable(agentTempDirectory, snykToolDownloads.snyk);
-    await downloadExecutable(agentTempDirectory, snykToolDownloads.snykToHtml);
-    const snykPath = path.resolve(
+
+    const maybeSnykPath = path.join(
       agentTempDirectory,
       snykToolDownloads.snyk.filename,
     );
-    const snykToHtmlPath = path.resolve(
+    const maybeSnykToHtmlPath = path.join(
       agentTempDirectory,
       snykToolDownloads.snykToHtml.filename,
     );
+
+    // the binaries might exist already in the agent temp directory
+    const snykPath = fs.existsSync(maybeSnykPath)
+      ? maybeSnykPath
+      : await downloadExecutable(snykToolDownloads.snyk);
+
+    const snykToHtmlPath = fs.existsSync(maybeSnykToHtmlPath)
+      ? maybeSnykToHtmlPath
+      : await downloadExecutable(snykToolDownloads.snykToHtml);
 
     if (isDebugMode()) {
       console.log('snykPath: ' + snykPath);
