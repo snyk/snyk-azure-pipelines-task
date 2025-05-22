@@ -171,6 +171,20 @@
       "defaultValue": "stable",
       "helpMarkDown": "Defaults to 'stable', but can be set to 'preview' or a specific version such as '1.1287.0'",
       "groupName": "advanced"
+    },
+    {
+      "name": "failOnThreshold",
+      "label": "The severity threshold that will cause a build failure. Works only when combined with the 'failOnIssues' parameter.",
+      "type": "pickList",
+      "required": false,
+      "defaultValue": "low",
+      "options": {
+        "low": "Low (default)",
+        "medium": "Medium",
+        "high": "High",
+        "critical": "Critical"
+      },
+      "helpMarkDown": "The severity threshold that will cause a build failure. Works only when combined with the 'failOnIssues' parameter. 'critical' value is only applicable for 'app' or 'container' test types."
     }
   ],
   "execution": {
