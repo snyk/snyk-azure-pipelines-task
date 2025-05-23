@@ -94,7 +94,7 @@ export async function getExtensionInfo(
 
   const version = undefined;
 
-  // This API is the one used by tfx-cli when you call `tfx extesion show`.
+  // This API is the one used by tfx-cli when you call `tfx extension show`.
   // See https://github.com/microsoft/tfs-cli/blob/master/app/exec/extension/_lib/publish.ts#L172
   const extensionInfo = await galleryApi.getExtension(
     null,

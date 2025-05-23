@@ -17,8 +17,8 @@
 #
 
 # This script deploy the Snyk Azure Extension via CI tool when there is a merge
-# to the master branch.
-# The version is generated automatic via semversione tool and the master branch
+# to the main branch.
+# The version is generated automatic via semantic versioning tool and the main branch
 # will be tag with the version.
 # $1 - Extension version
 # $2 (Optional) - Organization that will be shared the extension
