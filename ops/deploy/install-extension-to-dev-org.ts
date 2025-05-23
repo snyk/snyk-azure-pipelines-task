@@ -33,7 +33,7 @@ async function main() {
 
   const version = process.argv[2];
   if (version) {
-    console.log(`going to try to install extesion version: ${version}`);
+    console.log(`going to try to install extension version: ${version}`);
   } else {
     console.log('version must be passed in');
     process.exit(1);
