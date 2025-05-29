@@ -81,7 +81,8 @@
       "targets": ["ms.vss-build-web.build-results-view"],
       "properties": {
         "name": "Snyk Report",
-        "uri": "ui/snyk-report-tab.html"
+        "uri": "ui/snyk-report-tab.html",
+        "supportsTasks": ["826d5fe9-3983-4643-b918-487964d7cc87"]
       }
     },
     {
