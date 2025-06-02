@@ -105,7 +105,7 @@
                 "isConfidential": true,
                 "validation": {
                   "isRequired": true,
-                  "dataType": "guid"
+                  "dataType": "string"
                 }
               }
             ]
