@@ -15,10 +15,10 @@
  */
 
 import { Platform } from 'azure-pipelines-task-lib/task';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as https from 'https';
+import { downloadToolWithRetries, debug } from 'azure-pipelines-tool-lib/tool';
 import { sanitizeVersionInput } from '../lib/sanitize-version-input';
+import * as fs from 'fs';
+import * as os from 'os';
 
 export type Executable = {
   filename: string;
@@ -64,127 +64,53 @@ export function getSnykDownloadInfo(
 }
 
 export async function downloadExecutable(
-  targetDirectory: string,
   executable: Executable,
-  maxRetries = 5,
-) {
-  const filePath = path.join(targetDirectory, executable.filename);
-  console.log(`Downloading executable to: ${filePath}`);
-
-  // Check if the file already exists
-  if (fs.existsSync(filePath)) {
-    console.log(
-      `File ${executable.filename} already exists, skipping download.`,
+): Promise<string> {
+  try {
+    // https://downloads.snyk.io
+    return await download(executable.downloadUrl, executable.filename);
+  } catch (err) {
+    console.error(
+      `Download of ${executable.filename} from ${executable.downloadUrl} failed: ${err.message}`,
     );
-    return;
   }
 
-  const fileWriter = fs.createWriteStream(filePath, {
-    mode: 0o766,
-  });
+  try {
+    // https://static.snyk.io
+    return await download(executable.fallbackUrl, executable.filename);
+  } catch (err) {
+    console.error(
+      `Download of ${executable.filename} from ${executable.fallbackUrl} failed: ${err.message}`,
+    );
 
-  // Wrapping the download in a function for easy retrying
-  const doDownload = (urlString, filename) =>
-    new Promise<void>((resolve, reject) => {
-      const url = new URL(urlString);
-      const requestOpts: https.RequestOptions = {
-        host: url.hostname,
-        path: url.pathname,
-        timeout: 300000, // 5mins
-      };
-      https
-        .get(requestOpts, (response) => {
-          const isResponseError = response.statusCode !== 200;
-
-          response.on('finish', () => {
-            console.log(`Response finished for ${urlString}`);
-          });
-          response.on('close', () => {
-            console.log(`Download connection closed for ${urlString}`);
-          });
-          response.on('error', (err) => {
-            console.error(`Download of ${filename} failed: ${err.message}`);
-            reject(err);
-          });
-
-          if (response.statusCode !== 200) {
-            fileWriter.close();
-          }
-
-          fileWriter.on('close', () => {
-            console.log(`File.close ${filename} saved to ${filePath}`);
-            if (isResponseError) {
-              reject(new Error(`HTTP ${response.statusCode}`));
-            } else {
-              resolve();
-            }
-          });
-
-          response.pipe(fileWriter);
-        })
-        .on('timeout', () => {
-          console.error(`Download of ${filename} timed out`);
-          reject();
-        })
-        .on('error', (err) => {
-          console.error(`Request for ${filename} failed: ${err.message}`);
-          reject(err);
-        });
-    });
-
-  // Try to download the file, retry up to `maxRetries` times if the attempt fails
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      console.log(
-        `Downloading: ${executable.filename} from: ${executable.downloadUrl}`,
-      );
-      await doDownload(executable.downloadUrl, executable.filename);
-      console.log(`Download successful for ${executable.filename}`);
-      return;
-    } catch (err) {
-      console.error(
-        `Download of ${executable.filename} failed: ${err.message}`,
-      );
-
-      // Don't wait before retrying the last attempt
-      if (attempt < maxRetries - 1) {
-        console.log(
-          `Retrying download of ${executable.filename} from ${executable.downloadUrl} after 5 seconds...`,
-        );
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-      } else {
-        console.error(
-          `All retries failed for ${executable.filename} from ${executable.downloadUrl}: ${err.message}`,
-        );
-      }
-    }
+    throw err;
   }
+}
 
-  // Try to download the file from fallback url, retry up to `maxRetries` times if the attempt fails
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      console.log(
-        `Downloading: ${executable.filename} from: ${executable.downloadUrl}`,
-      );
-      await doDownload(executable.fallbackUrl, executable.filename);
-      console.log(`Download successful for ${executable.filename}`);
-      return;
-    } catch (err) {
-      console.error(
-        `Download of ${executable.filename} failed: ${err.message}`,
-      );
+async function download(
+  downloadUrl: string,
+  fileName: string,
+  maxRetries: number = 5,
+) {
+  console.log(`Downloading: ${fileName} from: ${downloadUrl} with retries.`);
+  const filePath = await downloadToolWithRetries(
+    downloadUrl,
+    fileName,
+    [],
+    {},
+    maxRetries,
+  );
+  console.log(`Downloaded executable to: ${filePath}`);
 
-      // Don't wait before retrying the last attempt
-      if (attempt < maxRetries - 1) {
-        console.log(
-          `Retrying download of ${executable.filename} from ${executable.fallbackUrl} after 5 seconds...`,
-        );
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-      } else {
-        console.error(
-          `All retries failed for ${executable.filename} from ${executable.fallbackUrl}: ${err.message}`,
-        );
-      }
-    }
+  // the azure-pipelines-tool-lib/tool is not setting the executable permissions on the downloaded files for Unix
+  setExecutablePermissions(filePath);
+
+  return filePath;
+}
+
+function setExecutablePermissions(filePath: string) {
+  if (os.platform() !== 'win32') {
+    fs.chmodSync(filePath, 0o111);
+    console.log(`Set executable permissions for ${filePath}`);
   }
 }
