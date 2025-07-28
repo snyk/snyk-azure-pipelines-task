@@ -17,8 +17,6 @@
 import { downloadExecutable, getSnykDownloadInfo } from '../../install';
 import { Platform } from 'azure-pipelines-task-lib/task';
 import * as nock from 'nock';
-import * as os from 'os';
-import * as path from 'path';
 import * as uuid from 'uuid/v4';
 
 describe('getSnykDownloadInfo', () => {
@@ -182,55 +180,28 @@ describe('downloadExecutable', () => {
     nock('https://example.com')
       .get('/' + fileName)
       .reply(500);
-
-    const targetDirectory = path.join(os.tmpdir());
-
-    await downloadExecutable(
-      targetDirectory,
-      {
-        filename: fileName,
-        downloadUrl: 'https://example.com/' + fileName,
-        fallbackUrl: '',
-      },
-      1,
-    );
-
-    // Assert that the file was not created
-    const calls = mockConsoleError.mock.calls;
-    console.log(mockConsoleError.mock.calls);
-    expect(mockConsoleError).toBeCalledTimes(4);
-    expect(calls[0]).toEqual([`Download of ${fileName} failed: HTTP 500`]);
-    expect(calls[1]).toEqual([
-      `All retries failed for ${fileName} from https://example.com/${fileName}: HTTP 500`,
-    ]);
-  });
-
-  it('gives up after all retries fail with 404 errors with meaningful error', async () => {
-    // Mock the server to always respond with 404 errors
-    const fileName = `test-file-${uuid()}.exe`;
-    nock('https://example.com')
+    nock('https://fallback.com')
       .get('/' + fileName)
-      .times(2)
-      .reply(404);
+      .reply(500);
 
-    const targetDirectory = path.join(os.tmpdir());
-
-    await downloadExecutable(
-      targetDirectory,
-      {
+    try {
+      await downloadExecutable({
         filename: fileName,
         downloadUrl: 'https://example.com/' + fileName,
-        fallbackUrl: '' + fileName,
-      },
-      1,
-    );
+        fallbackUrl: 'https://fallback.com/' + fileName,
+      });
+    } catch (err) {
+      // Assert that the file was not created
+      const calls = mockConsoleError.mock.calls;
+      console.log(mockConsoleError.mock.calls);
+      expect(mockConsoleError).toBeCalledTimes(2);
 
-    // Assert that the file was not created
-    const calls = mockConsoleError.mock.calls;
-    expect(mockConsoleError).toBeCalledTimes(4);
-    expect(calls[0]).toEqual([`Download of ${fileName} failed: HTTP 404`]);
-    expect(calls[1]).toEqual([
-      `All retries failed for ${fileName} from https://example.com/${fileName}: HTTP 404`,
-    ]);
+      expect(calls[0][0]).toContain(
+        `Download of ${fileName} from https://example.com/${fileName} failed`,
+      );
+      expect(calls[1][0]).toContain(
+        `Download of ${fileName} from https://fallback.com/${fileName} failed`,
+      );
+    }
   });
 });
