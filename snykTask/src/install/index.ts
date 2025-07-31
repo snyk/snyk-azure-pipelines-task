@@ -110,7 +110,7 @@ async function download(
 
 function setExecutablePermissions(filePath: string) {
   if (os.platform() !== 'win32') {
-    fs.chmodSync(filePath, 0o111);
+    fs.chmodSync(filePath, 0o755);
     console.log(`Set executable permissions for ${filePath}`);
   }
 }
