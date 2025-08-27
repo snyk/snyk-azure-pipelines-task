@@ -55,7 +55,10 @@ async function main() {
         `Extension version currently installed: ${alreadyInstalledVersion}`,
       );
 
-      console.log(`Uninstalling previously installed extension`);
+      console.log(`Uninstalling previously installed extension:`, {
+        publisherName,
+        extensionName,
+      });
       await uninstallExtension(webApi, publisherName, extensionName);
     }
 
