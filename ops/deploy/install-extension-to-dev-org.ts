@@ -73,6 +73,11 @@ async function main() {
       publisherName,
       extensionName,
     );
+
+    if (!afterInstallExtensionInfo) {
+      console.log(`Failed to install extension`);
+    }
+    console.log({ afterInstallExtensionInfo });
     const afterInstallExtensionVersion = afterInstallExtensionInfo.version;
     console.log(`Extension version installed: ${afterInstallExtensionVersion}`);
 
