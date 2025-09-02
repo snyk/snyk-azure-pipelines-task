@@ -142,6 +142,14 @@ export function getSeverityOrdinal(severity: string): number {
   throw new Error(`Cannot get severity ordinal for ${severity} severity`);
 }
 
+function hasAcceptedSuppression(issue: any): boolean {
+  const suppressions = issue['suppressions'];
+  return (
+    suppressions?.some((suppression) => suppression['status'] === 'accepted') ||
+    false
+  );
+}
+
 const codeSeverityMap = {
   error: Severity.HIGH,
   warning: Severity.MEDIUM,
@@ -213,12 +221,19 @@ function hasMatchingVulnerabilities(project: any, threshold: string) {
 // finds code issues levels mapping to severity of matching or higher than threshold
 function hasMatchingCodeIssues(results: any, thresholdOrdinal: number) {
   for (const issue of results) {
-    if (
-      getSeverityOrdinal(codeSeverityMap[issue['level']]) >= thresholdOrdinal
-    ) {
-      return true;
-    }
+    const issueSeverity = getSeverityOrdinal(codeSeverityMap[issue['level']]);
+    const issueSuppressions = issue['suppressions'];
+
+    // Skip issues below threshold severity
+    if (issueSeverity < thresholdOrdinal) continue;
+
+    // No suppressions means vulnerability counts
+    if (!issueSuppressions || issueSuppressions.length === 0) return true;
+
+    // With suppressions, check if any are accepted
+    if (!hasAcceptedSuppression(issue)) return true;
   }
+
   return false;
 }
 
