@@ -1,0 +1,154 @@
+{
+  "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "SnykCode",
+          "semanticVersion": "1.1298.3",
+          "version": "1.1298.3",
+          "informationUri": "https://docs.snyk.io/"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "javascript/HardcodedNonCryptoSecret",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": {
+            "text": "Avoid hardcoding values that are meant to be secret. Found a hardcoded string used in express-session.",
+            "markdown": "Avoid hardcoding values that are meant to be secret. Found {0} used in {1}.",
+            "arguments": [
+              "[a hardcoded string](0)",
+              "[express-session](1)"
+            ]
+          },
+          "locations": [
+            {
+              "id": 0,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 42,
+                  "endLine": 42,
+                  "startColumn": 9,
+                  "endColumn": 16
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "0": "260c5be6525ea2ff697cf1389e59aae276a6ab5b8fda6d27e2e2b82b7b89c111",
+            "1": "fc3065be.4773f344.607187b5.e052b9a9.79a7d027.fcf3002d.a56a8b5b.4a974edb.fc3065be.4773f344.44eded10.d7919eeb.79a7d027.5fce695c.48237d02.f5919d50",
+            "snyk/asset/finding/v1": "5605f563-ee08-465f-a3d9-f5b19a18f2ed",
+            "identity": "5605f563-ee08-465f-a3d9-f5b19a18f2ed"
+          },
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "id": 0,
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "app.js",
+                            "uriBaseId": "%SRCROOT%"
+                          },
+                          "region": {
+                            "startLine": 43,
+                            "endLine": 43,
+                            "startColumn": 11,
+                            "endColumn": 25
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "location": {
+                        "id": 1,
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "app.js",
+                            "uriBaseId": "%SRCROOT%"
+                          },
+                          "region": {
+                            "startLine": 42,
+                            "endLine": 42,
+                            "startColumn": 9,
+                            "endColumn": 16
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "suppressions": [
+            {
+              "guid": "5043428c-2c80-40d1-ad95-e518454bfae5",
+              "status": "accepted",
+              "justification": "Test reason",
+              "kind": "external",
+              "properties": {
+                "category": "not-vulnerable",
+                "ignoredOn": "2025-08-28T18:00:45.743Z",
+                "ignoredBy": {
+                  "name": "John Doe",
+                  "email": "john.doe"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "isAutofixable": true,
+            "priorityScore": 809,
+            "priorityScoreFactors": [
+              {
+                "label": true,
+                "type": "multipleOccurrence"
+              },
+              {
+                "label": true,
+                "type": "hotFileSource"
+              },
+              {
+                "label": true,
+                "type": "fixExamples"
+              }
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "coverage": [
+          {
+            "files": 4,
+            "isSupported": true,
+            "lang": "EJS",
+            "type": "SUPPORTED"
+          },
+          {
+            "files": 1,
+            "isSupported": true,
+            "lang": "HTML",
+            "type": "SUPPORTED"
+          },
+          {
+            "files": 10,
+            "isSupported": true,
+            "lang": "JavaScript",
+            "type": "SUPPORTED"
+          }
+        ]
+      }
+    }
+  ]
+}

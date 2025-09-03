@@ -34,6 +34,7 @@ import {
   attachReport,
   removeRegexFromFile,
   doVulnerabilitiesExistForFailureThreshold,
+  Severity,
 } from '../task-lib';
 import { TaskArgs } from '../task-args';
 import { execSync } from 'child_process';
@@ -88,7 +89,7 @@ test('finds vulnerabilities greater than medium threshold in single-project resu
     'snykTask/test/fixtures/single-project-high-vulnerabilities.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'medium',
+    Severity.MEDIUM,
   );
 
   expect(itemsFound).toBe(true);
@@ -98,7 +99,7 @@ test('finds vulnerabilities greater than medium threshold in multi-project resul
   const fixturePath = 'snykTask/test/fixtures/high-vulnerabilities.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'medium',
+    Severity.MEDIUM,
   );
 
   expect(itemsFound).toBe(true);
@@ -109,7 +110,7 @@ test('finds vulnerabilities greater than high threshold in container application
     'snykTask/test/fixtures/container-app-vulnerabilities-critical.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'high',
+    Severity.HIGH,
   );
 
   expect(itemsFound).toBe(true);
@@ -120,7 +121,7 @@ test('does not find vulnerabilities greater than high threshold in container app
     'snykTask/test/fixtures/container-app-vulnerabilities-medium.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'high',
+    Severity.HIGH,
   );
 
   expect(itemsFound).toBe(false);
@@ -130,7 +131,7 @@ test('defaults to found when file does not exist', () => {
   const fixturePath = 'snykTask/test/fixtures/does-not-exist.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'medium',
+    Severity.MEDIUM,
   );
 
   expect(itemsFound).toBe(true);
@@ -140,7 +141,7 @@ test('does not match vulnerabilities lower than high threshold', () => {
   const fixturePath = 'snykTask/test/fixtures/low-vulnerabilities.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'high',
+    Severity.HIGH,
   );
 
   expect(itemsFound).toBe(false);
@@ -151,7 +152,7 @@ test('finds issues in code test of low threshold', () => {
   const fixturePath = 'snykTask/test/fixtures/code-test-none-issues.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'low',
+    Severity.LOW,
   );
 
   expect(itemsFound).toBe(true);
@@ -161,7 +162,7 @@ test('finds issues in code test of low threshold', () => {
   const fixturePath = 'snykTask/test/fixtures/code-test-note-issues.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'low',
+    Severity.LOW,
   );
 
   expect(itemsFound).toBe(true);
@@ -171,7 +172,7 @@ test('finds issues in code test of medium threshold', () => {
   const fixturePath = 'snykTask/test/fixtures/code-test-warning-issues.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'medium',
+    Severity.MEDIUM,
   );
 
   expect(itemsFound).toBe(true);
@@ -181,7 +182,7 @@ test('finds issues in code test of high threshold', () => {
   const fixturePath = 'snykTask/test/fixtures/code-test-error-issues.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'high',
+    Severity.HIGH,
   );
 
   expect(itemsFound).toBe(true);
@@ -191,7 +192,7 @@ test('finds medium and above severity threshold issues in code test result of hi
   const fixturePath = 'snykTask/test/fixtures/code-test-error-issues.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'medium',
+    Severity.MEDIUM,
   );
 
   expect(itemsFound).toBe(true);
@@ -201,7 +202,7 @@ test('finds no issues in code test of low threshold', () => {
   const fixturePath = 'snykTask/test/fixtures/code-test-no-issues.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'low',
+    Severity.LOW,
   );
 
   expect(itemsFound).toBe(false);
@@ -211,7 +212,7 @@ test('finds no issues in code test of medium threshold', () => {
   const fixturePath = 'snykTask/test/fixtures/code-test-no-issues.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'medium',
+    Severity.MEDIUM,
   );
 
   expect(itemsFound).toBe(false);
@@ -221,10 +222,65 @@ test('finds no issues in code test of high threshold', () => {
   const fixturePath = 'snykTask/test/fixtures/code-test-no-issues.json';
   const itemsFound = doVulnerabilitiesExistForFailureThreshold(
     fixturePath,
-    'high',
+    Severity.HIGH,
   );
 
   expect(itemsFound).toBe(false);
+});
+
+test('ignores suppressed issues with status accepted', () => {
+  const fixturePath =
+    'snykTask/test/fixtures/code-test-accepted-suppression.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    Severity.HIGH,
+  );
+
+  expect(itemsFound).toBe(false);
+});
+
+test('ignores suppressed issues with status rejected', () => {
+  const fixturePath =
+    'snykTask/test/fixtures/code-test-rejected-suppression.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    Severity.HIGH,
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
+test('ignores suppressed issues with status underReview', () => {
+  const fixturePath =
+    'snykTask/test/fixtures/code-test-underreview-suppression.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    Severity.HIGH,
+  );
+
+  expect(itemsFound).toBe(true);
+});
+
+test('ignores suppressed issues with multiple statuses - at least one accepted', () => {
+  const fixturePath =
+    'snykTask/test/fixtures/code-test-multiple-suppressions-accepted.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    Severity.HIGH,
+  );
+
+  expect(itemsFound).toBe(false);
+});
+
+test('ignores suppressed issues with multiple statuses - none accepted', () => {
+  const fixturePath =
+    'snykTask/test/fixtures/code-test-multiple-suppressions-rejected.json';
+  const itemsFound = doVulnerabilitiesExistForFailureThreshold(
+    fixturePath,
+    Severity.HIGH,
+  );
+
+  expect(itemsFound).toBe(true);
 });
 
 test('getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it', () => {
