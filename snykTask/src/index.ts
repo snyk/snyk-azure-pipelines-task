@@ -31,6 +31,7 @@ import {
   doVulnerabilitiesExistForFailureThreshold,
   Severity,
   TestType,
+  getCommands,
 } from './task-lib';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -61,6 +62,7 @@ const taskJsonPath = path.join(__dirname, '..', 'task.json');
 const taskVersion = getTaskVersion(taskJsonPath);
 
 const isDebugMode = () => tl.getBoolInput('debug', false);
+let jsonReportFullPath = '';
 
 if (isDebugMode()) {
   console.log(`taskNameForAnalytics: ${taskNameForAnalytics}`);
@@ -77,6 +79,7 @@ function parseInputArgs(): TaskArgs {
   });
 
   taskArgs.testType = tl.getInput('testType', false) || TestType.APPLICATION;
+  taskArgs.command = tl.getInput('command', false);
   taskArgs.targetFile = tl.getInput('targetFile', false);
   taskArgs.dockerImageName = tl.getInput('dockerImageName', false);
   taskArgs.dockerfilePath = tl.getInput('dockerfilePath', false);
@@ -112,6 +115,7 @@ function parseInputArgs(): TaskArgs {
 
 const logAllTaskArgs = (taskArgs: TaskArgs) => {
   console.log(`taskArgs.testType: ${taskArgs.testType}`);
+  console.log(`taskArgs.command: ${taskArgs.command}`);
   console.log(`taskArgs.targetFile: ${taskArgs.targetFile}`);
   console.log(`taskArgs.dockerImageName: ${taskArgs.dockerImageName}`);
   console.log(`taskArgs.dockerfilePath: ${taskArgs.dockerfilePath}`);
@@ -180,6 +184,72 @@ export async function generateSnykCodeResultsWithoutIssues(
   if (isDebugMode()) {
     console.log(snykCodeTestResult);
   }
+}
+
+async function runSnykCommand(
+  snykPath: string,
+  taskArgs: TaskArgs,
+  snykToken: string,
+): Promise<SnykOutput> {
+  const debugPrefix = `snyk ${taskArgs.command}`;
+  const snykOutput: SnykOutput = { code: 0, message: '' };
+
+  if (!taskArgs.command) {
+    snykOutput.code = CLI_EXIT_CODE_INVALID_USE;
+    snykOutput.message = 'failing task because `command` is not set';
+    return snykOutput;
+  }
+
+  const commands = getCommands(taskArgs.command);
+  const snykCommandToolRunner = tl.tool(snykPath);
+  // iterate over the commands and add them to the tool runner
+  for (const command of commands) {
+    if (isDebugMode()) {
+      console.log(`${debugPrefix}: adding command: ${command}`);
+    }
+    snykCommandToolRunner.arg(command);
+  }
+  // add the remaining arguments
+  snykCommandToolRunner
+    .argIf(isDebugMode(), '-d')
+    .line(taskArgs.additionalArguments);
+
+  const options = getOptionsToExecuteSnykCLICommand(
+    taskArgs,
+    taskNameForAnalytics,
+    taskVersion,
+    snykToken,
+  );
+
+  // update jsonReportFullPath if json-file-output is set
+  if (taskArgs.additionalArguments.length > 0) {
+    const jsonFileOutput = taskArgs.additionalArguments
+      .split(' ')
+      .find((arg) => arg.startsWith('--json-file-output='));
+    if (jsonFileOutput) {
+      jsonReportFullPath = jsonFileOutput.split('=')[1];
+    }
+  }
+
+  const snykCommandExitCode = await snykCommandToolRunner.execAsync(options);
+  if (snykCommandExitCode === CLI_EXIT_CODE_ISSUES_FOUND) {
+    snykOutput.code = snykCommandExitCode;
+    snykOutput.message = `failing task because 'snyk ${taskArgs.command}' found issues`;
+  }
+
+  if (snykCommandExitCode >= CLI_EXIT_CODE_INVALID_USE) {
+    snykOutput.code = snykCommandExitCode;
+    snykOutput.message =
+      "failing task because 'snyk' was improperly used or had other errors";
+  }
+
+  snykOutput.code = snykCommandExitCode;
+
+  if (isDebugMode()) {
+    console.log(`${debugPrefix}: jsonReportFullPath: ${jsonReportFullPath}`);
+  }
+
+  return snykOutput;
 }
 
 async function runSnykTest(
@@ -391,7 +461,7 @@ async function run() {
     }
 
     const dNowStr = formatDate(new Date());
-    const jsonReportFullPath = path.join(
+    jsonReportFullPath = path.join(
       agentTempDirectory,
       `report-${dNowStr}.json`,
     );
@@ -454,40 +524,61 @@ async function run() {
       );
     }
 
-    const snykTestResult = await runSnykTest(
-      snykPath,
-      taskArgs,
-      jsonReportFullPath,
-      snykToken,
-    );
-
-    if (taskArgs.delayAfterReportGenerationSeconds > 0) {
-      console.log(
-        `sleeping for ${
-          taskArgs.delayAfterReportGenerationSeconds
-        } after generating JSON report at ${new Date().getTime()}`,
+    let snykTestResult: SnykOutput;
+    if (taskArgs.testType !== TestType.COMMAND) {
+      snykTestResult = await runSnykTest(
+        snykPath,
+        taskArgs,
+        jsonReportFullPath,
+        snykToken,
       );
-      await sleep(taskArgs.delayAfterReportGenerationSeconds);
-      console.log(`done sleeping at at ${new Date().getTime()}`);
-    }
 
-    const snykToHTMLResult = await runSnykToHTML(
-      snykToHtmlPath,
-      taskArgs,
-      jsonReportFullPath,
-      htmlReportFullPath,
-    );
+      if (taskArgs.delayAfterReportGenerationSeconds > 0) {
+        console.log(
+          `sleeping for ${
+            taskArgs.delayAfterReportGenerationSeconds
+          } after generating JSON report at ${new Date().getTime()}`,
+        );
+        await sleep(taskArgs.delayAfterReportGenerationSeconds);
+        console.log(`done sleeping at at ${new Date().getTime()}`);
+      }
 
-    handleSnykToHTMLError(snykToHTMLResult);
-
-    if (taskArgs.delayAfterReportGenerationSeconds > 0) {
-      console.log(
-        `sleeping for ${
-          taskArgs.delayAfterReportGenerationSeconds
-        } after generating HTML report at ${new Date().getTime()}`,
+      const snykToHTMLResult = await runSnykToHTML(
+        snykToHtmlPath,
+        taskArgs,
+        jsonReportFullPath,
+        htmlReportFullPath,
       );
-      await sleep(taskArgs.delayAfterReportGenerationSeconds);
-      console.log(`done sleeping at at ${new Date().getTime()}`);
+
+      handleSnykToHTMLError(snykToHTMLResult);
+
+      if (taskArgs.delayAfterReportGenerationSeconds > 0) {
+        console.log(
+          `sleeping for ${
+            taskArgs.delayAfterReportGenerationSeconds
+          } after generating HTML report at ${new Date().getTime()}`,
+        );
+        await sleep(taskArgs.delayAfterReportGenerationSeconds);
+        console.log(`done sleeping at at ${new Date().getTime()}`);
+      }
+
+      attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
+      attachReport(htmlReportFullPath, HTML_ATTACHMENT_TYPE);
+      handleSnykTestError(taskArgs, snykTestResult, jsonReportFullPath);
+
+      const snykTestSuccessAndNoIssuesFound = snykTestResult.code === 0;
+      if (taskArgs.shouldRunMonitor(snykTestSuccessAndNoIssuesFound)) {
+        const snykMonitorResult = await runSnykMonitor(
+          snykPath,
+          taskArgs,
+          snykToken,
+        );
+        handleSnykMonitorError(snykMonitorResult);
+      }
+    } else {
+      snykTestResult = await runSnykCommand(snykPath, taskArgs, snykToken);
+      attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
+      handleSnykTestError(taskArgs, snykTestResult, jsonReportFullPath);
     }
 
     if (isDebugMode()) {
@@ -498,20 +589,6 @@ async function run() {
         getOptionsToExecuteCmd(taskArgs),
         agentTempDirectory,
       );
-    }
-
-    attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
-    attachReport(htmlReportFullPath, HTML_ATTACHMENT_TYPE);
-    handleSnykTestError(taskArgs, snykTestResult, jsonReportFullPath);
-
-    const snykTestSuccessAndNoIssuesFound = snykTestResult.code === 0;
-    if (taskArgs.shouldRunMonitor(snykTestSuccessAndNoIssuesFound)) {
-      const snykMonitorResult = await runSnykMonitor(
-        snykPath,
-        taskArgs,
-        snykToken,
-      );
-      handleSnykMonitorError(snykMonitorResult);
     }
 
     // TODO: deprecate in the next major version of the plugin.

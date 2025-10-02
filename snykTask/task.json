@@ -43,7 +43,8 @@
       "options": {
         "app": "Application",
         "code": "Code",
-        "container": "Container Image"
+        "container": "Container Image",
+        "command": "Run a supported Snyk command"
       },
       "properties": {
         "EditableOptions": "False"
@@ -75,6 +76,19 @@
       "defaultValue": "",
       "helpMarkDown": "Relative path to manifest file to test (relative to repo root or working directory, if set)",
       "visibleRule": "testType = app"
+    },
+    {
+      "name": "command",
+      "label": "Snyk command to run",
+      "type": "string",
+      "required": false,
+      "defaultValue": "",
+      "options": {
+        "sbom": "sbom",
+        "sbom test": "sbom test"
+      },
+      "helpMarkDown": "The Snyk command to run. Permitted commands are: 'sbom', 'sbom test'. Flag options can be added via 'additionalArguments'.",
+      "visibleRule": "testType = command"
     },
     {
       "name": "severityThreshold",
