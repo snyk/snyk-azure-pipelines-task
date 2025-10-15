@@ -114,6 +114,7 @@ export enum TestType {
   APPLICATION = 'app',
   CODE = 'code',
   CONTAINER_IMAGE = 'container',
+  COMMAND = 'command',
 }
 
 export const testTypeSeverityThreshold = new Map<string, Array<string>>([
@@ -127,6 +128,20 @@ export const testTypeSeverityThreshold = new Map<string, Array<string>>([
     [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW],
   ],
 ]);
+
+// validCommands ensures that we only allow known commands to be executed when using the command input
+export const validCommands = {
+  sbom: ['sbom'],
+  'sbom test': ['sbom', 'test'],
+};
+
+export function getCommands(command: string): string[] {
+  return validCommands[command];
+}
+
+export function isValidCommand(command: string): boolean {
+  return validCommands[command] !== undefined;
+}
 
 export function getSeverityOrdinal(severity: string): number {
   switch (severity) {

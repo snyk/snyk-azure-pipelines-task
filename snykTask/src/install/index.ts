@@ -15,7 +15,7 @@
  */
 
 import { Platform } from 'azure-pipelines-task-lib/task';
-import { downloadToolWithRetries, debug } from 'azure-pipelines-tool-lib/tool';
+import { downloadToolWithRetries } from 'azure-pipelines-tool-lib/tool';
 import { sanitizeVersionInput } from '../lib/sanitize-version-input';
 import * as fs from 'fs';
 import * as os from 'os';

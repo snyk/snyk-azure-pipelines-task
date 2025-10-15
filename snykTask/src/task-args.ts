@@ -15,14 +15,20 @@
  */
 
 import * as tl from 'azure-pipelines-task-lib';
-import { Severity, TestType, testTypeSeverityThreshold } from './task-lib';
+import {
+  isValidCommand,
+  validCommands,
+  Severity,
+  TestType,
+  testTypeSeverityThreshold,
+} from './task-lib';
 
 export type MonitorWhen = 'never' | 'noIssuesFound' | 'always';
 class TaskArgs {
   testType: string | undefined = 'app';
 
   targetFile: string | undefined = '';
-
+  command: string | undefined = '';
   dockerImageName: string | undefined = '';
   dockerfilePath: string | undefined = '';
 
@@ -159,6 +165,20 @@ class TaskArgs {
       !taskTestTypeThreshold?.includes(this.codeSeverityThreshold.toLowerCase())
     ) {
       const errorMsg = `If set, codeSeverityThreshold must be one from [${taskTestTypeThreshold}] (case insensitive). If not set, the default is '${Severity.LOW}'.`;
+      throw new Error(errorMsg);
+    }
+
+    // validating command property
+    // cannot use command if testType is not command
+    if (this.command && taskTestType !== TestType.COMMAND) {
+      const errorMsg = `If set, command is only allowed when testType is ${TestType.COMMAND}.`;
+      throw new Error(errorMsg);
+    }
+    // cannot use unknown command
+    if (this.command && !isValidCommand(this.command)) {
+      const errorMsg = `If set, command must be one of: ${Object.keys(
+        validCommands,
+      ).join(', ')}.`;
       throw new Error(errorMsg);
     }
   }

@@ -302,6 +302,26 @@ describe('TaskArgs.validate', () => {
     );
   });
 
+  it('throws error if invalid command is specified', () => {
+    const taskArgs = new TaskArgs({ failOnIssues: true });
+    expect(() => {
+      taskArgs.command = 'thisIsInvalidCommand';
+      taskArgs.testType = TestType.COMMAND;
+      taskArgs.validate();
+    }).toThrow(new Error('If set, command must be one of: sbom, sbom test.'));
+  });
+
+  it('throws error if command is used with invalid testType', () => {
+    const taskArgs = new TaskArgs({ failOnIssues: true });
+    expect(() => {
+      taskArgs.command = 'sbom';
+      taskArgs.testType = TestType.APPLICATION;
+      taskArgs.validate();
+    }).toThrow(
+      new Error('If set, command is only allowed when testType is command.'),
+    );
+  });
+
   it.each(testTypeSeverityThreshold)(
     'passes validation for each test type severity threshold',
     (a, b) => {
