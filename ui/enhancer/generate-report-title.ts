@@ -19,6 +19,7 @@ import { detectVulns } from './detect-vulns';
 export function generateReportTitle(
   jsonResults: object | any[],
   attachmentName: string, // timestamp e.g., 'report-2021-04-27T13-44-14.json'
+  htmlReportDescription?: string | null,
 ): string {
   const vulnsFound = detectVulns(jsonResults);
 
@@ -65,6 +66,8 @@ export function generateReportTitle(
 
   if (jsonResults['uniqueCount'] && jsonResults['uniqueCount'] > 0) {
     titleText += ` | Found ${jsonResults['uniqueCount']} issues`;
+  } else if (htmlReportDescription) {
+    titleText += ` | ${htmlReportDescription}`;
   } else if (
     jsonResults['$schema'] &&
     jsonResults['runs'][0]['results'].length > 0

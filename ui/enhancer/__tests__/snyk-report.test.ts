@@ -99,5 +99,55 @@ describe('SnykReportTab UI', () => {
         'Tested 4 ruby/yarn/python projects | Found 4 issues',
       );
     });
+
+    test('handling of code project with vulns and html report description with no ignored vulns', () => {
+      const jsonResults = {
+        $schema: true,
+        runs: [{ results: [{}, {}, {}] }],
+      };
+
+      const title = generateReportTitle(
+        jsonResults,
+        'report-2021-04-27T13-44-14.json',
+        'Found 3 issues',
+      );
+      expect(title).toEqual(
+        'Snyk Code Test for (report-2021-04-27 13:44:14) | Found 3 issues',
+      );
+    });
+
+    test('handling of code project with vulns and html report description with ignored vulns', () => {
+      const jsonResults = {
+        $schema: true,
+        runs: [
+          {
+            results: [{}, {}, {}],
+          },
+        ],
+      };
+      const title = generateReportTitle(
+        jsonResults,
+        'report-2021-04-27T13-44-14.json',
+        'Found 3 issues (2 ignored)',
+      );
+      expect(title).toEqual(
+        'Snyk Code Test for (report-2021-04-27 13:44:14) | Found 3 issues (2 ignored)',
+      );
+    });
+
+    test('handling of code project with no vulns and no html report description', () => {
+      const jsonResults = {
+        $schema: true,
+        runs: [{ results: [] }],
+      };
+      const title = generateReportTitle(
+        jsonResults,
+        'report-2021-04-27T13-44-14.json',
+        null,
+      );
+      expect(title).toEqual(
+        'Snyk Code Test for (report-2021-04-27 13:44:14) | No issues found',
+      );
+    });
   });
 });
