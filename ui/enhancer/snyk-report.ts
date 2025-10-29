@@ -18,7 +18,10 @@ import * as Controls from 'VSS/Controls';
 import * as TFSBuildContracts from 'TFS/Build/Contracts';
 import * as TFSBuildExtensionContracts from 'TFS/Build/ExtensionContracts';
 import * as DTClient from 'TFS/DistributedTask/TaskRestClient';
-import { generateReportTitle } from './generate-report-title';
+import {
+  extractHtmlReportDescription,
+  generateReportTitle,
+} from './generate-report-title';
 import { detectVulns } from './detect-vulns';
 
 const BUILD_PHASE = 'build';
@@ -95,30 +98,25 @@ export class SnykReportTab extends Controls.BaseControl {
                     );
 
                     let htmlReportDescription: string | null = null;
+
                     // infer html report description from the html attachment for Code scans
-                    if (json['$schema']) {
-                      const content =
-                        await this.taskClient.getAttachmentContent(
-                          this.projectId,
-                          BUILD_PHASE,
-                          this.planId,
-                          timelineId,
-                          recordId,
-                          HTML_ATTACHMENT_TYPE,
-                          attachmentName,
-                        );
-                      const data = new TextDecoder('utf-8').decode(
-                        new DataView(content),
+                    const htmlContent =
+                      await this.taskClient.getAttachmentContent(
+                        this.projectId,
+                        BUILD_PHASE,
+                        this.planId,
+                        timelineId,
+                        recordId,
+                        HTML_ATTACHMENT_TYPE,
+                        attachmentName,
                       );
-                      const parsedData = new DOMParser().parseFromString(
-                        data,
-                        'text/html',
-                      );
-                      const metaTag = parsedData.querySelector(
-                        'meta[name="description"]',
-                      );
+
+                    if (htmlContent || htmlContent.byteLength !== 0) {
+                      const decodedHtmlContent = new TextDecoder(
+                        'utf-8',
+                      ).decode(new DataView(htmlContent));
                       htmlReportDescription =
-                        metaTag?.getAttribute('content') ?? null;
+                        extractHtmlReportDescription(decodedHtmlContent);
                     }
 
                     this.improveReportDisplayName(

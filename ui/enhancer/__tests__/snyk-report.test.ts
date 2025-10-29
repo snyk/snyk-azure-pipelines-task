@@ -22,7 +22,10 @@
   thus TS compilation may fail on them, making it impossible for Jest to mock them
 */
 
-import { generateReportTitle } from '../generate-report-title';
+import {
+  extractHtmlReportDescription,
+  generateReportTitle,
+} from '../generate-report-title';
 
 describe('SnykReportTab UI', () => {
   describe('generateReportTitle', () => {
@@ -100,38 +103,21 @@ describe('SnykReportTab UI', () => {
       );
     });
 
-    test('handling of code project with vulns and html report description with no ignored vulns', () => {
+    test('handling of code project with html report description parameter', () => {
       const jsonResults = {
         $schema: true,
         runs: [{ results: [{}, {}, {}] }],
       };
 
+      const customDescription = 'Found 3 issues (2 ignored)';
       const title = generateReportTitle(
         jsonResults,
         'report-2021-04-27T13-44-14.json',
-        'Found 3 issues',
+        customDescription,
       );
-      expect(title).toEqual(
-        'Snyk Code Test for (report-2021-04-27 13:44:14) | Found 3 issues',
-      );
-    });
 
-    test('handling of code project with vulns and html report description with ignored vulns', () => {
-      const jsonResults = {
-        $schema: true,
-        runs: [
-          {
-            results: [{}, {}, {}],
-          },
-        ],
-      };
-      const title = generateReportTitle(
-        jsonResults,
-        'report-2021-04-27T13-44-14.json',
-        'Found 3 issues (2 ignored)',
-      );
       expect(title).toEqual(
-        'Snyk Code Test for (report-2021-04-27 13:44:14) | Found 3 issues (2 ignored)',
+        `Snyk Code Test for (report-2021-04-27 13:44:14) | ${customDescription}`,
       );
     });
 
@@ -148,6 +134,117 @@ describe('SnykReportTab UI', () => {
       expect(title).toEqual(
         'Snyk Code Test for (report-2021-04-27 13:44:14) | No issues found',
       );
+    });
+  });
+
+  describe('extractHtmlReportDescription', () => {
+    test('should extract description from valid HTML with meta tag', () => {
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta name="description" content="Found 3 
+issues (2 ignored)">
+          <title>Snyk Report</title>
+        </head>
+        <body>
+          <h1>Test Report</h1>
+        </body>
+        </html>
+      `;
+
+      const result = extractHtmlReportDescription(htmlContent);
+
+      expect(result).toEqual('Found 3 issues (2 ignored)');
+    });
+
+    test('should return null when meta description tag is missing', () => {
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Snyk Report</title>
+        </head>
+        <body>
+          <h1>Test Report</h1>
+        </body>
+        </html>
+      `;
+
+      const result = extractHtmlReportDescription(htmlContent);
+
+      expect(result).toBeNull();
+    });
+
+    test('should return null when meta tag has no content attribute', () => {
+      const htmlContent = `
+        <html>
+        <head>
+          <meta name="description">
+          <title>Snyk Report</title>
+        </head>
+        </html>
+      `;
+
+      const result = extractHtmlReportDescription(htmlContent);
+
+      expect(result).toBeNull();
+    });
+
+    test('should return empty string when content attribute is empty', () => {
+      const htmlContent = `
+        <html>
+        <head>
+          <meta name="description" content="">
+          <title>Snyk Report</title>
+        </head>
+        </html>
+      `;
+
+      const result = extractHtmlReportDescription(htmlContent);
+
+      expect(result).toBeNull();
+    });
+
+    test('should handle malformed HTML gracefully', () => {
+      const htmlContent = `
+        <html>
+        <head>
+          <meta name="description" content="Valid description">
+          <title>Unclosed title
+        </head>
+        <body>
+          <h1>Missing closing tag
+      `;
+
+      const result = extractHtmlReportDescription(htmlContent);
+
+      expect(result).toEqual('Valid description');
+    });
+
+    test('should find the first meta description when multiple exist', () => {
+      const htmlContent = `
+        <html>
+        <head>
+          <meta name="description" content="First description">
+          <meta name="description" content="Second description">
+          <title>Snyk Report</title>
+        </head>
+        </html>
+      `;
+
+      const result = extractHtmlReportDescription(htmlContent);
+
+      expect(result).toEqual('First description');
+    });
+
+    test('should handle empty HTML document', () => {
+      const htmlContent = '';
+
+      const result = extractHtmlReportDescription(htmlContent);
+
+      expect(result).toBeNull();
     });
   });
 });

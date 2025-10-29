@@ -64,10 +64,10 @@ export function generateReportTitle(
     titleText = `Snyk Code Test for (${formatReportName(attachmentName)})`;
   }
 
-  if (jsonResults['uniqueCount'] && jsonResults['uniqueCount'] > 0) {
-    titleText += ` | Found ${jsonResults['uniqueCount']} issues`;
-  } else if (htmlReportDescription) {
+  if (htmlReportDescription) {
     titleText += ` | ${htmlReportDescription}`;
+  } else if (jsonResults['uniqueCount'] && jsonResults['uniqueCount'] > 0) {
+    titleText += ` | Found ${jsonResults['uniqueCount']} issues`;
   } else if (
     jsonResults['$schema'] &&
     jsonResults['runs'][0]['results'].length > 0
@@ -78,6 +78,25 @@ export function generateReportTitle(
   }
 
   return titleText;
+}
+
+export function extractHtmlReportDescription(content: string): string | null {
+  const MAX_DESCRIPTION_LENGTH = 1024;
+  // Use regex to find meta[name="description"] tag and extract content attribute
+  const metaDescriptionRegex = new RegExp(
+    `<meta[^>]*name=["']description["'][^>]*content=["']([^"']{0,${MAX_DESCRIPTION_LENGTH}})`,
+    'i',
+  );
+  const match = content.match(metaDescriptionRegex);
+
+  if (!match || !match[1]) {
+    return null;
+  }
+
+  const description = match[1];
+  const sanitized = description.trim().replace(/[\n\r\t]/gm, '');
+
+  return sanitized || null;
 }
 
 function formatReportName(
