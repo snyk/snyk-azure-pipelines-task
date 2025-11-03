@@ -18,7 +18,10 @@ import * as Controls from 'VSS/Controls';
 import * as TFSBuildContracts from 'TFS/Build/Contracts';
 import * as TFSBuildExtensionContracts from 'TFS/Build/ExtensionContracts';
 import * as DTClient from 'TFS/DistributedTask/TaskRestClient';
-import { generateReportTitle } from './generate-report-title';
+import {
+  extractHtmlReportDescription,
+  generateReportTitle,
+} from './generate-report-title';
 import { detectVulns } from './detect-vulns';
 
 const BUILD_PHASE = 'build';
@@ -89,14 +92,38 @@ export class SnykReportTab extends Controls.BaseControl {
                     JSON_ATTACHMENT_TYPE,
                     jsonName,
                   )
-                  .then((content) => {
+                  .then(async (content) => {
                     const json = JSON.parse(
                       new TextDecoder('utf-8').decode(new DataView(content)),
                     );
+
+                    let htmlReportDescription: string | null = null;
+
+                    // infer html report description from the html attachment for Code scans
+                    const htmlContent =
+                      await this.taskClient.getAttachmentContent(
+                        this.projectId,
+                        BUILD_PHASE,
+                        this.planId,
+                        timelineId,
+                        recordId,
+                        HTML_ATTACHMENT_TYPE,
+                        attachmentName,
+                      );
+
+                    if (htmlContent || htmlContent.byteLength !== 0) {
+                      const decodedHtmlContent = new TextDecoder(
+                        'utf-8',
+                      ).decode(new DataView(htmlContent));
+                      htmlReportDescription =
+                        extractHtmlReportDescription(decodedHtmlContent);
+                    }
+
                     this.improveReportDisplayName(
                       attachmentName,
                       json,
                       reportItem,
+                      htmlReportDescription,
                     );
                   });
 
@@ -113,6 +140,7 @@ export class SnykReportTab extends Controls.BaseControl {
     attachmentName: string,
     jsonResults: object | any[],
     reportItem: HTMLElement,
+    htmlReportDescription?: string | null,
   ): void => {
     // TODO: should we fail in this case? Or is this a valid state?
     if (!jsonResults) {
@@ -122,7 +150,11 @@ export class SnykReportTab extends Controls.BaseControl {
     const img: HTMLImageElement = document.createElement('img');
     const span: HTMLElement = document.createElement('span');
     const vulnsFound = detectVulns(jsonResults);
-    const spanText = generateReportTitle(jsonResults, attachmentName);
+    const spanText = generateReportTitle(
+      jsonResults,
+      attachmentName,
+      htmlReportDescription,
+    );
 
     $(reportItem).addClass(vulnsFound ? 'failed' : 'passed');
     img.src = vulnsFound
