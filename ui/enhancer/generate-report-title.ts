@@ -47,14 +47,17 @@ export function generateReportTitle(
   }
 
   // Single project scan or Snyk code scan results
-  let titleText = '';
+  let titleText = `Snyk Report (${formatReportName(attachmentName)})`;
   if (jsonResults['docker'] && jsonResults['docker']['baseImage']) {
     titleText = `Snyk Test for ${
       jsonResults['docker']['baseImage']
     } (${formatReportName(attachmentName)})`;
   }
 
-  if (jsonResults['packageManager']) {
+  if (
+    jsonResults['packageManager'] &&
+    jsonResults['packageManager'].length > 0
+  ) {
     titleText = `Snyk Test for ${
       jsonResults['packageManager']
     } (${formatReportName(attachmentName)})`;

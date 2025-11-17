@@ -48,6 +48,8 @@ class SnykError extends Error {
 interface SnykOutput {
   code: number;
   message: string;
+  runSnykToHTML?: boolean;
+  runSnykMonitor?: boolean;
 }
 
 const CLI_EXIT_CODE_SUCCESS = 0;
@@ -189,10 +191,16 @@ export async function generateSnykCodeResultsWithoutIssues(
 async function runSnykCommand(
   snykPath: string,
   taskArgs: TaskArgs,
+  jsonReportOutputPath: string,
   snykToken: string,
 ): Promise<SnykOutput> {
   const debugPrefix = `snyk ${taskArgs.command}`;
-  const snykOutput: SnykOutput = { code: 0, message: '' };
+  const snykOutput: SnykOutput = {
+    code: 0,
+    message: '',
+    runSnykToHTML: false,
+    runSnykMonitor: false,
+  };
 
   if (!taskArgs.command) {
     snykOutput.code = CLI_EXIT_CODE_INVALID_USE;
@@ -222,12 +230,28 @@ async function runSnykCommand(
   );
 
   // update jsonReportFullPath if json-file-output is set
-  if (taskArgs.additionalArguments.length > 0) {
-    const jsonFileOutput = taskArgs.additionalArguments
-      .split(' ')
-      .find((arg) => arg.startsWith('--json-file-output='));
-    if (jsonFileOutput) {
-      jsonReportFullPath = jsonFileOutput.split('=')[1];
+  const jsonFileOutput = taskArgs.additionalArguments
+    .split(' ')
+    .find((arg) => arg.startsWith('--json-file-output='));
+  if (jsonFileOutput) {
+    jsonReportFullPath = jsonFileOutput.split('=')[1];
+  }
+
+  // make sure --reachability flag is set for sbom test command
+  // this flag is required for sbom snyk-to-html support
+  const isSbomTestCommand = taskArgs.command === 'sbom test';
+  const hasReachabilityFlag = taskArgs.additionalArguments
+    .split(' ')
+    .some((arg) => arg.startsWith('--reachability'));
+  const shouldAddReachability = isSbomTestCommand && !hasReachabilityFlag;
+  snykCommandToolRunner.argIf(shouldAddReachability, '--reachability');
+
+  // generate snyk-to-html report for sbom test command
+  if (isSbomTestCommand) {
+    snykOutput.runSnykToHTML = true;
+    // ensure json-file-output is set
+    if (!jsonFileOutput) {
+      snykCommandToolRunner.arg(`--json-file-output=${jsonReportOutputPath}`);
     }
   }
 
@@ -246,7 +270,9 @@ async function runSnykCommand(
   snykOutput.code = snykCommandExitCode;
 
   if (isDebugMode()) {
-    console.log(`${debugPrefix}: jsonReportFullPath: ${jsonReportFullPath}`);
+    console.log(
+      `${debugPrefix}: jsonReportFullPath has been updated: ${jsonReportFullPath}`,
+    );
   }
 
   return snykOutput;
@@ -309,7 +335,12 @@ async function runSnykTest(
     errorMsg =
       'failing task because `snyk` was improperly used or had other errors';
   }
-  const snykOutput: SnykOutput = { code: code, message: errorMsg };
+  const snykOutput: SnykOutput = {
+    code: code,
+    message: errorMsg,
+    runSnykToHTML: true,
+    runSnykMonitor: taskArgs.shouldRunMonitor(code === CLI_EXIT_CODE_SUCCESS),
+  };
 
   // handle inconsistency in snyk CLI for code test, when --json-file-output is specified
   // and the test results in no issues found, no JSON is produced when it should still be
@@ -532,7 +563,20 @@ async function run() {
         jsonReportFullPath,
         snykToken,
       );
+      attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
+      handleSnykTestError(taskArgs, snykTestResult, jsonReportFullPath);
+    } else {
+      snykTestResult = await runSnykCommand(
+        snykPath,
+        taskArgs,
+        jsonReportFullPath,
+        snykToken,
+      );
+      attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
+      handleSnykTestError(taskArgs, snykTestResult, jsonReportFullPath);
+    }
 
+    if (snykTestResult.runSnykToHTML) {
       if (taskArgs.delayAfterReportGenerationSeconds > 0) {
         console.log(
           `sleeping for ${
@@ -562,23 +606,16 @@ async function run() {
         console.log(`done sleeping at at ${new Date().getTime()}`);
       }
 
-      attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
       attachReport(htmlReportFullPath, HTML_ATTACHMENT_TYPE);
-      handleSnykTestError(taskArgs, snykTestResult, jsonReportFullPath);
+    }
 
-      const snykTestSuccessAndNoIssuesFound = snykTestResult.code === 0;
-      if (taskArgs.shouldRunMonitor(snykTestSuccessAndNoIssuesFound)) {
-        const snykMonitorResult = await runSnykMonitor(
-          snykPath,
-          taskArgs,
-          snykToken,
-        );
-        handleSnykMonitorError(snykMonitorResult);
-      }
-    } else {
-      snykTestResult = await runSnykCommand(snykPath, taskArgs, snykToken);
-      attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
-      handleSnykTestError(taskArgs, snykTestResult, jsonReportFullPath);
+    if (snykTestResult.runSnykMonitor) {
+      const snykMonitorResult = await runSnykMonitor(
+        snykPath,
+        taskArgs,
+        snykToken,
+      );
+      handleSnykMonitorError(snykMonitorResult);
     }
 
     if (isDebugMode()) {
