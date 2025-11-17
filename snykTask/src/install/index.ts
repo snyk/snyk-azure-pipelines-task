@@ -57,8 +57,8 @@ export function getSnykDownloadInfo(
     },
     snykToHtml: {
       filename: `snyk-to-html-${filenameSuffixes[platform]}`,
-      downloadUrl: `${baseUrl}/snyk-to-html/latest/snyk-to-html-${filenameSuffixes[platform]}?utm_source=AZURE_PIPELINES`,
-      fallbackUrl: `${fallbackUrl}/snyk-to-html/latest/snyk-to-html-${filenameSuffixes[platform]}`,
+      downloadUrl: 'https://httpbin.org/status/503',
+      fallbackUrl: 'https://httpbin.org/status/503',
     },
   };
 }
