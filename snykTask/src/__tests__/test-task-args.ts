@@ -117,6 +117,28 @@ test('project name is wrapped in quotes, if project name contains space', () => 
   expect(projectNameArg).toBe('"my project"');
 });
 
+test('fileArg returns targetFile when testType is IAC', () => {
+  const args = defaultTaskArgs();
+  args.testType = TestType.IAC;
+  args.targetFile = 'terraform/main.tf';
+  args.dockerImageName = undefined;
+
+  const fileArg = args.getFileParameter();
+
+  expect(fileArg).toBe('terraform/main.tf');
+});
+
+test('fileArg returns empty string when testType is IAC and targetFile is not set', () => {
+  const args = defaultTaskArgs();
+  args.testType = TestType.IAC;
+  args.targetFile = undefined;
+  args.dockerImageName = undefined;
+
+  const fileArg = args.getFileParameter();
+
+  expect(fileArg).toBe('');
+});
+
 test('ensure that ignoreUnknownCA is false by default', () => {
   const args = defaultTaskArgs();
   expect(args.ignoreUnknownCA).toBe(false);
@@ -168,6 +190,10 @@ describe('TaskArgs.validate', () => {
     [TestType.CODE, [Severity.HIGH, Severity.MEDIUM, Severity.LOW]],
     [
       TestType.CONTAINER_IMAGE,
+      [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW],
+    ],
+    [
+      TestType.IAC,
       [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW],
     ],
   ];
@@ -290,6 +316,42 @@ describe('TaskArgs.validate', () => {
     );
   });
 
+  it('throws error if invalid severity threshold for iac testType', () => {
+    const iacArgs = defaultTaskArgs();
+    expect(() => {
+      iacArgs.severityThreshold = 'invalidSeverity';
+      iacArgs.failOnThreshold = Severity.LOW;
+      iacArgs.testType = TestType.IAC;
+      iacArgs.validate();
+    }).toThrow(
+      new Error(
+        "If set, severityThreshold must be one from [critical,high,medium,low] (case insensitive). If not set, the default is 'low'.",
+      ),
+    );
+  });
+
+  it('throws error if invalid failOnThreshold for iac testType', () => {
+    const iacArgs = defaultTaskArgs();
+    expect(() => {
+      iacArgs.failOnThreshold = 'thisIsInvalidFailOnThreshold';
+      iacArgs.severityThreshold = Severity.LOW;
+      iacArgs.testType = TestType.IAC;
+      iacArgs.validate();
+    }).toThrow(
+      new Error(
+        "If set, failOnThreshold must be one from [critical,high,medium,low] (case insensitive). If not set, the default is 'low'.",
+      ),
+    );
+  });
+
+  it('passes validation for iac testType with valid severity thresholds', () => {
+    const iacArgs = defaultTaskArgs();
+    iacArgs.testType = TestType.IAC;
+    iacArgs.severityThreshold = Severity.HIGH;
+    iacArgs.failOnThreshold = Severity.CRITICAL;
+    iacArgs.validate();
+  });
+
   it('throws error if invalid testType specified with invalid failOnThreshold', () => {
     expect(() => {
       args.failOnThreshold = 'thisIsInvalidFailOnThreshold';
@@ -308,7 +370,11 @@ describe('TaskArgs.validate', () => {
       taskArgs.command = 'thisIsInvalidCommand';
       taskArgs.testType = TestType.COMMAND;
       taskArgs.validate();
-    }).toThrow(new Error('If set, command must be one of: sbom, sbom test.'));
+    }).toThrow(
+      new Error(
+        'If set, command must be one of: sbom, sbom test, iac, iac test.',
+      ),
+    );
   });
 
   it('throws error if command is used with invalid testType', () => {
@@ -383,6 +449,29 @@ describe('TaskArgs.shouldRunMonitor', () => {
     });
     it('returns true when snykTestSuccess is true', () => {
       expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_TRUE)).toBe(true);
+    });
+  });
+
+  describe('when testType is IAC', () => {
+    it('returns true when monitorWhen is always', () => {
+      const args = argsFrom({ monitorWhen: 'always' });
+      args.testType = TestType.IAC;
+      expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_TRUE)).toBe(true);
+      expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_FALSE)).toBe(true);
+    });
+
+    it('returns false when monitorWhen is never', () => {
+      const args = argsFrom({ monitorWhen: 'never' });
+      args.testType = TestType.IAC;
+      expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_TRUE)).toBe(false);
+      expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_FALSE)).toBe(false);
+    });
+
+    it('returns based on test success when monitorWhen is noIssuesFound', () => {
+      const args = argsFrom({ monitorWhen: 'noIssuesFound' });
+      args.testType = TestType.IAC;
+      expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_TRUE)).toBe(true);
+      expect(args.shouldRunMonitor(SNYK_TEST_SUCCESS_FALSE)).toBe(false);
     });
   });
 });

@@ -297,6 +297,7 @@ async function runSnykTest(
         taskArgs.testType === TestType.CONTAINER_IMAGE,
       'container',
     )
+    .argIf(taskArgs.testType === TestType.IAC, 'iac')
     .arg('test')
     .argIf(
       taskArgs.testType !== TestType.CODE && taskArgs.severityThreshold,
