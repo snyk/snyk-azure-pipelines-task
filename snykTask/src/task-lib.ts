@@ -114,6 +114,7 @@ export enum TestType {
   APPLICATION = 'app',
   CODE = 'code',
   CONTAINER_IMAGE = 'container',
+  IAC = 'iac',
   COMMAND = 'command',
 }
 
@@ -127,12 +128,18 @@ export const testTypeSeverityThreshold = new Map<string, Array<string>>([
     TestType.CONTAINER_IMAGE,
     [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW],
   ],
+  [
+    TestType.IAC,
+    [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW],
+  ],
 ]);
 
 // validCommands ensures that we only allow known commands to be executed when using the command input
 export const validCommands = {
   sbom: ['sbom'],
   'sbom test': ['sbom', 'test'],
+  iac: ['iac', 'test'],
+  'iac test': ['iac', 'test'],
 };
 
 export function getCommands(command: string): string[] {

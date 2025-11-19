@@ -308,7 +308,11 @@ describe('TaskArgs.validate', () => {
       taskArgs.command = 'thisIsInvalidCommand';
       taskArgs.testType = TestType.COMMAND;
       taskArgs.validate();
-    }).toThrow(new Error('If set, command must be one of: sbom, sbom test.'));
+    }).toThrow(
+      new Error(
+        'If set, command must be one of: sbom, sbom test, iac, iac test.',
+      ),
+    );
   });
 
   it('throws error if command is used with invalid testType', () => {
