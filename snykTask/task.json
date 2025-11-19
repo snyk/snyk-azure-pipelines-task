@@ -44,6 +44,7 @@
         "app": "Application",
         "code": "Code",
         "container": "Container Image",
+        "iac": "Infrastructure as Code",
         "command": "Run a supported Snyk command"
       },
       "properties": {
@@ -75,7 +76,7 @@
       "required": false,
       "defaultValue": "",
       "helpMarkDown": "Relative path to manifest file to test (relative to repo root or working directory, if set)",
-      "visibleRule": "testType = app"
+      "visibleRule": "testType = app || testType = iac"
     },
     {
       "name": "command",
@@ -85,9 +86,11 @@
       "defaultValue": "",
       "options": {
         "sbom": "sbom",
-        "sbom test": "sbom test"
+        "sbom test": "sbom test",
+        "iac": "iac",
+        "iac test": "iac test"
       },
-      "helpMarkDown": "The Snyk command to run. Permitted commands are: 'sbom', 'sbom test'. Flag options can be added via 'additionalArguments'.",
+      "helpMarkDown": "The Snyk command to run. Permitted commands are: 'sbom', 'sbom test', 'iac', 'iac test'. Flag options can be added via 'additionalArguments'.",
       "visibleRule": "testType = command"
     },
     {
@@ -103,7 +106,7 @@
         "critical": "Critical"
       },
       "helpMarkDown": "The testing severity threshold. Leave blank for no threshold.",
-      "visibleRule": "testType = app || testType = container"
+      "visibleRule": "testType = app || testType = container || testType = iac"
     },
     {
       "name": "codeSeverityThreshold",
@@ -131,7 +134,7 @@
       "required": true,
       "defaultValue": "always",
       "helpMarkDown": "When to run Snyk Monitor",
-      "visibleRule": "testType = app || testType = container"
+      "visibleRule": "testType = app || testType = container || testType = iac"
     },
     {
       "name": "failOnIssues",
