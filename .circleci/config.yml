@@ -192,8 +192,6 @@ workflows:
 
       - test
       - deploy_dev:
-          requires:
-            - test
           filters:
             branches:
               ignore: main
