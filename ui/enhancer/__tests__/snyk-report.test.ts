@@ -26,6 +26,7 @@ import {
   extractHtmlReportDescription,
   generateReportTitle,
 } from '../generate-report-title';
+import { detectVulns } from '../detect-vulns';
 
 describe('SnykReportTab UI', () => {
   describe('generateReportTitle', () => {
@@ -245,6 +246,178 @@ issues (2 ignored)">
       const result = extractHtmlReportDescription(htmlContent);
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('detectVulns', () => {
+    test('should return true for array with vulnerabilities', () => {
+      const jsonResults = [
+        {
+          packageManager: 'npm',
+          uniqueCount: 3,
+        },
+        {
+          packageManager: 'yarn',
+          uniqueCount: 0,
+        },
+      ];
+
+      expect(detectVulns(jsonResults)).toBe(true);
+    });
+
+    test('should return false for array without vulnerabilities', () => {
+      const jsonResults = [
+        {
+          packageManager: 'npm',
+          uniqueCount: 0,
+        },
+        {
+          packageManager: 'yarn',
+          uniqueCount: 0,
+        },
+      ];
+
+      expect(detectVulns(jsonResults)).toBe(false);
+    });
+
+    test('should return false for array with no uniqueCount properties', () => {
+      const jsonResults = [
+        {
+          packageManager: 'npm',
+        },
+        {
+          packageManager: 'yarn',
+        },
+      ];
+
+      expect(detectVulns(jsonResults)).toBe(false);
+    });
+
+    test('should return true for object with uniqueCount > 0', () => {
+      const jsonResults = {
+        packageManager: 'npm',
+        uniqueCount: 5,
+      };
+
+      expect(detectVulns(jsonResults)).toBe(true);
+    });
+
+    test('should return false for object with uniqueCount = 0', () => {
+      const jsonResults = {
+        packageManager: 'npm',
+        uniqueCount: 0,
+      };
+
+      expect(detectVulns(jsonResults)).toBe(false);
+    });
+
+    test('should return false for object without uniqueCount', () => {
+      const jsonResults = {
+        packageManager: 'npm',
+      };
+
+      expect(detectVulns(jsonResults)).toBe(false);
+    });
+
+    test('should return true for code test with results', () => {
+      const jsonResults = {
+        $schema: true,
+        runs: [{ results: [{}, {}, {}] }],
+      };
+
+      expect(detectVulns(jsonResults)).toBe(true);
+    });
+
+    test('should return false for code test without results', () => {
+      const jsonResults = {
+        $schema: true,
+        runs: [{ results: [] }],
+      };
+
+      expect(detectVulns(jsonResults)).toBe(false);
+    });
+
+    test('should return true for object with applications containing vulnerabilities', () => {
+      const jsonResults = {
+        applications: [
+          {
+            packageManager: 'npm',
+            uniqueCount: 3,
+          },
+          {
+            packageManager: 'yarn',
+            uniqueCount: 0,
+          },
+        ],
+      };
+
+      expect(detectVulns(jsonResults)).toBe(true);
+    });
+
+    test('should return true for object with vulnerabilities and applications vulnerabilities', () => {
+      const jsonResults = {
+        packageManager: 'deb',
+        uniqueCount: 3,
+        applications: [
+          {
+            packageManager: 'npm',
+            uniqueCount: 3,
+          },
+          {
+            packageManager: 'yarn',
+            uniqueCount: 0,
+          },
+        ],
+      };
+
+      expect(detectVulns(jsonResults)).toBe(true);
+    });
+
+    test('should return false for object with applications without vulnerabilities', () => {
+      const jsonResults = {
+        applications: [
+          {
+            packageManager: 'npm',
+            uniqueCount: 0,
+          },
+          {
+            packageManager: 'yarn',
+            uniqueCount: 0,
+          },
+        ],
+      };
+
+      expect(detectVulns(jsonResults)).toBe(false);
+    });
+
+    test('should return false for empty applications array', () => {
+      const jsonResults = {
+        applications: [],
+      };
+
+      expect(detectVulns(jsonResults)).toBe(false);
+    });
+
+    test('should return false for empty array', () => {
+      const jsonResults: any[] = [];
+
+      expect(detectVulns(jsonResults)).toBe(false);
+    });
+
+    test('should return false for empty object', () => {
+      const jsonResults = {};
+
+      expect(detectVulns(jsonResults)).toBe(false);
+    });
+
+    test('should handle object with both uniqueCount and code test results', () => {
+      const jsonResults = {
+        uniqueCount: 0,
+        $schema: true,
+        runs: [{ results: [{}, {}] }],
+      };
+
+      expect(detectVulns(jsonResults)).toBe(true);
     });
   });
 });
