@@ -19,6 +19,15 @@ export function detectVulns(jsonResults: object | any[]): boolean {
     return jsonResults.some((result) => !!result.uniqueCount);
   }
 
+  const applications = jsonResults['applications'];
+  if (Array.isArray(applications) && applications.length > 0) {
+    for (const proj of applications) {
+      if (detectVulns(proj)) {
+        return true;
+      }
+    }
+  }
+
   if (
     (jsonResults['uniqueCount'] && jsonResults['uniqueCount'] > 0) ||
     (jsonResults['$schema'] && jsonResults['runs'][0]['results'].length > 0)
