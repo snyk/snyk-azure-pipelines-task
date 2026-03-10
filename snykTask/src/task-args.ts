@@ -212,4 +212,18 @@ export function getAuthToken() {
   return '';
 }
 
+export function getApiUrl(): string {
+  const serviceConnectionEndpoint = tl.getInput(
+    'serviceConnectionEndpoint',
+    false,
+  );
+  if (serviceConnectionEndpoint) {
+    const endpointUrl = tl.getEndpointUrl(serviceConnectionEndpoint, true);
+    if (endpointUrl) {
+      return endpointUrl;
+    }
+  }
+  return '';
+}
+
 export { TaskArgs };
