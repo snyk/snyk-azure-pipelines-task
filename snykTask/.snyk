@@ -2,9 +2,4 @@
 version: v1.25.0
 # ignores vulnerabilities until expiry date; change duration by modifying expiry date
 ignore:
-  SNYK-JS-MOCKERY-3043117:
-    - '*':
-        reason: No upgrade available
-        expires: 2024-07-18T00:00:00.000Z
-        created: 2023-07-18T12:52:43.840Z
 patch: {}
