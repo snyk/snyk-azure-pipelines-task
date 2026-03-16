@@ -80,9 +80,7 @@ export interface MockObjects {
   fsReadFileSync: jest.Mock;
 }
 
-export function setupMocks(
-  overrides: Partial<MockConfig> = {},
-): MockObjects {
+export function setupMocks(overrides: Partial<MockConfig> = {}): MockObjects {
   const config: MockConfig = {
     ...defaultMockConfig,
     ...overrides,
