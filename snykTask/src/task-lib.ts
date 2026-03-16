@@ -32,12 +32,26 @@ export const getOptionsToExecuteCmd = (taskArgs: TaskArgs): tr.IExecOptions => {
   } as tr.IExecOptions;
 };
 
+export function getAgentEnvironment(): {
+  name: string;
+  version: string;
+} {
+  const agentName = tl.getVariable('Agent.Name') || '';
+  const agentVersion = tl.getVariable('Agent.Version') || '';
+  const isHosted = agentName.startsWith('Azure Pipelines');
+  const name = `${isHosted ? 'Hosted_Compute_Agent' : 'Self_Hosted_Agent'}-${agentVersion}`;
+  const version =
+    tl.getVariable('ImageVersion') || tl.getVariable('Agent.OS') || '';
+  return { name, version };
+}
+
 export const getOptionsToExecuteSnykCLICommand = (
   taskArgs: TaskArgs,
   taskNameForAnalytics: string,
   taskVersion: string,
   snykToken: string,
 ): tr.IExecOptions => {
+  const agentEnv = getAgentEnvironment();
   const options = {
     cwd: taskArgs.testDirectory,
     failOnStdErr: false,
@@ -46,6 +60,8 @@ export const getOptionsToExecuteSnykCLICommand = (
       ...process.env,
       SNYK_INTEGRATION_NAME: taskNameForAnalytics,
       SNYK_INTEGRATION_VERSION: taskVersion,
+      SNYK_INTEGRATION_ENVIRONMENT: agentEnv.name,
+      SNYK_INTEGRATION_ENVIRONMENT_VERSION: agentEnv.version,
       SNYK_TOKEN: snykToken,
     } as tr.IExecOptions['env'],
   } as tr.IExecOptions;
