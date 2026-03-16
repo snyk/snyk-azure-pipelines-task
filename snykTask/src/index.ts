@@ -490,7 +490,7 @@ const handleSnykMonitorError = (snykMonitorResult: SnykOutput) => {
     throw new SnykError(snykMonitorResult.message);
 };
 
-async function run() {
+export async function run() {
   try {
     const currentDir: string = tl.cwd(); // Azure mock framework will return empty string / undefined
     if (isDebugMode()) console.log(`currentWorkingDirectory: ${currentDir}\n`);
@@ -672,4 +672,11 @@ async function run() {
   }
 }
 
-run();
+// Only auto-invoke run() when Azure's agent executes this file directly
+// (i.e. `node dist/index.js`). When tests import this module, require.main
+// points to the test runner, so run() won't fire as a side effect.
+// This is safe because the build is plain tsc (no bundler), so `module`
+// identity is preserved in the compiled output.
+if (require.main === module) {
+  run();
+}
