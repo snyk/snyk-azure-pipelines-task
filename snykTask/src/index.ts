@@ -25,6 +25,7 @@ import {
   getOptionsForSnykToHtml,
   formatDate,
   attachReport,
+  enrichReportWithEndpointUrl,
   removeRegexFromFile,
   JSON_ATTACHMENT_TYPE,
   HTML_ATTACHMENT_TYPE,
@@ -565,6 +566,7 @@ export async function run() {
       );
     }
 
+    const endpointUrl = apiUrl || 'https://api.snyk.io';
     let snykTestResult: SnykOutput;
     if (taskArgs.testType !== TestType.COMMAND) {
       snykTestResult = await runSnykTest(
@@ -574,6 +576,7 @@ export async function run() {
         snykToken,
         apiUrl,
       );
+      enrichReportWithEndpointUrl(jsonReportFullPath, endpointUrl);
       attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
       handleSnykTestError(taskArgs, snykTestResult, jsonReportFullPath);
     } else {
@@ -584,6 +587,7 @@ export async function run() {
         snykToken,
         apiUrl,
       );
+      enrichReportWithEndpointUrl(jsonReportFullPath, endpointUrl);
       attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
       handleSnykTestError(taskArgs, snykTestResult, jsonReportFullPath);
     }

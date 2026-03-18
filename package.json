@@ -21,7 +21,8 @@
     "deploy:compile": "tsc -b ops/deploy/tsconfig.json",
     "deploy:test": "jest --config=ops/deploy/jest.config.js",
     "deploy:eslint": "eslint --cache 'ops/deploy/**/*.ts'",
-    "deploy:run": "node ops/deploy/dist/deploy.js"
+    "deploy:run": "node ops/deploy/dist/deploy.js",
+    "test:integration": "npm run compile && jest snykTask/src/__tests__/index.test.ts"
   },
   "author": "snyk.io",
   "license": "Apache-2.0",

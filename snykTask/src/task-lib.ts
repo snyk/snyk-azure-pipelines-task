@@ -77,6 +77,33 @@ export function formatDate(d: Date): string {
   return d.toISOString().split('.')[0].replace(/:/g, '-');
 }
 
+/**
+ * Adds endpointUrl to the JSON report so consumers know which Snyk API was used.
+ * Only enriches when the report is a JSON object (not an array).
+ */
+export function enrichReportWithEndpointUrl(
+  jsonReportPath: string,
+  endpointUrl: string,
+): void {
+  if (!endpointUrl || !fs.existsSync(jsonReportPath)) return;
+  try {
+    const content = fs.readFileSync(jsonReportPath, 'utf8');
+    const report = JSON.parse(content);
+    if (typeof report === 'object' && !Array.isArray(report)) {
+      report.endpointUrl = endpointUrl;
+      // Detect original indentation to preserve formatting
+      const indentMatch = content.match(/^(\s+)"/m);
+      const indent = indentMatch ? indentMatch[1] : 2;
+      fs.writeFileSync(
+        jsonReportPath,
+        JSON.stringify(report, null, indent) + '\n',
+      );
+    }
+  } catch {
+    // Ignore parse/write errors; report stays unchanged
+  }
+}
+
 export function attachReport(filePath: string, attachmentType: string) {
   if (fs.existsSync(filePath)) {
     const filename = path.basename(filePath);

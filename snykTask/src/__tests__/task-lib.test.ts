@@ -32,6 +32,7 @@ import {
   getOptionsForSnykToHtml,
   formatDate,
   attachReport,
+  enrichReportWithEndpointUrl,
   removeRegexFromFile,
   doVulnerabilitiesExistForFailureThreshold,
   Severity,
@@ -445,6 +446,27 @@ test('attachReport works', () => {
 
   fsExistsSyncSpy.mockRestore();
   addAttachmentSpy.mockRestore();
+});
+
+test('enrichReportWithEndpointUrl adds endpointUrl to JSON report', () => {
+  const reportPath = path.join(tempFolder, 'enrich-test.json');
+  fs.writeFileSync(
+    reportPath,
+    JSON.stringify({ ok: true, vulnerabilities: [] }),
+  );
+  enrichReportWithEndpointUrl(reportPath, 'https://api.eu.snyk.io');
+  const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  expect(report.endpointUrl).toBe('https://api.eu.snyk.io');
+  expect(report.ok).toBe(true);
+});
+
+test('enrichReportWithEndpointUrl does nothing when endpointUrl is empty', () => {
+  const reportPath = path.join(tempFolder, 'enrich-empty.json');
+  const original = { ok: true };
+  fs.writeFileSync(reportPath, JSON.stringify(original));
+  enrichReportWithEndpointUrl(reportPath, '');
+  const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  expect(report.endpointUrl).toBeUndefined();
 });
 
 describe('removeRegexFromFile', () => {
