@@ -512,10 +512,10 @@ export async function run() {
 
     if (isDebugMode()) {
       console.log(`agentTempDirectory: ${agentTempDirectory}`);
-      console.log(`jsonReportFullPath: ${jsonReportFullPath}`);
-      console.log(`htmlReportFullPath: ${htmlReportFullPath}`);
+    console.log(`jsonReportFullPath: ${jsonReportFullPath}`);
+    console.log(`htmlReportFullPath: ${htmlReportFullPath}`);
     }
-
+    
     const taskArgs: TaskArgs = parseInputArgs();
     const distributionChannel = taskArgs.getDistributionChannel();
     const snykToken = getAuthToken();
@@ -672,11 +672,4 @@ export async function run() {
   }
 }
 
-// Only auto-invoke run() when Azure's agent executes this file directly
-// (i.e. `node dist/index.js`). When tests import this module, require.main
-// points to the test runner, so run() won't fire as a side effect.
-// This is safe because the build is plain tsc (no bundler), so `module`
-// identity is preserved in the compiled output.
-if (require.main === module) {
-  run();
-}
+export const runPromise = run();

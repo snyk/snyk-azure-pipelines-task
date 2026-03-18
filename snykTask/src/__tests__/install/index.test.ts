@@ -60,95 +60,96 @@ describe('getSnykDownloadInfo', () => {
 
   it('retrieves the correct download info for MacOS', () => {
     const dlInfo = getSnykDownloadInfo(Platform.MacOS);
+    const macosSuffix =
+      process.arch === 'arm64' ? 'macos-arm64' : 'macos';
+    // snyk-to-html has no arm64 binary; always uses macos on Mac
+    const snykToHtmlSuffix = 'macos';
     expect(dlInfo).toEqual({
       snyk: {
-        filename: 'snyk-macos',
-        downloadUrl:
-          'https://downloads.snyk.io/cli/stable/snyk-macos?utm_source=AZURE_PIPELINES',
-        fallbackUrl: 'https://static.snyk.io/cli/latest/snyk-macos',
+        filename: `snyk-${macosSuffix}`,
+        downloadUrl: `https://downloads.snyk.io/cli/stable/snyk-${macosSuffix}?utm_source=AZURE_PIPELINES`,
+        fallbackUrl: `https://static.snyk.io/cli/latest/snyk-${macosSuffix}`,
       },
       snykToHtml: {
-        filename: 'snyk-to-html-macos',
-        downloadUrl:
-          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
-        fallbackUrl:
-          'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+        filename: `snyk-to-html-${snykToHtmlSuffix}`,
+        downloadUrl: `https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-${snykToHtmlSuffix}?utm_source=AZURE_PIPELINES`,
+        fallbackUrl: `https://static.snyk.io/snyk-to-html/latest/snyk-to-html-${snykToHtmlSuffix}`,
       },
     });
   });
 
   it('retrieves the correct download info a preview release', () => {
     const dlInfo = getSnykDownloadInfo(Platform.MacOS, 'preview ');
+    const macosSuffix =
+      process.arch === 'arm64' ? 'macos-arm64' : 'macos';
+    const snykToHtmlSuffix = 'macos';
     expect(dlInfo).toEqual({
       snyk: {
-        filename: 'snyk-macos',
-        downloadUrl:
-          'https://downloads.snyk.io/cli/preview/snyk-macos?utm_source=AZURE_PIPELINES',
-        fallbackUrl: 'https://static.snyk.io/cli/latest/snyk-macos',
+        filename: `snyk-${macosSuffix}`,
+        downloadUrl: `https://downloads.snyk.io/cli/preview/snyk-${macosSuffix}?utm_source=AZURE_PIPELINES`,
+        fallbackUrl: `https://static.snyk.io/cli/latest/snyk-${macosSuffix}`,
       },
       snykToHtml: {
-        filename: 'snyk-to-html-macos',
-        downloadUrl:
-          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
-        fallbackUrl:
-          'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+        filename: `snyk-to-html-${snykToHtmlSuffix}`,
+        downloadUrl: `https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-${snykToHtmlSuffix}?utm_source=AZURE_PIPELINES`,
+        fallbackUrl: `https://static.snyk.io/snyk-to-html/latest/snyk-to-html-${snykToHtmlSuffix}`,
       },
     });
   });
 
   it('retrieves the correct download info for a valid semver', () => {
     const dlInfo = getSnykDownloadInfo(Platform.MacOS, '1.1287.0');
+    const macosSuffix =
+      process.arch === 'arm64' ? 'macos-arm64' : 'macos';
+    const snykToHtmlSuffix = 'macos';
     expect(dlInfo).toEqual({
       snyk: {
-        filename: 'snyk-macos',
-        downloadUrl:
-          'https://downloads.snyk.io/cli/v1.1287.0/snyk-macos?utm_source=AZURE_PIPELINES',
-        fallbackUrl: 'https://static.snyk.io/cli/latest/snyk-macos',
+        filename: `snyk-${macosSuffix}`,
+        downloadUrl: `https://downloads.snyk.io/cli/v1.1287.0/snyk-${macosSuffix}?utm_source=AZURE_PIPELINES`,
+        fallbackUrl: `https://static.snyk.io/cli/latest/snyk-${macosSuffix}`,
       },
       snykToHtml: {
-        filename: 'snyk-to-html-macos',
-        downloadUrl:
-          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
-        fallbackUrl:
-          'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+        filename: `snyk-to-html-${snykToHtmlSuffix}`,
+        downloadUrl: `https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-${snykToHtmlSuffix}?utm_source=AZURE_PIPELINES`,
+        fallbackUrl: `https://static.snyk.io/snyk-to-html/latest/snyk-to-html-${snykToHtmlSuffix}`,
       },
     });
   });
 
   it('retrieves the correct download info for a valid semver and sanitizes input', () => {
     const dlInfo = getSnykDownloadInfo(Platform.MacOS, 'v1.1287.0  ');
+    const macosSuffix =
+      process.arch === 'arm64' ? 'macos-arm64' : 'macos';
+    const snykToHtmlSuffix = 'macos';
     expect(dlInfo).toEqual({
       snyk: {
-        filename: 'snyk-macos',
-        downloadUrl:
-          'https://downloads.snyk.io/cli/v1.1287.0/snyk-macos?utm_source=AZURE_PIPELINES',
-        fallbackUrl: 'https://static.snyk.io/cli/latest/snyk-macos',
+        filename: `snyk-${macosSuffix}`,
+        downloadUrl: `https://downloads.snyk.io/cli/v1.1287.0/snyk-${macosSuffix}?utm_source=AZURE_PIPELINES`,
+        fallbackUrl: `https://static.snyk.io/cli/latest/snyk-${macosSuffix}`,
       },
       snykToHtml: {
-        filename: 'snyk-to-html-macos',
-        downloadUrl:
-          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
-        fallbackUrl:
-          'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+        filename: `snyk-to-html-${snykToHtmlSuffix}`,
+        downloadUrl: `https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-${snykToHtmlSuffix}?utm_source=AZURE_PIPELINES`,
+        fallbackUrl: `https://static.snyk.io/snyk-to-html/latest/snyk-to-html-${snykToHtmlSuffix}`,
       },
     });
   });
 
   it('ignores invalid versions', () => {
     const dlInfo = getSnykDownloadInfo(Platform.MacOS, 'invalid-channel');
+    const macosSuffix =
+      process.arch === 'arm64' ? 'macos-arm64' : 'macos';
+    const snykToHtmlSuffix = 'macos';
     expect(dlInfo).toEqual({
       snyk: {
-        filename: 'snyk-macos',
-        downloadUrl:
-          'https://downloads.snyk.io/cli/stable/snyk-macos?utm_source=AZURE_PIPELINES',
-        fallbackUrl: 'https://static.snyk.io/cli/latest/snyk-macos',
+        filename: `snyk-${macosSuffix}`,
+        downloadUrl: `https://downloads.snyk.io/cli/stable/snyk-${macosSuffix}?utm_source=AZURE_PIPELINES`,
+        fallbackUrl: `https://static.snyk.io/cli/latest/snyk-${macosSuffix}`,
       },
       snykToHtml: {
-        filename: 'snyk-to-html-macos',
-        downloadUrl:
-          'https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-macos?utm_source=AZURE_PIPELINES',
-        fallbackUrl:
-          'https://static.snyk.io/snyk-to-html/latest/snyk-to-html-macos',
+        filename: `snyk-to-html-${snykToHtmlSuffix}`,
+        downloadUrl: `https://downloads.snyk.io/snyk-to-html/latest/snyk-to-html-${snykToHtmlSuffix}?utm_source=AZURE_PIPELINES`,
+        fallbackUrl: `https://static.snyk.io/snyk-to-html/latest/snyk-to-html-${snykToHtmlSuffix}`,
       },
     });
   });

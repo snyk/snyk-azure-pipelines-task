@@ -31,34 +31,56 @@ export type SnykDownloads = {
   snykToHtml: Executable;
 };
 
+/**
+ * Get the filename suffix for the current platform, including architecture for macOS.
+ * On Apple Silicon (arm64), Snyk provides snyk-macos-arm64; on Intel Macs, snyk-macos.
+ */
+function getFilenameSuffix(platform: Platform): string {
+  const baseSuffixes: Record<Platform, string> = {
+    [Platform.Linux]: 'linux',
+    [Platform.Windows]: 'win.exe',
+    [Platform.MacOS]: 'macos',
+  };
+
+  const base = baseSuffixes[platform];
+
+  // Azure Pipelines Platform enum does not distinguish macOS architectures.
+  // On Apple Silicon (M1/M2), process.arch is 'arm64'; use snyk-macos-arm64.
+  if (platform === Platform.MacOS && process.arch === 'arm64') {
+    return 'macos-arm64';
+  }
+
+  return base;
+}
+
 export function getSnykDownloadInfo(
   platform: Platform,
   versionString: string = 'stable',
 ): SnykDownloads {
+  const filenameSuffix = getFilenameSuffix(platform);
+
   console.log(
-    `Getting Snyk download info for platform: ${platform} version: ${versionString}`,
+    `Getting Snyk download info for platform: ${platform} (arch: ${process.arch}) version: ${versionString}`,
   );
 
   const baseUrl = 'https://downloads.snyk.io';
   const fallbackUrl = 'https://static.snyk.io';
   const distributionChannel = sanitizeVersionInput(versionString);
 
-  const filenameSuffixes: Record<Platform, string> = {
-    [Platform.Linux]: 'linux',
-    [Platform.Windows]: 'win.exe',
-    [Platform.MacOS]: 'macos',
-  };
+  // snyk-to-html has no arm64 binary; use generic macos on Apple Silicon
+  const snykToHtmlSuffix =
+    filenameSuffix === 'macos-arm64' ? 'macos' : filenameSuffix;
 
   return {
     snyk: {
-      filename: `snyk-${filenameSuffixes[platform]}`,
-      downloadUrl: `${baseUrl}/cli/${distributionChannel}/snyk-${filenameSuffixes[platform]}?utm_source=AZURE_PIPELINES`,
-      fallbackUrl: `${fallbackUrl}/cli/latest/snyk-${filenameSuffixes[platform]}`,
+      filename: `snyk-${filenameSuffix}`,
+      downloadUrl: `${baseUrl}/cli/${distributionChannel}/snyk-${filenameSuffix}?utm_source=AZURE_PIPELINES`,
+      fallbackUrl: `${fallbackUrl}/cli/latest/snyk-${filenameSuffix}`,
     },
     snykToHtml: {
-      filename: `snyk-to-html-${filenameSuffixes[platform]}`,
-      downloadUrl: `${baseUrl}/snyk-to-html/latest/snyk-to-html-${filenameSuffixes[platform]}?utm_source=AZURE_PIPELINES`,
-      fallbackUrl: `${fallbackUrl}/snyk-to-html/latest/snyk-to-html-${filenameSuffixes[platform]}`,
+      filename: `snyk-to-html-${snykToHtmlSuffix}`,
+      downloadUrl: `${baseUrl}/snyk-to-html/latest/snyk-to-html-${snykToHtmlSuffix}?utm_source=AZURE_PIPELINES`,
+      fallbackUrl: `${fallbackUrl}/snyk-to-html/latest/snyk-to-html-${snykToHtmlSuffix}`,
     },
   };
 }
