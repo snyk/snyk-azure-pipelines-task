@@ -20,6 +20,71 @@ beforeEach(() => {
   jest.resetModules();
 });
 
+// --- getApiUrl tests ---
+
+test('getApiUrl returns URL from service connection when set', () => {
+  const mockGetEndpointUrl = jest
+    .fn()
+    .mockReturnValue('https://api.eu.snyk.io');
+
+  jest.doMock('azure-pipelines-task-lib/task', () => {
+    return {
+      getInput: jest.fn((name: string) => {
+        if (name === 'serviceConnectionEndpoint') {
+          return 'some-serviceConnectionEndpoint';
+        }
+      }),
+      getEndpointUrl: mockGetEndpointUrl,
+    };
+  });
+
+  const att = require('../task-args');
+  const retrievedApiUrl = att.getApiUrl();
+  expect(retrievedApiUrl).toBe('https://api.eu.snyk.io');
+  expect(mockGetEndpointUrl).toHaveBeenCalledWith(
+    'some-serviceConnectionEndpoint',
+    true,
+  );
+});
+
+test('getApiUrl returns empty string when no service connection is configured', () => {
+  const mockGetEndpointUrl = jest.fn();
+
+  jest.doMock('azure-pipelines-task-lib/task', () => {
+    return {
+      getInput: jest.fn(() => null),
+      getEndpointUrl: mockGetEndpointUrl,
+    };
+  });
+
+  const att = require('../task-args');
+  const retrievedApiUrl = att.getApiUrl();
+  expect(retrievedApiUrl).toBe('');
+  expect(mockGetEndpointUrl).toHaveBeenCalledTimes(0);
+});
+
+test('getApiUrl returns empty string when service connection has no URL', () => {
+  const mockGetEndpointUrl = jest.fn().mockReturnValue(undefined);
+
+  jest.doMock('azure-pipelines-task-lib/task', () => {
+    return {
+      getInput: jest.fn((name: string) => {
+        if (name === 'serviceConnectionEndpoint') {
+          return 'some-serviceConnectionEndpoint';
+        }
+      }),
+      getEndpointUrl: mockGetEndpointUrl,
+    };
+  });
+
+  const att = require('../task-args');
+  const retrievedApiUrl = att.getApiUrl();
+  expect(retrievedApiUrl).toBe('');
+  expect(mockGetEndpointUrl).toHaveBeenCalledTimes(1);
+});
+
+// --- getAuthToken tests ---
+
 test('test auth token pulled from service connection', () => {
   const mockEndpointAuthorization = {
     parameters: {

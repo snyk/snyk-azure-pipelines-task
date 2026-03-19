@@ -17,7 +17,7 @@
 import * as tl from 'azure-pipelines-task-lib/task';
 import * as tr from 'azure-pipelines-task-lib/toolrunner';
 
-import { TaskArgs, getAuthToken } from './task-args';
+import { TaskArgs, getAuthToken, getApiUrl } from './task-args';
 import { getTaskVersion } from './task-version';
 import {
   getOptionsToExecuteCmd,
@@ -155,6 +155,7 @@ export async function generateSnykCodeResultsWithoutIssues(
   taskArgs: TaskArgs,
   jsonReportOutputPath: string,
   snykToken: string,
+  apiUrl?: string,
 ) {
   const projectNameArg = taskArgs.getProjectNameParameter();
 
@@ -163,6 +164,7 @@ export async function generateSnykCodeResultsWithoutIssues(
     taskNameForAnalytics,
     taskVersion,
     snykToken,
+    apiUrl,
   );
 
   const snykCodeTestToolRunner = tl
@@ -193,6 +195,7 @@ async function runSnykCommand(
   taskArgs: TaskArgs,
   jsonReportOutputPath: string,
   snykToken: string,
+  apiUrl?: string,
 ): Promise<SnykOutput> {
   const debugPrefix = `snyk ${taskArgs.command}`;
   const snykOutput: SnykOutput = {
@@ -227,6 +230,7 @@ async function runSnykCommand(
     taskNameForAnalytics,
     taskVersion,
     snykToken,
+    apiUrl,
   );
 
   // update jsonReportFullPath if json-file-output is set
@@ -283,6 +287,7 @@ async function runSnykTest(
   taskArgs: TaskArgs,
   jsonReportOutputPath: string,
   snykToken: string,
+  apiUrl?: string,
 ): Promise<SnykOutput> {
   let errorMsg = '';
   let code = 0;
@@ -320,6 +325,7 @@ async function runSnykTest(
     taskNameForAnalytics,
     taskVersion,
     snykToken,
+    apiUrl,
   );
 
   const snykTestExitCode = await snykTestToolRunner.exec(options);
@@ -355,6 +361,7 @@ async function runSnykTest(
       taskArgs,
       jsonReportOutputPath,
       snykToken,
+      apiUrl,
     );
   }
 
@@ -407,6 +414,7 @@ async function runSnykMonitor(
   snykPath: string,
   taskArgs: TaskArgs,
   snykToken,
+  apiUrl?: string,
 ): Promise<SnykOutput> {
   let errorMsg = '';
   const fileArg = taskArgs.getFileParameter();
@@ -416,6 +424,7 @@ async function runSnykMonitor(
     taskNameForAnalytics,
     taskVersion,
     snykToken,
+    apiUrl,
   );
   // not handling snyk code cli upload which is still a closed beta
   const snykMonitorToolRunner = tl
@@ -510,6 +519,7 @@ async function run() {
     const taskArgs: TaskArgs = parseInputArgs();
     const distributionChannel = taskArgs.getDistributionChannel();
     const snykToken = getAuthToken();
+    const apiUrl = getApiUrl();
     if (!snykToken) {
       const errorMsg =
         'auth token is not set. Setup SnykAuth service connection and specify serviceConnectionEndpoint input parameter.';
@@ -562,6 +572,7 @@ async function run() {
         taskArgs,
         jsonReportFullPath,
         snykToken,
+        apiUrl,
       );
       attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
       handleSnykTestError(taskArgs, snykTestResult, jsonReportFullPath);
@@ -571,6 +582,7 @@ async function run() {
         taskArgs,
         jsonReportFullPath,
         snykToken,
+        apiUrl,
       );
       attachReport(jsonReportFullPath, JSON_ATTACHMENT_TYPE);
       handleSnykTestError(taskArgs, snykTestResult, jsonReportFullPath);
@@ -614,6 +626,7 @@ async function run() {
         snykPath,
         taskArgs,
         snykToken,
+        apiUrl,
       );
       handleSnykMonitorError(snykMonitorResult);
     }
