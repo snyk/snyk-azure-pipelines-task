@@ -43,6 +43,18 @@ import { execSync } from 'child_process';
 let tempFolder = '';
 let snykCliPath = '';
 
+/** Stubs `tl.getAgentMode` and `tl.getVariable` for agent instrumentation tests. Mocks are restored by `afterEach`. */
+function stubAzureAgentContext(
+  mode: tl.AgentHostedMode,
+  agentVersion: string | undefined,
+): void {
+  jest.spyOn(tl, 'getAgentMode').mockReturnValue(mode);
+  jest.spyOn(tl, 'getVariable').mockImplementation((name: string) => {
+    if (name === 'Agent.Version') return agentVersion;
+    return undefined;
+  });
+}
+
 function getTestToken(): string {
   if (process.env.SNYK_TOKEN === undefined) {
     const output = execSync(snykCliPath + ' config get api');
@@ -310,71 +322,33 @@ test('getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it', ()
 
 describe('getAgentEnvironment', () => {
   it('returns MsHosted and agent version for hosted agents', () => {
-    const getAgentModeSpy = jest
-      .spyOn(tl, 'getAgentMode')
-      .mockReturnValue(tl.AgentHostedMode.MsHosted);
-    const getVariableSpy = jest
-      .spyOn(tl, 'getVariable')
-      .mockImplementation((name: string) => {
-        if (name === 'Agent.Version') return '4.269.0';
-        return undefined;
-      });
+    stubAzureAgentContext(tl.AgentHostedMode.MsHosted, '4.269.0');
 
     const env = getAgentEnvironment();
     expect(env.name).toBe('MsHosted');
     expect(env.version).toBe('4.269.0');
-
-    getAgentModeSpy.mockRestore();
-    getVariableSpy.mockRestore();
   });
 
   it('returns SelfHosted and agent version for self-hosted agents', () => {
-    const getAgentModeSpy = jest
-      .spyOn(tl, 'getAgentMode')
-      .mockReturnValue(tl.AgentHostedMode.SelfHosted);
-    const getVariableSpy = jest
-      .spyOn(tl, 'getVariable')
-      .mockImplementation((name: string) => {
-        if (name === 'Agent.Version') return '3.227.0';
-        return undefined;
-      });
+    stubAzureAgentContext(tl.AgentHostedMode.SelfHosted, '3.227.0');
 
     const env = getAgentEnvironment();
     expect(env.name).toBe('SelfHosted');
     expect(env.version).toBe('3.227.0');
-
-    getAgentModeSpy.mockRestore();
-    getVariableSpy.mockRestore();
   });
 
   it('returns Unknown when agent mode cannot be determined', () => {
-    const getAgentModeSpy = jest
-      .spyOn(tl, 'getAgentMode')
-      .mockReturnValue(tl.AgentHostedMode.Unknown);
-    const getVariableSpy = jest
-      .spyOn(tl, 'getVariable')
-      .mockReturnValue(undefined);
+    stubAzureAgentContext(tl.AgentHostedMode.Unknown, undefined);
 
     const env = getAgentEnvironment();
     expect(env.name).toBe('Unknown');
     expect(env.version).toBe('');
-
-    getAgentModeSpy.mockRestore();
-    getVariableSpy.mockRestore();
   });
 });
 
 describe('getOptionsToExecuteSnykCLICommand environment variables', () => {
   it('includes SNYK_INTEGRATION_ENVIRONMENT and SNYK_INTEGRATION_ENVIRONMENT_VERSION', () => {
-    const getAgentModeSpy = jest
-      .spyOn(tl, 'getAgentMode')
-      .mockReturnValue(tl.AgentHostedMode.MsHosted);
-    const getVariableSpy = jest
-      .spyOn(tl, 'getVariable')
-      .mockImplementation((name: string) => {
-        if (name === 'Agent.Version') return '4.269.0';
-        return undefined;
-      });
+    stubAzureAgentContext(tl.AgentHostedMode.MsHosted, '4.269.0');
 
     const taskArgs: TaskArgs = new TaskArgs({ failOnIssues: true });
     taskArgs.testDirectory = '/some/path';
@@ -388,9 +362,6 @@ describe('getOptionsToExecuteSnykCLICommand environment variables', () => {
 
     expect(options.env?.SNYK_INTEGRATION_ENVIRONMENT).toBe('MsHosted');
     expect(options.env?.SNYK_INTEGRATION_ENVIRONMENT_VERSION).toBe('4.269.0');
-
-    getAgentModeSpy.mockRestore();
-    getVariableSpy.mockRestore();
   });
 });
 
