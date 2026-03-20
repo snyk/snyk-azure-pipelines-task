@@ -309,65 +309,71 @@ test('getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it', ()
 });
 
 describe('getAgentEnvironment', () => {
-  it('returns agent name and version from Azure Pipelines variables', () => {
+  it('returns MsHosted and agent version for hosted agents', () => {
+    const getAgentModeSpy = jest
+      .spyOn(tl, 'getAgentMode')
+      .mockReturnValue(tl.AgentHostedMode.MsHosted);
     const getVariableSpy = jest
       .spyOn(tl, 'getVariable')
       .mockImplementation((name: string) => {
-        const vars: Record<string, string> = {
-          'Agent.Name': 'Azure Pipelines 1',
-          'Agent.Version': '4.269.0',
-        };
-        return vars[name];
+        if (name === 'Agent.Version') return '4.269.0';
+        return undefined;
       });
 
     const env = getAgentEnvironment();
-    expect(env.name).toBe('Azure Pipelines 1');
+    expect(env.name).toBe('MsHosted');
     expect(env.version).toBe('4.269.0');
 
+    getAgentModeSpy.mockRestore();
     getVariableSpy.mockRestore();
   });
 
-  it('returns self-hosted agent name and version', () => {
+  it('returns SelfHosted and agent version for self-hosted agents', () => {
+    const getAgentModeSpy = jest
+      .spyOn(tl, 'getAgentMode')
+      .mockReturnValue(tl.AgentHostedMode.SelfHosted);
     const getVariableSpy = jest
       .spyOn(tl, 'getVariable')
       .mockImplementation((name: string) => {
-        const vars: Record<string, string> = {
-          'Agent.Name': 'my-custom-agent',
-          'Agent.Version': '3.227.0',
-        };
-        return vars[name];
+        if (name === 'Agent.Version') return '3.227.0';
+        return undefined;
       });
 
     const env = getAgentEnvironment();
-    expect(env.name).toBe('my-custom-agent');
+    expect(env.name).toBe('SelfHosted');
     expect(env.version).toBe('3.227.0');
 
+    getAgentModeSpy.mockRestore();
     getVariableSpy.mockRestore();
   });
 
-  it('handles missing agent variables gracefully', () => {
+  it('returns Unknown when agent mode cannot be determined', () => {
+    const getAgentModeSpy = jest
+      .spyOn(tl, 'getAgentMode')
+      .mockReturnValue(tl.AgentHostedMode.Unknown);
     const getVariableSpy = jest
       .spyOn(tl, 'getVariable')
       .mockReturnValue(undefined);
 
     const env = getAgentEnvironment();
-    expect(env.name).toBe('');
+    expect(env.name).toBe('Unknown');
     expect(env.version).toBe('');
 
+    getAgentModeSpy.mockRestore();
     getVariableSpy.mockRestore();
   });
 });
 
 describe('getOptionsToExecuteSnykCLICommand environment variables', () => {
   it('includes SNYK_INTEGRATION_ENVIRONMENT and SNYK_INTEGRATION_ENVIRONMENT_VERSION', () => {
+    const getAgentModeSpy = jest
+      .spyOn(tl, 'getAgentMode')
+      .mockReturnValue(tl.AgentHostedMode.MsHosted);
     const getVariableSpy = jest
       .spyOn(tl, 'getVariable')
       .mockImplementation((name: string) => {
-        const vars: Record<string, string> = {
-          'Agent.Name': 'Azure Pipelines 1',
-          'Agent.Version': '4.269.0',
-        };
-        return vars[name];
+        if (name === 'Agent.Version') return '4.269.0';
+        return undefined;
       });
 
     const taskArgs: TaskArgs = new TaskArgs({ failOnIssues: true });
@@ -380,9 +386,10 @@ describe('getOptionsToExecuteSnykCLICommand environment variables', () => {
       'fake-token',
     );
 
-    expect(options.env?.SNYK_INTEGRATION_ENVIRONMENT).toBe('Azure Pipelines 1');
+    expect(options.env?.SNYK_INTEGRATION_ENVIRONMENT).toBe('MsHosted');
     expect(options.env?.SNYK_INTEGRATION_ENVIRONMENT_VERSION).toBe('4.269.0');
 
+    getAgentModeSpy.mockRestore();
     getVariableSpy.mockRestore();
   });
 });

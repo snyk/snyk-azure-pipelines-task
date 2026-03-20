@@ -36,7 +36,7 @@ export function getAgentEnvironment(): {
   name: string;
   version: string;
 } {
-  const name = tl.getVariable('Agent.Name') || '';
+  const name = tl.AgentHostedMode[tl.getAgentMode()];
   const version = tl.getVariable('Agent.Version') || '';
   return { name, version };
 }
