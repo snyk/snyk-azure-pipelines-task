@@ -394,6 +394,56 @@ describe('getOptionsToExecuteSnykCLICommand environment variables', () => {
   });
 });
 
+test('getOptionsToExecuteSnykCLICommand sets SNYK_API when apiUrl is provided', () => {
+  const taskArgs: TaskArgs = new TaskArgs({
+    failOnIssues: true,
+  });
+  taskArgs.testDirectory = '/some/path';
+
+  const options: tr.IExecOptions = getOptionsToExecuteSnykCLICommand(
+    taskArgs,
+    'AZURE_PIPELINES',
+    '1.2.3',
+    'fake-token',
+    'https://api.eu.snyk.io',
+  );
+
+  expect(options.env?.SNYK_API).toBe('https://api.eu.snyk.io');
+});
+
+test('getOptionsToExecuteSnykCLICommand does not set SNYK_API when apiUrl is not provided', () => {
+  const taskArgs: TaskArgs = new TaskArgs({
+    failOnIssues: true,
+  });
+  taskArgs.testDirectory = '/some/path';
+
+  const options: tr.IExecOptions = getOptionsToExecuteSnykCLICommand(
+    taskArgs,
+    'AZURE_PIPELINES',
+    '1.2.3',
+    'fake-token',
+  );
+
+  expect(options.env?.SNYK_API).toBeUndefined();
+});
+
+test('getOptionsToExecuteSnykCLICommand does not set SNYK_API when apiUrl is empty string', () => {
+  const taskArgs: TaskArgs = new TaskArgs({
+    failOnIssues: true,
+  });
+  taskArgs.testDirectory = '/some/path';
+
+  const options: tr.IExecOptions = getOptionsToExecuteSnykCLICommand(
+    taskArgs,
+    'AZURE_PIPELINES',
+    '1.2.3',
+    'fake-token',
+    '',
+  );
+
+  expect(options.env?.SNYK_API).toBeUndefined();
+});
+
 describe('getOptionsForSnykToHtml', () => {
   it('builds IExecOptions for running snyk-to-html', async () => {
     const taskArgs: TaskArgs = new TaskArgs({

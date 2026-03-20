@@ -46,20 +46,25 @@ export const getOptionsToExecuteSnykCLICommand = (
   taskNameForAnalytics: string,
   taskVersion: string,
   snykToken: string,
+  apiUrl?: string,
 ): tr.IExecOptions => {
   const agentEnv = getAgentEnvironment();
+  const env: tr.IExecOptions['env'] = {
+    ...process.env,
+    SNYK_INTEGRATION_NAME: taskNameForAnalytics,
+    SNYK_INTEGRATION_VERSION: taskVersion,
+    SNYK_INTEGRATION_ENVIRONMENT: agentEnv.name,
+    SNYK_INTEGRATION_ENVIRONMENT_VERSION: agentEnv.version,
+    SNYK_TOKEN: snykToken,
+  };
+  if (apiUrl) {
+    env!.SNYK_API = apiUrl;
+  }
   const options = {
     cwd: taskArgs.testDirectory,
     failOnStdErr: false,
     ignoreReturnCode: true,
-    env: {
-      ...process.env,
-      SNYK_INTEGRATION_NAME: taskNameForAnalytics,
-      SNYK_INTEGRATION_VERSION: taskVersion,
-      SNYK_INTEGRATION_ENVIRONMENT: agentEnv.name,
-      SNYK_INTEGRATION_ENVIRONMENT_VERSION: agentEnv.version,
-      SNYK_TOKEN: snykToken,
-    } as tr.IExecOptions['env'],
+    env,
   } as tr.IExecOptions;
   return options;
 };
