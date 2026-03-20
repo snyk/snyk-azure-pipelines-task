@@ -309,60 +309,38 @@ test('getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it', ()
 });
 
 describe('getAgentEnvironment', () => {
-  it('returns hosted agent details when agent name starts with Azure Pipelines', () => {
+  it('returns agent name and version from Azure Pipelines variables', () => {
     const getVariableSpy = jest
       .spyOn(tl, 'getVariable')
       .mockImplementation((name: string) => {
         const vars: Record<string, string> = {
           'Agent.Name': 'Azure Pipelines 1',
           'Agent.Version': '4.269.0',
-          ImageVersion: '20260302.42.1',
-          'Agent.OS': 'Linux',
         };
         return vars[name];
       });
 
     const env = getAgentEnvironment();
-    expect(env.name).toBe('Hosted_Compute_Agent-4.269.0');
-    expect(env.version).toBe('20260302.42.1');
+    expect(env.name).toBe('Azure Pipelines 1');
+    expect(env.version).toBe('4.269.0');
 
     getVariableSpy.mockRestore();
   });
 
-  it('returns self-hosted agent details when agent name does not start with Azure Pipelines', () => {
+  it('returns self-hosted agent name and version', () => {
     const getVariableSpy = jest
       .spyOn(tl, 'getVariable')
       .mockImplementation((name: string) => {
         const vars: Record<string, string> = {
           'Agent.Name': 'my-custom-agent',
           'Agent.Version': '3.227.0',
-          'Agent.OS': 'Windows_NT',
         };
         return vars[name];
       });
 
     const env = getAgentEnvironment();
-    expect(env.name).toBe('Self_Hosted_Agent-3.227.0');
-    expect(env.version).toBe('Windows_NT');
-
-    getVariableSpy.mockRestore();
-  });
-
-  it('falls back to Agent.OS when ImageVersion is not available', () => {
-    const getVariableSpy = jest
-      .spyOn(tl, 'getVariable')
-      .mockImplementation((name: string) => {
-        const vars: Record<string, string> = {
-          'Agent.Name': 'Azure Pipelines 1',
-          'Agent.Version': '4.269.0',
-          'Agent.OS': 'Darwin',
-        };
-        return vars[name];
-      });
-
-    const env = getAgentEnvironment();
-    expect(env.name).toBe('Hosted_Compute_Agent-4.269.0');
-    expect(env.version).toBe('Darwin');
+    expect(env.name).toBe('my-custom-agent');
+    expect(env.version).toBe('3.227.0');
 
     getVariableSpy.mockRestore();
   });
@@ -373,7 +351,7 @@ describe('getAgentEnvironment', () => {
       .mockReturnValue(undefined);
 
     const env = getAgentEnvironment();
-    expect(env.name).toBe('Self_Hosted_Agent-');
+    expect(env.name).toBe('');
     expect(env.version).toBe('');
 
     getVariableSpy.mockRestore();
@@ -388,8 +366,6 @@ describe('getOptionsToExecuteSnykCLICommand environment variables', () => {
         const vars: Record<string, string> = {
           'Agent.Name': 'Azure Pipelines 1',
           'Agent.Version': '4.269.0',
-          ImageVersion: '20260302.42.1',
-          'Agent.OS': 'Linux',
         };
         return vars[name];
       });
@@ -404,12 +380,8 @@ describe('getOptionsToExecuteSnykCLICommand environment variables', () => {
       'fake-token',
     );
 
-    expect(options.env?.SNYK_INTEGRATION_ENVIRONMENT).toBe(
-      'Hosted_Compute_Agent-4.269.0',
-    );
-    expect(options.env?.SNYK_INTEGRATION_ENVIRONMENT_VERSION).toBe(
-      '20260302.42.1',
-    );
+    expect(options.env?.SNYK_INTEGRATION_ENVIRONMENT).toBe('Azure Pipelines 1');
+    expect(options.env?.SNYK_INTEGRATION_ENVIRONMENT_VERSION).toBe('4.269.0');
 
     getVariableSpy.mockRestore();
   });

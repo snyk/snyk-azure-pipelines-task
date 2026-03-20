@@ -36,14 +36,8 @@ export function getAgentEnvironment(): {
   name: string;
   version: string;
 } {
-  const agentName = tl.getVariable('Agent.Name') || '';
-  const agentVersion = tl.getVariable('Agent.Version') || '';
-  const isHosted = agentName.startsWith('Azure Pipelines');
-  const name = `${
-    isHosted ? 'Hosted_Compute_Agent' : 'Self_Hosted_Agent'
-  }-${agentVersion}`;
-  const version =
-    tl.getVariable('ImageVersion') || tl.getVariable('Agent.OS') || '';
+  const name = tl.getVariable('Agent.Name') || '';
+  const version = tl.getVariable('Agent.Version') || '';
   return { name, version };
 }
 
