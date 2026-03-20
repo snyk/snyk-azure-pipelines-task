@@ -32,6 +32,15 @@ export const getOptionsToExecuteCmd = (taskArgs: TaskArgs): tr.IExecOptions => {
   } as tr.IExecOptions;
 };
 
+export function getAgentEnvironment(): {
+  name: string;
+  version: string;
+} {
+  const name = tl.AgentHostedMode[tl.getAgentMode()];
+  const version = tl.getVariable('Agent.Version') || '';
+  return { name, version };
+}
+
 export const getOptionsToExecuteSnykCLICommand = (
   taskArgs: TaskArgs,
   taskNameForAnalytics: string,
@@ -39,10 +48,13 @@ export const getOptionsToExecuteSnykCLICommand = (
   snykToken: string,
   apiUrl?: string,
 ): tr.IExecOptions => {
+  const agentEnv = getAgentEnvironment();
   const env: tr.IExecOptions['env'] = {
     ...process.env,
     SNYK_INTEGRATION_NAME: taskNameForAnalytics,
     SNYK_INTEGRATION_VERSION: taskVersion,
+    SNYK_INTEGRATION_ENVIRONMENT: agentEnv.name,
+    SNYK_INTEGRATION_ENVIRONMENT_VERSION: agentEnv.version,
     SNYK_TOKEN: snykToken,
   };
   if (apiUrl) {

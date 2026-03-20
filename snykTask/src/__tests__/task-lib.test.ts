@@ -30,6 +30,7 @@ import {
   getOptionsToExecuteSnykCLICommand,
   getOptionsToExecuteCmd,
   getOptionsForSnykToHtml,
+  getAgentEnvironment,
   formatDate,
   attachReport,
   removeRegexFromFile,
@@ -41,6 +42,18 @@ import { execSync } from 'child_process';
 
 let tempFolder = '';
 let snykCliPath = '';
+
+/** Stubs `tl.getAgentMode` and `tl.getVariable` for agent instrumentation tests. Mocks are restored by `afterEach`. */
+function stubAzureAgentContext(
+  mode: tl.AgentHostedMode,
+  agentVersion: string | undefined,
+): void {
+  jest.spyOn(tl, 'getAgentMode').mockReturnValue(mode);
+  jest.spyOn(tl, 'getVariable').mockImplementation((name: string) => {
+    if (name === 'Agent.Version') return agentVersion;
+    return undefined;
+  });
+}
 
 function getTestToken(): string {
   if (process.env.SNYK_TOKEN === undefined) {
@@ -305,6 +318,51 @@ test('getOptionsToExecuteSnykCLICommand builds IExecOptions like we need it', ()
   expect(options.env?.SNYK_INTEGRATION_NAME).toBe('AZURE_PIPELINES');
   expect(options.env?.SNYK_INTEGRATION_VERSION).toBe(version);
   expect(options.env?.SNYK_TOKEN).toBe('fake-token');
+});
+
+describe('getAgentEnvironment', () => {
+  it('returns MsHosted and agent version for hosted agents', () => {
+    stubAzureAgentContext(tl.AgentHostedMode.MsHosted, '4.269.0');
+
+    const env = getAgentEnvironment();
+    expect(env.name).toBe('MsHosted');
+    expect(env.version).toBe('4.269.0');
+  });
+
+  it('returns SelfHosted and agent version for self-hosted agents', () => {
+    stubAzureAgentContext(tl.AgentHostedMode.SelfHosted, '3.227.0');
+
+    const env = getAgentEnvironment();
+    expect(env.name).toBe('SelfHosted');
+    expect(env.version).toBe('3.227.0');
+  });
+
+  it('returns Unknown when agent mode cannot be determined', () => {
+    stubAzureAgentContext(tl.AgentHostedMode.Unknown, undefined);
+
+    const env = getAgentEnvironment();
+    expect(env.name).toBe('Unknown');
+    expect(env.version).toBe('');
+  });
+});
+
+describe('getOptionsToExecuteSnykCLICommand environment variables', () => {
+  it('includes SNYK_INTEGRATION_ENVIRONMENT and SNYK_INTEGRATION_ENVIRONMENT_VERSION', () => {
+    stubAzureAgentContext(tl.AgentHostedMode.MsHosted, '4.269.0');
+
+    const taskArgs: TaskArgs = new TaskArgs({ failOnIssues: true });
+    taskArgs.testDirectory = '/some/path';
+
+    const options = getOptionsToExecuteSnykCLICommand(
+      taskArgs,
+      'AZURE_PIPELINES',
+      '1.2.3',
+      'fake-token',
+    );
+
+    expect(options.env?.SNYK_INTEGRATION_ENVIRONMENT).toBe('MsHosted');
+    expect(options.env?.SNYK_INTEGRATION_ENVIRONMENT_VERSION).toBe('4.269.0');
+  });
 });
 
 test('getOptionsToExecuteSnykCLICommand sets SNYK_API when apiUrl is provided', () => {
