@@ -111,7 +111,7 @@ describe('Snyk Task E2E', () => {
     tmr.setInput('failOnIssues', 'true');
     tmr.setInput('monitorWhen', 'never');
 
-    process.env['ENDPOINT_URL_SnykConnection'] = 'https://api.eu.snyk.io';
+    process.env['ENDPOINT_URL_SnykConnection'] = 'https://api.snyk.io';
     process.env['ENDPOINT_AUTH_SnykConnection'] = JSON.stringify({
       parameters: { apitoken: snykToken },
       scheme: 'Token',
