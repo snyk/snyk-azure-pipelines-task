@@ -461,6 +461,25 @@ async function runSnykMonitor(
   return snykOutput;
 }
 
+async function runSnykCLI(
+  snykPath: string,
+  command: string,
+  snykToken: string,
+  apiUrl?: string,
+): Promise<number> {
+  const taskArgs = new TaskArgs({ failOnIssues: false });
+  const options = getOptionsToExecuteSnykCLICommand(
+    taskArgs,
+    taskNameForAnalytics,
+    taskVersion,
+    snykToken,
+    apiUrl,
+  );
+
+  const snykToolRunner = tl.tool(snykPath).line(command);
+  return await snykToolRunner.execAsync(options);
+}
+
 const handleSnykTestError = (
   args: TaskArgs,
   snykTestResult: SnykOutput,
@@ -519,7 +538,7 @@ async function run() {
     const taskArgs: TaskArgs = parseInputArgs();
     const distributionChannel = taskArgs.getDistributionChannel();
     const snykToken = getAuthToken();
-    const apiUrl = getApiUrl();
+    let apiUrl = getApiUrl();
     if (!snykToken) {
       const errorMsg =
         'auth token is not set. Setup SnykAuth service connection and specify serviceConnectionEndpoint input parameter.';
@@ -563,6 +582,20 @@ async function run() {
         getOptionsToExecuteCmd(taskArgs),
         agentTempDirectory,
       );
+    }
+
+    // validate connection settings to ensure they are usable
+    const whoamiExitCode = await runSnykCLI(
+      snykPath,
+      'whoami --experimental',
+      snykToken,
+      apiUrl,
+    );
+    if (whoamiExitCode !== CLI_EXIT_CODE_SUCCESS) {
+      if (isDebugMode()) {
+        console.log('whoami failed, apiUrl will be unset');
+      }
+      apiUrl = '';
     }
 
     let snykTestResult: SnykOutput;
