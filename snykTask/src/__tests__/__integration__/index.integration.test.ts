@@ -13,7 +13,6 @@ import { TaskMockRunner } from 'azure-pipelines-task-lib/mock-run';
  */
 const INTEGRATION_ARTIFACTS_OUTPUT_DIR = '';
 
-/** Shape checks for `snyk test` JSON output */
 function assertSnykTestJsonReport(
   parsed: Record<string, unknown>,
   expectedProjectRoot: string,
@@ -43,6 +42,22 @@ function assertSnykTestJsonReport(
 
   expect(typeof parsed.summary).toBe('string');
   expect((parsed.summary as string).length).toBeGreaterThan(0);
+}
+
+function assertSnykTestHtmlReport(
+  html: string,
+  expectedProjectRoot: string,
+  expectedProjectName: string,
+): void {
+  expect(html).toMatch(/<!DOCTYPE html>/i);
+  expect(html).toContain('<title>Snyk test report</title>');
+  expect(html).toContain(
+    '<h1 class="project__header__title">Snyk test report</h1>',
+  );
+  expect(html).toContain('Package Manager</th>');
+  expect(html).toContain('<td class="meta-row-value">npm</td>');
+  expect(html).toContain(expectedProjectName);
+  expect(html).toContain(path.normalize(expectedProjectRoot));
 }
 
 describe('Snyk Task E2E', () => {
@@ -87,14 +102,14 @@ describe('Snyk Task E2E', () => {
       .forEach((k) => delete require.cache[k]);
   });
 
-  /**
-   * End-to-end: real task lib, CLI download, `snyk test`, JSON report on disk.
-   * Service connection URL → SNYK_API is not echoed in the report; that is covered by unit tests.
-   */
-  it('generates a JSON report file with expected shape', async () => {
+  it('runs snyk test end-to-end with expected JSON and HTML reports', async () => {
     const snykToken = loadSnykToken();
     const taskPath = path.join(__dirname, '..', '..', '..', 'dist', 'index.js');
     const projectRoot = process.cwd();
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'),
+    ) as { name?: string };
+    expect(typeof pkg.name).toBe('string');
 
     const tmr = new TaskMockRunner(taskPath);
     tmr.setInput('serviceConnectionEndpoint', 'SnykConnection');
@@ -107,27 +122,38 @@ describe('Snyk Task E2E', () => {
       scheme: 'Token',
     });
 
-    tmr.run(true);
-    const task = require(taskPath);
-    await task.runPromise;
+    const apTask = await import('azure-pipelines-task-lib/task');
+    const setResultSpy = jest.spyOn(apTask, 'setResult');
+    try {
+      tmr.run(true);
+      const task = require(taskPath);
+      await task.runPromise;
 
-    const files = fs.readdirSync(tempDir);
-    const jsonReport = files.find(
-      (f) => f.startsWith('report-') && f.endsWith('.json'),
-    );
-    expect(jsonReport).toBeDefined();
-    const content = fs.readFileSync(
-      path.join(tempDir, jsonReport as string),
-      'utf8',
-    );
-    const parsed = JSON.parse(content) as Record<string, unknown>;
-    assertSnykTestJsonReport(parsed, projectRoot);
+      const files = fs.readdirSync(tempDir);
+      const jsonReport = files.find(
+        (f) => f.startsWith('report-') && f.endsWith('.json'),
+      );
+      expect(jsonReport).toBeDefined();
+      const content = fs.readFileSync(
+        path.join(tempDir, jsonReport as string),
+        'utf8',
+      );
+      const parsed = JSON.parse(content) as Record<string, unknown>;
+      assertSnykTestJsonReport(parsed, projectRoot);
 
-    // TODO: assert HTML report exists (requires snyk-to-html binary compatible with platform)
-    // TODO: assert tl.setResult was called with Succeeded
-  }, 120_000);
+      const htmlReport = (jsonReport as string).replace(/\.json$/i, '.html');
+      expect(fs.existsSync(path.join(tempDir, htmlReport))).toBe(true);
+      const html = fs.readFileSync(path.join(tempDir, htmlReport), 'utf8');
+      assertSnykTestHtmlReport(html, projectRoot, pkg.name as string);
 
-  // TODO: test with a custom CLI path via SNYK_CLI_PATH env var
+      expect(setResultSpy).toHaveBeenCalledWith(
+        apTask.TaskResult.Succeeded,
+        'Snyk Scan completed',
+      );
+    } finally {
+      setResultSpy.mockRestore();
+    }
+  }, 60_000);
 });
 
 function trimArtifactsPath(value: unknown): string {
