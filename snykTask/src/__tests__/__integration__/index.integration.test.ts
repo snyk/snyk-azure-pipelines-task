@@ -5,25 +5,15 @@ import { TaskMockRunner } from 'azure-pipelines-task-lib/mock-run';
 
 /**
  * Copy integration artifacts (JSON, HTML, downloaded binaries) after each test.
- * Takes precedence over `SNYK_INTEGRATION_ARTIFACTS_DIR` when non-empty.
- *
- * Relative paths (e.g. `./snyk-integration-artifacts` or `.`) are resolved from
- * `process.cwd()` — when you run `npm run test:integration` from the repo root,
- * not this file’s directory. `./` therefore dumps under the
- * project root (same as `.`).
- *
- * For a folder next to this test file, use e.g.
- * `path.join(__dirname, 'integration-artifacts')`.
- *
- * If empty, falls back to the env var (same resolution rules for relative paths).
- * Must be a string (e.g. from `path.join` or `''`);
+ * Use the following code to copy artifacts to a directory next to this test file:
+ * const INTEGRATION_ARTIFACTS_OUTPUT_DIR = path.join(
+ *   __dirname,
+ *   'integration-artifacts',
+ * );
  */
-const INTEGRATION_ARTIFACTS_OUTPUT_DIR = path.join(
-  __dirname,
-  'integration-artifacts',
-);
+const INTEGRATION_ARTIFACTS_OUTPUT_DIR = '';
 
-/** Shape checks for `snyk test` JSON output; values that hold for this repo on any OS. */
+/** Shape checks for `snyk test` JSON output */
 function assertSnykTestJsonReport(
   parsed: Record<string, unknown>,
   expectedProjectRoot: string,
@@ -190,7 +180,6 @@ function maybeCopyArtifactsThenRemoveTempDir(dir: string): void {
     );
     fs.mkdirSync(dest, { recursive: true });
     fs.cpSync(dir, dest, { recursive: true });
-    // eslint-disable-next-line no-console
     console.log(
       `Integration test: copied artifacts to ${dest} (from INTEGRATION_ARTIFACTS_OUTPUT_DIR or SNYK_INTEGRATION_ARTIFACTS_DIR)`,
     );
