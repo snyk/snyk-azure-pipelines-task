@@ -466,7 +466,7 @@ async function runSnykCLI(
   command: string,
   snykToken: string,
   apiUrl?: string,
-  execOptions?: Partial<tr.IExecOptions>,
+  silent = false,
 ): Promise<number> {
   const taskArgs = new TaskArgs({ failOnIssues: false });
   const options = {
@@ -477,7 +477,7 @@ async function runSnykCLI(
       snykToken,
       apiUrl,
     ),
-    ...execOptions,
+    ...(silent ? { silent: true } : {}),
   } as tr.IExecOptions;
 
   const snykToolRunner = tl.tool(snykPath).line(command);
@@ -594,18 +594,9 @@ async function run() {
       'whoami --experimental',
       snykToken,
       apiUrl,
-      { silent: true },
+      true /* silent: connection probe only */,
     );
     if (whoamiExitCode !== CLI_EXIT_CODE_SUCCESS) {
-      if (apiUrl) {
-        console.log(
-          'Snyk could not authenticate using the API URL from your service connection and your token; they may not match (for example, the wrong Snyk region). The task will continue with the default Snyk API. Review your service connection if scans still fail.',
-        );
-      } else {
-        console.log(
-          'Snyk could not verify the token (authentication check failed). Review your service connection and token if the scan fails.',
-        );
-      }
       if (isDebugMode()) {
         console.log('whoami failed, apiUrl will be unset');
       }
