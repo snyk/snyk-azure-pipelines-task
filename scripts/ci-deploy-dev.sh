@@ -90,10 +90,8 @@ ls -la snykTask/dist
 echo "checking snykTask/node_modules..."
 ls -la snykTask/node_modules
 
-# Publishing and sharing extension (--no-wait-validation: don't block on Marketplace validation)
+# Publishing and sharing extension
 echo "Publishing and sharing extension..."
-echo "To manually check validation status, run:"
-echo "  tfx extension isvalid --publisher ${DEV_AZ_PUBLISHER} --extension-id ${DEV_AZ_EXTENSION_ID} --version ${INPUT_PARAM_AZ_EXT_NEW_VERSION} --service-url https://marketplace.visualstudio.com/ --token <PAT>"
 echo "OVERRIDE_JSON: ${OVERRIDE_JSON}"
 echo "About to call \`tfx extension publish...\`"
 
@@ -103,8 +101,7 @@ tfx extension publish --manifest-globs vss-extension-dev.json \
 --extension-id $DEV_AZ_EXTENSION_ID \
 --publisher $DEV_AZ_PUBLISHER \
 --override $OVERRIDE_JSON \
---token $DEV_AZURE_DEVOPS_EXT_PAT \
---no-wait-validation
+--token $DEV_AZURE_DEVOPS_EXT_PAT
 
 publish_exit_code=$?
 if [[ publish_exit_code -eq 0 ]]; then
