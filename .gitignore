@@ -15,3 +15,5 @@ snykTask/coverage
 .ops
 ops/deploy/dist
 .cursor
+.env
+.release-version

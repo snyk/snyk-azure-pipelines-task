@@ -160,10 +160,22 @@ jobs:
             npm run build:clean
 
       - run:
-          name: Create Extension
+          name: Create Release
           command: |
             export AZURE_DEVOPS_EXT_PAT=$PROD_AZURE_DEVOPS_EXT_PAT
             npx semantic-release
+
+      - run:
+          name: Deploy to Marketplace
+          command: |
+            if [[ ! -f .release-version ]]; then
+              echo "No new release version detected; skipping Marketplace deploy."
+              exit 0
+            fi
+            export AZURE_DEVOPS_EXT_PAT=$PROD_AZURE_DEVOPS_EXT_PAT
+            RELEASE_VERSION=$(cat .release-version)
+            echo "Deploying version ${RELEASE_VERSION} to Marketplace..."
+            scripts/ci-deploy.sh $RELEASE_VERSION
 
       - run:
           name: Create renamed copy of the vsix bundle
