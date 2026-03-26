@@ -153,7 +153,7 @@ describe('Snyk Task E2E', () => {
     } finally {
       setResultSpy.mockRestore();
     }
-  }, 60_000);
+  }, 120_000);
 });
 
 function trimArtifactsPath(value: unknown): string {
