@@ -108,7 +108,6 @@ jobs:
             fi
             DEPLOY_VERSION=$(cat .deploy-version)
             npm install
-            npm run deploy:compile
             node ./ops/deploy/dist/install-extension-to-dev-org.js "$DEPLOY_VERSION"
             node ./scripts/recovery-task-json-dev.js
 
