@@ -22,6 +22,22 @@ import { asyncSleep } from './lib/sleep';
 const TIMEOUT_MS = parseInt(process.env.VALIDATION_TIMEOUT_MS || '600000', 10);
 const POLL_MS = parseInt(process.env.VALIDATION_POLL_MS || '15000', 10);
 
+function getHttpStatus(err: unknown): number | undefined {
+  if (err && typeof err === 'object' && 'statusCode' in err) {
+    const code = (err as { statusCode?: number }).statusCode;
+    if (typeof code === 'number' && Number.isFinite(code)) {
+      return code;
+    }
+  }
+  return undefined;
+}
+
+const RETRYABLE_STATUS_CODES = new Set([408, 429]);
+
+function isRetryableError(statusCode: number): boolean {
+  return statusCode >= 500 || RETRYABLE_STATUS_CODES.has(statusCode);
+}
+
 type ValidationResult =
   | { status: 'validated' }
   | { status: 'pending' }
@@ -55,7 +71,8 @@ async function checkValidation(
 
   if (
     matchingVersion.flags !== undefined &&
-    (matchingVersion.flags & GalleryInterfaces.ExtensionVersionFlags.Validated) !==
+    (matchingVersion.flags &
+      GalleryInterfaces.ExtensionVersionFlags.Validated) !==
       0
   ) {
     return { status: 'validated' };
@@ -85,7 +102,9 @@ async function main() {
   }
 
   console.log(
-    `Waiting for Marketplace validation of ${publisher}.${extensionId}@${version} (timeout: ${TIMEOUT_MS / 1000}s, poll: ${POLL_MS / 1000}s)...`,
+    `Waiting for Marketplace validation of ${publisher}.${extensionId}@${version} (timeout: ${
+      TIMEOUT_MS / 1000
+    }s, poll: ${POLL_MS / 1000}s)...`,
   );
 
   const deadline = Date.now() + TIMEOUT_MS;
@@ -114,7 +133,16 @@ async function main() {
         `  Validation pending... (${elapsed}s / ${TIMEOUT_MS / 1000}s)`,
       );
     } catch (err) {
-      console.warn(`  Warning: validation check failed, retrying... (${err})`);
+      const status = getHttpStatus(err);
+      if (status !== undefined && !isRetryableError(status)) {
+        console.error(
+          `Gallery API error (HTTP ${status}); not retrying: ${err}`,
+        );
+        process.exit(1);
+      }
+      const label =
+        status !== undefined ? `HTTP ${status} (transient)` : 'unknown error';
+      console.warn(`  ${label}: ${err}; retrying...`);
     }
 
     await asyncSleep(POLL_MS);
