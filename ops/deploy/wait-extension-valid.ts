@@ -32,7 +32,7 @@ function getHttpStatus(err: unknown): number | undefined {
   return undefined;
 }
 
-const RETRYABLE_STATUS_CODES = new Set([408, 429]);
+const RETRYABLE_STATUS_CODES = new Set([404, 408, 429]);
 
 function isRetryableError(statusCode: number): boolean {
   return statusCode >= 500 || RETRYABLE_STATUS_CODES.has(statusCode);
