@@ -217,6 +217,7 @@ jobs:
               exit 0
             fi
             export AZURE_DEVOPS_EXT_PAT=$PROD_AZURE_DEVOPS_EXT_PAT
+            npm run deploy:compile
             RELEASE_VERSION=$(cat .release-version)
             echo "Deploying version ${RELEASE_VERSION} to Marketplace..."
             scripts/ci-deploy.sh $RELEASE_VERSION
