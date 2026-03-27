@@ -17,3 +17,4 @@ ops/deploy/dist
 .cursor
 .env
 .release-version
+.deploy-version

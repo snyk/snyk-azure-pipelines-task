@@ -101,7 +101,8 @@ tfx extension publish --manifest-globs vss-extension-dev.json \
 --extension-id $DEV_AZ_EXTENSION_ID \
 --publisher $DEV_AZ_PUBLISHER \
 --override $OVERRIDE_JSON \
---token $DEV_AZURE_DEVOPS_EXT_PAT
+--token $DEV_AZURE_DEVOPS_EXT_PAT \
+--no-wait-validation
 
 publish_exit_code=$?
 if [[ publish_exit_code -eq 0 ]]; then
@@ -110,19 +111,3 @@ else
   echo "Extension failed to pubish with exit code ${publish_exit_code}"
   exit ${publish_exit_code}
 fi
-
-# re-install all dependencies. The dev deps were pruned off in ci-build.sh
-echo "reinstalling all dependencies..."
-npm install
-
-echo "Run script to install the dev extension into the dev org in Azure DevOps..."
-node ./ops/deploy/dist/install-extension-to-dev-org.js "${INPUT_PARAM_AZ_EXT_NEW_VERSION}"
-if [[ ! $? -eq 0 ]]; then
-  echo "failed installing dev extension at correct version"
-  exit 1
-fi
-
-# Updating version in task.json file
-node "${PWD}/scripts/recovery-task-json-dev.js"
-
-echo "Extension installed"

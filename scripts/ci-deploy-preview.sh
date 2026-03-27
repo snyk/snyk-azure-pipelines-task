@@ -45,9 +45,6 @@ echo "Extension ID: ${AZ_EXTENSION_ID}"
 echo "Publisher: ${AZ_PUBLISHER}"
 echo "Override JSON: ${OVERRIDE_JSON}"
 
-# --no-wait-validation: don't block on Marketplace validation
-echo "To manually check validation status, run:"
-echo "  tfx extension isvalid --publisher ${AZ_PUBLISHER} --extension-id ${AZ_EXTENSION_ID} --version ${AZ_EXT_NEW_VERSION} --service-url https://marketplace.visualstudio.com/ --token <PAT>"
 tfx extension publish --manifest-globs vss-extension-preview.json \
 --version $AZ_EXT_NEW_VERSION \
 --extension-id $AZ_EXTENSION_ID \

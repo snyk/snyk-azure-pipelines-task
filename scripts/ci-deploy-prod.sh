@@ -29,10 +29,8 @@ node "${PWD}/scripts/ci-update-task-json-prod.js" ${AZ_EXT_NEW_VERSION}
 # Override version
 OVERRIDE_JSON="{ \"id\": \"${AZ_EXTENSION_ID}\", \"name\": \"${AZ_EXTENSION_NAME}\", \"version\": \"${AZ_EXT_NEW_VERSION}\", \"public\": true }"
 
-# Publish extension (--no-wait-validation: don't block on Marketplace validation)
+# Publish extension
 echo "Publishing extension..."
-echo "To manually check validation status, run:"
-echo "  tfx extension isvalid --publisher ${AZ_PUBLISHER} --extension-id ${AZ_EXTENSION_ID} --version ${AZ_EXT_NEW_VERSION} --service-url https://marketplace.visualstudio.com/ --token <PAT>"
 tfx extension publish --manifest-globs vss-extension.json \
 --version $AZ_EXT_NEW_VERSION \
 --extension-id $AZ_EXTENSION_ID \

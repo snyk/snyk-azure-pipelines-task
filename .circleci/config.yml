@@ -80,8 +80,37 @@ jobs:
               NEXT_DEV_VERSION=0.0.1
             fi
 
+            echo "$NEXT_DEV_VERSION" > .deploy-version
+
             echo "Deploying to dev with ${NEXT_DEV_VERSION} ${AZ_ORG}"
             scripts/ci-deploy.sh $NEXT_DEV_VERSION $DEV_AZ_ORG
+
+      - run:
+          name: Verify Marketplace Validation
+          command: |
+            if [[ ! -f .deploy-version ]]; then
+              echo "No deploy version; skipping validation."
+              exit 0
+            fi
+            DEPLOY_VERSION=$(cat .deploy-version)
+            node ./ops/deploy/dist/wait-extension-valid.js \
+              "$DEV_AZ_PUBLISHER" \
+              "$DEV_AZ_EXTENSION_ID" \
+              "$DEPLOY_VERSION" \
+              "$DEV_AZURE_DEVOPS_EXT_PAT"
+
+      - run:
+          name: Install Extension into Dev Org
+          command: |
+            if [[ ! -f .deploy-version ]]; then
+              echo "No deploy version; skipping install."
+              exit 0
+            fi
+            DEPLOY_VERSION=$(cat .deploy-version)
+            npm install
+            npm run deploy:compile
+            node ./ops/deploy/dist/install-extension-to-dev-org.js "$DEPLOY_VERSION"
+            node ./scripts/recovery-task-json-dev.js
 
       - run:
           name: Create renamed copy of the vsix bundle
@@ -131,10 +160,25 @@ jobs:
             npm run deploy:compile
 
             VERSION=$(date +"%Y.%-m.%-d%H%M")
+            echo "$VERSION" > .deploy-version
             echo "Deploying to Preview: ${VERSION}"
 
             chmod +x scripts/ci-deploy-preview.sh
             scripts/ci-deploy-preview.sh $VERSION
+
+      - run:
+          name: Verify Marketplace Validation
+          command: |
+            if [[ ! -f .deploy-version ]]; then
+              echo "No deploy version; skipping validation."
+              exit 0
+            fi
+            DEPLOY_VERSION=$(cat .deploy-version)
+            node ./ops/deploy/dist/wait-extension-valid.js \
+              "$AZ_PUBLISHER" \
+              "$AZ_EXTENSION_ID" \
+              "$DEPLOY_VERSION" \
+              "$PROD_AZURE_DEVOPS_EXT_PAT"
   deploy_prod:
     docker:
       - image: circleci/node:lts
@@ -176,6 +220,20 @@ jobs:
             RELEASE_VERSION=$(cat .release-version)
             echo "Deploying version ${RELEASE_VERSION} to Marketplace..."
             scripts/ci-deploy.sh $RELEASE_VERSION
+
+      - run:
+          name: Verify Marketplace Validation
+          command: |
+            if [[ ! -f .release-version ]]; then
+              echo "No release version; skipping validation."
+              exit 0
+            fi
+            RELEASE_VERSION=$(cat .release-version)
+            node ./ops/deploy/dist/wait-extension-valid.js \
+              "$AZ_PUBLISHER" \
+              "$AZ_EXTENSION_ID" \
+              "$RELEASE_VERSION" \
+              "$PROD_AZURE_DEVOPS_EXT_PAT"
 
       - run:
           name: Create renamed copy of the vsix bundle
