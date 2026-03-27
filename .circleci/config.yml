@@ -92,12 +92,12 @@ jobs:
               echo "No deploy version; skipping validation."
               exit 0
             fi
+            export AZURE_DEVOPS_EXT_PAT="$DEV_AZURE_DEVOPS_EXT_PAT"
             DEPLOY_VERSION=$(cat .deploy-version)
             node ./ops/deploy/dist/wait-extension-valid.js \
               "$DEV_AZ_PUBLISHER" \
               "$DEV_AZ_EXTENSION_ID" \
-              "$DEPLOY_VERSION" \
-              "$DEV_AZURE_DEVOPS_EXT_PAT"
+              "$DEPLOY_VERSION"
 
       - run:
           name: Install Extension into Dev Org
@@ -173,12 +173,12 @@ jobs:
               echo "No deploy version; skipping validation."
               exit 0
             fi
+            export AZURE_DEVOPS_EXT_PAT="$PROD_AZURE_DEVOPS_EXT_PAT"
             DEPLOY_VERSION=$(cat .deploy-version)
             node ./ops/deploy/dist/wait-extension-valid.js \
               "$AZ_PUBLISHER" \
               "$AZ_EXTENSION_ID" \
-              "$DEPLOY_VERSION" \
-              "$PROD_AZURE_DEVOPS_EXT_PAT"
+              "$DEPLOY_VERSION"
   deploy_prod:
     docker:
       - image: circleci/node:lts
@@ -229,12 +229,12 @@ jobs:
               echo "No release version; skipping validation."
               exit 0
             fi
+            export AZURE_DEVOPS_EXT_PAT="$PROD_AZURE_DEVOPS_EXT_PAT"
             RELEASE_VERSION=$(cat .release-version)
             node ./ops/deploy/dist/wait-extension-valid.js \
               "$AZ_PUBLISHER" \
               "$AZ_EXTENSION_ID" \
-              "$RELEASE_VERSION" \
-              "$PROD_AZURE_DEVOPS_EXT_PAT"
+              "$RELEASE_VERSION"
 
       - run:
           name: Create renamed copy of the vsix bundle

@@ -56,7 +56,7 @@ async function checkValidation(
   );
 
   if (!extensionDetails || !extensionDetails.versions) {
-    return { status: 'error', message: 'Extension or versions not found.' };
+    return { status: 'pending' };
   }
 
   const matchingVersion = (
@@ -92,12 +92,17 @@ async function main() {
   const publisher = process.argv[2];
   const extensionId = process.argv[3];
   const version = process.argv[4];
-  const azToken = process.argv[5] || process.env.AZURE_DEVOPS_EXT_PAT || '';
+  const azToken = process.env.AZURE_DEVOPS_EXT_PAT || '';
 
   if (!publisher || !extensionId || !version) {
     console.error(
-      'Usage: wait-extension-valid <publisher> <extensionId> <version> [token]',
+      'Usage: wait-extension-valid <publisher> <extensionId> <version>',
     );
+    process.exit(1);
+  }
+
+  if (!azToken) {
+    console.error('AZURE_DEVOPS_EXT_PAT environment variable is not set.');
     process.exit(1);
   }
 
