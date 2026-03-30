@@ -13,7 +13,7 @@
     "test:checks": "npm run eslint && npm run format:check",
     "test:snyk": "npx snyk test --severity-threshold=high",
     "test:unit": "jest",
-    "test:integration": "npm run compile && jest --testPathPattern='__integration__' --testPathIgnorePatterns='/node_modules/' --no-coverage --testTimeout=120000",
+    "test:integration": "npm run compile && jest --testPathPattern='\\.integration\\.test\\.ts$' --testPathIgnorePatterns='/node_modules/' --no-coverage --testTimeout=120000",
     "compile": "tsc -b snykTask/tsconfig.json",
     "eslint": "eslint --cache 'snykTask/{src,test,public/js/{!(build)}}/**/*.{js,ts}'",
     "format:check": "prettier --check '**/*.{js,ts,json,yaml,yml,md,html}'",
