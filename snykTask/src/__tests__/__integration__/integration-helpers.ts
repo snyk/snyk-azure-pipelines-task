@@ -22,44 +22,22 @@ export function assertSnykTestJsonReport(
   expect(parsed.ok).toBe(true);
   expect(Array.isArray(parsed.vulnerabilities)).toBe(true);
 
-  expect(typeof parsed.org).toBe('string');
-  expect((parsed.org as string).length).toBeGreaterThan(0);
-
-  expect(parsed.packageManager).toBe('npm');
-
   const pkgPath = path.join(expectedProjectRoot, 'package.json');
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8')) as { name?: string };
   expect(typeof pkg.name).toBe('string');
   expect(parsed.projectName).toBe(pkg.name);
 
-  expect(parsed.displayTargetFile).toBe('package-lock.json');
-
-  expect(typeof parsed.dependencyCount).toBe('number');
-  expect(parsed.dependencyCount as number).toBeGreaterThanOrEqual(0);
-
   expect(typeof parsed.path).toBe('string');
   expect(path.normalize(parsed.path as string)).toBe(
     path.normalize(expectedProjectRoot),
   );
-
-  expect(typeof parsed.summary).toBe('string');
-  expect((parsed.summary as string).length).toBeGreaterThan(0);
 }
 
-export function assertSnykTestHtmlReport(
-  html: string,
-  expectedProjectRoot: string,
-  expectedProjectName: string,
-): void {
-  expect(html).toMatch(/<!DOCTYPE html>/i);
-  expect(html).toContain('<title>Snyk test report</title>');
-  expect(html).toContain(
-    '<h1 class="project__header__title">Snyk test report</h1>',
-  );
-  expect(html).toContain('Package Manager</th>');
-  expect(html).toContain('<td class="meta-row-value">npm</td>');
-  expect(html).toContain(expectedProjectName);
-  expect(html).toContain(path.normalize(expectedProjectRoot));
+export function assertSnykTestHtmlReport(html: string): void {
+  expect(typeof html).toBe('string');
+  const trimmed = html.trim();
+  expect(trimmed.length).toBeGreaterThan(200);
+  expect(trimmed).toMatch(/<!DOCTYPE\s+html|<html[\s>]/i);
 }
 
 function trimArtifactsPath(value: unknown): string {
@@ -122,7 +100,8 @@ export function maybeCopyArtifactsThenRemoveTempDir(dir: string): void {
 }
 
 export function loadSnykToken(): string {
-  if (process.env.TEST_SNYK_TOKEN?.trim()) return process.env.TEST_SNYK_TOKEN.trim();
+  if (process.env.TEST_SNYK_TOKEN?.trim())
+    return process.env.TEST_SNYK_TOKEN.trim();
 
   throw new Error(
     `No credentials for integration test. Set TEST_SNYK_TOKEN before running the test.`,

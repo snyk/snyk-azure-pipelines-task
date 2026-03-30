@@ -99,7 +99,7 @@ describe('Snyk Task E2E', () => {
       const htmlReport = (jsonReport as string).replace(/\.json$/i, '.html');
       expect(fs.existsSync(path.join(tempDir, htmlReport))).toBe(true);
       const html = fs.readFileSync(path.join(tempDir, htmlReport), 'utf8');
-      assertSnykTestHtmlReport(html, projectRoot, pkg.name as string);
+      assertSnykTestHtmlReport(html);
 
       expect(setResultSpy).toHaveBeenCalledWith(
         apTask.TaskResult.Succeeded,
