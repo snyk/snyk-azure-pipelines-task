@@ -2,63 +2,18 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { TaskMockRunner } from 'azure-pipelines-task-lib/mock-run';
+import {
+  assertSnykTestHtmlReport,
+  assertSnykTestJsonReport,
+  COMPILED_TASK_JS,
+  loadSnykToken,
+  maybeCopyArtifactsThenRemoveTempDir,
+  REPO_ROOT_FOR_SNYK_TEST,
+} from './integration-helpers';
 
-/**
- * Copy integration artifacts (JSON, HTML, downloaded binaries) after each test.
- * Use the following code to copy artifacts to a directory next to this test file:
- * const INTEGRATION_ARTIFACTS_OUTPUT_DIR = path.join(
- *   __dirname,
- *   'integration-artifacts',
- * );
- */
-const INTEGRATION_ARTIFACTS_OUTPUT_DIR = '';
-
-function assertSnykTestJsonReport(
-  parsed: Record<string, unknown>,
-  expectedProjectRoot: string,
-): void {
-  expect(parsed.ok).toBe(true);
-  expect(Array.isArray(parsed.vulnerabilities)).toBe(true);
-
-  expect(typeof parsed.org).toBe('string');
-  expect((parsed.org as string).length).toBeGreaterThan(0);
-
-  expect(parsed.packageManager).toBe('npm');
-
-  const pkgPath = path.join(expectedProjectRoot, 'package.json');
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8')) as { name?: string };
-  expect(typeof pkg.name).toBe('string');
-  expect(parsed.projectName).toBe(pkg.name);
-
-  expect(parsed.displayTargetFile).toBe('package-lock.json');
-
-  expect(typeof parsed.dependencyCount).toBe('number');
-  expect(parsed.dependencyCount as number).toBeGreaterThanOrEqual(0);
-
-  expect(typeof parsed.path).toBe('string');
-  expect(path.normalize(parsed.path as string)).toBe(
-    path.normalize(expectedProjectRoot),
-  );
-
-  expect(typeof parsed.summary).toBe('string');
-  expect((parsed.summary as string).length).toBeGreaterThan(0);
-}
-
-function assertSnykTestHtmlReport(
-  html: string,
-  expectedProjectRoot: string,
-  expectedProjectName: string,
-): void {
-  expect(html).toMatch(/<!DOCTYPE html>/i);
-  expect(html).toContain('<title>Snyk test report</title>');
-  expect(html).toContain(
-    '<h1 class="project__header__title">Snyk test report</h1>',
-  );
-  expect(html).toContain('Package Manager</th>');
-  expect(html).toContain('<td class="meta-row-value">npm</td>');
-  expect(html).toContain(expectedProjectName);
-  expect(html).toContain(path.normalize(expectedProjectRoot));
-}
+// You can run this integration test locally by setting the TEST_SNYK_TOKEN environment variable.
+// Example when using 1Password:
+// TEST_SNYK_TOKEN="op://<Vault>/API Credentials/credential" op run -- npm run test:integration
 
 describe('Snyk Task E2E', () => {
   let tempDir: string;
@@ -104,8 +59,8 @@ describe('Snyk Task E2E', () => {
 
   it('runs snyk test end-to-end with expected JSON and HTML reports', async () => {
     const snykToken = loadSnykToken();
-    const taskPath = path.join(__dirname, '..', '..', '..', 'dist', 'index.js');
-    const projectRoot = process.cwd();
+    const taskPath = COMPILED_TASK_JS;
+    const projectRoot = REPO_ROOT_FOR_SNYK_TEST;
     const pkg = JSON.parse(
       fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'),
     ) as { name?: string };
@@ -155,73 +110,3 @@ describe('Snyk Task E2E', () => {
     }
   }, 120_000);
 });
-
-function trimArtifactsPath(value: unknown): string {
-  if (typeof value !== 'string') return '';
-  return value.trim();
-}
-
-function normalizeArtifactsRoot(raw: string): string {
-  const t = raw.trim();
-  if (!t) return '';
-  return path.isAbsolute(t)
-    ? path.normalize(t)
-    : path.resolve(process.cwd(), t);
-}
-
-function resolveIntegrationArtifactsRoot(): string | undefined {
-  const fromFile = trimArtifactsPath(INTEGRATION_ARTIFACTS_OUTPUT_DIR);
-  if (fromFile) {
-    return normalizeArtifactsRoot(fromFile);
-  }
-  const fromEnv = trimArtifactsPath(process.env.SNYK_INTEGRATION_ARTIFACTS_DIR);
-  if (fromEnv) {
-    return normalizeArtifactsRoot(fromEnv);
-  }
-  return undefined;
-}
-
-function ensureArtifactsDirectoryExists(resolvedRoot: string): void {
-  if (fs.existsSync(resolvedRoot)) {
-    const st = fs.statSync(resolvedRoot);
-    if (!st.isDirectory()) {
-      throw new Error(
-        `Integration artifacts path must be a directory, not a file: ${resolvedRoot}`,
-      );
-    }
-    return;
-  }
-  fs.mkdirSync(resolvedRoot, { recursive: true });
-}
-
-function maybeCopyArtifactsThenRemoveTempDir(dir: string): void {
-  if (!dir || !fs.existsSync(dir)) return;
-
-  const copyDestRoot = resolveIntegrationArtifactsRoot();
-  if (copyDestRoot) {
-    ensureArtifactsDirectoryExists(copyDestRoot);
-    const dest = path.join(
-      copyDestRoot,
-      `run-${new Date().toISOString().replace(/[:.]/g, '-')}`,
-    );
-    fs.mkdirSync(dest, { recursive: true });
-    fs.cpSync(dir, dest, { recursive: true });
-    console.log(
-      `Integration test: copied artifacts to ${dest} (from INTEGRATION_ARTIFACTS_OUTPUT_DIR or SNYK_INTEGRATION_ARTIFACTS_DIR)`,
-    );
-  }
-
-  fs.rmSync(dir, { recursive: true, force: true });
-}
-
-function loadSnykToken(): string {
-  const envFile = path.join(__dirname, '..', '.env');
-  if (fs.existsSync(envFile)) {
-    const match = fs.readFileSync(envFile, 'utf8').match(/^SNYK_TOKEN=(.+)$/m);
-    if (match) return match[1].trim();
-  }
-  if (process.env.SNYK_TOKEN) return process.env.SNYK_TOKEN;
-  throw new Error(
-    'SNYK_TOKEN not found. Set SNYK_TOKEN env var or create snykTask/src/__tests__/.env with SNYK_TOKEN=<token>',
-  );
-}

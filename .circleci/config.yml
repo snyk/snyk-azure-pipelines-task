@@ -194,7 +194,10 @@ workflows:
       - security-scans:
           context: devex_cli
 
-      - test
+      - test:
+          context:
+            - team_hammerhead-cli
+
       - deploy_dev:
           requires:
             - test
