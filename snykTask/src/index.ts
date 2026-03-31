@@ -466,15 +466,19 @@ async function runSnykCLI(
   command: string,
   snykToken: string,
   apiUrl?: string,
+  silent = false,
 ): Promise<number> {
   const taskArgs = new TaskArgs({ failOnIssues: false });
-  const options = getOptionsToExecuteSnykCLICommand(
-    taskArgs,
-    taskNameForAnalytics,
-    taskVersion,
-    snykToken,
-    apiUrl,
-  );
+  const options = {
+    ...getOptionsToExecuteSnykCLICommand(
+      taskArgs,
+      taskNameForAnalytics,
+      taskVersion,
+      snykToken,
+      apiUrl,
+    ),
+    ...(silent ? { silent: true } : {}),
+  } as tr.IExecOptions;
 
   const snykToolRunner = tl.tool(snykPath).line(command);
   return await snykToolRunner.execAsync(options);
@@ -590,6 +594,7 @@ export async function run() {
       'whoami --experimental',
       snykToken,
       apiUrl,
+      true /* silent: connection probe only */,
     );
     if (whoamiExitCode !== CLI_EXIT_CODE_SUCCESS) {
       if (isDebugMode()) {
