@@ -35,6 +35,10 @@ jobs:
           name: Unit Tests
           command: |
             npm run test:unit
+      - run:
+          name: Integration Tests (Snyk task E2E)
+          command: |
+            npm run test:integration
 
   deploy_dev:
     docker:
@@ -190,7 +194,10 @@ workflows:
       - security-scans:
           context: devex_cli
 
-      - test
+      - test:
+          context:
+            - team_hammerhead-cli
+
       - deploy_dev:
           requires:
             - test

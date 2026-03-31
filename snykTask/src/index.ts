@@ -513,7 +513,7 @@ const handleSnykMonitorError = (snykMonitorResult: SnykOutput) => {
     throw new SnykError(snykMonitorResult.message);
 };
 
-async function run() {
+export async function run() {
   try {
     const currentDir: string = tl.cwd(); // Azure mock framework will return empty string / undefined
     if (isDebugMode()) console.log(`currentWorkingDirectory: ${currentDir}\n`);
@@ -710,4 +710,4 @@ async function run() {
   }
 }
 
-run();
+export const runPromise = run();
