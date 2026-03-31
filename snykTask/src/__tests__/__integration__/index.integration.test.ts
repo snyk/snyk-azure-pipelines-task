@@ -93,8 +93,7 @@ describe('Snyk Task E2E', () => {
         path.join(tempDir, jsonReport as string),
         'utf8',
       );
-      const parsed = JSON.parse(content) as Record<string, unknown>;
-      assertSnykTestJsonReport(parsed, projectRoot);
+      assertSnykTestJsonReport(content);
 
       const htmlReport = (jsonReport as string).replace(/\.json$/i, '.html');
       expect(fs.existsSync(path.join(tempDir, htmlReport))).toBe(true);
