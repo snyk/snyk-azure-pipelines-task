@@ -97,6 +97,12 @@ jobs:
           path: ./dev-extension-artifact.vsix
 
       - run:
+          name: Wait for extension availability
+          command: |
+            echo "Sleeping 60s to let Azure DevOps propagate the updated extension..."
+            sleep 60
+
+      - run:
           name: Launch Test Pipelines
           command: |
             node ./ops/deploy/dist/run-test-pipelines.js
