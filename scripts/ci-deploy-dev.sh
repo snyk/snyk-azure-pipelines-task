@@ -49,26 +49,6 @@ if [[ ! $? -eq 0 ]]; then
   fi
 fi
 
-# echo "See if the extension is installed..."
-az devops extension show \
-  --publisher-name $DEV_AZ_PUBLISHER \
-  --extension-name $DEV_AZ_EXTENSION_ID \
-  --organization "https://dev.azure.com/${INPUT_PARAM_AZ_ORG}/"
-
-if [[ $? -eq 0 ]]; then
-  echo "Extension is installed in org ${INPUT_PARAM_AZ_ORG}... uninstall it"
-  # Unistall the extinsion if it has been already installed in this organization.
-  # This may not be required it works much more consistently with it.
-  echo "Uninstall extension..."
-  az devops extension uninstall \
-    --publisher-name $DEV_AZ_PUBLISHER \
-    --extension-name $DEV_AZ_EXTENSION_ID \
-    --organization "https://dev.azure.com/${INPUT_PARAM_AZ_ORG}/" --yes
-  echo "Extension uninstalled"
-else
-  echo "Extension not already installed."
-fi
-
 echo "About to deploy to dev environment using:"
 echo "INPUT_PARAM_AZ_EXT_NEW_VERSION: ${INPUT_PARAM_AZ_EXT_NEW_VERSION}"
 echo "DEV_AZ_PUBLISHER: ${DEV_AZ_PUBLISHER}"
@@ -111,18 +91,7 @@ else
   exit ${publish_exit_code}
 fi
 
-# re-install all dependencies. The dev deps were pruned off in ci-build.sh
-echo "reinstalling all dependencies..."
-npm install
-
-echo "Run script to install the dev extension into the dev org in Azure DevOps..."
-node ./ops/deploy/dist/install-extension-to-dev-org.js "${INPUT_PARAM_AZ_EXT_NEW_VERSION}"
-if [[ ! $? -eq 0 ]]; then
-  echo "failed installing dev extension at correct version"
-  exit 1
-fi
-
 # Updating version in task.json file
 node "${PWD}/scripts/recovery-task-json-dev.js"
 
-echo "Extension installed"
+echo "Extension published and shared successfully"
