@@ -4,6 +4,9 @@
   ],
   "repositoryUrl": "https://github.com/snyk/snyk-azure-pipelines-task",
   "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
     [
       "@semantic-release/git",
       {
@@ -11,9 +14,6 @@
         "message": "chore(release): ${nextRelease.version}"
       }
     ],
-    "@semantic-release/commit-analyzer",
-    "@semantic-release/release-notes-generator",
-    "@semantic-release/changelog",
     "@semantic-release/github",
     [
       "@semantic-release/exec",
