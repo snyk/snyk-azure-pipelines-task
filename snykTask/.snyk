@@ -1,5 +1,20 @@
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
-version: v1.25.0
+version: v1.25.1
 # ignores vulnerabilities until expiry date; change duration by modifying expiry date
 ignore:
+  SNYK-JS-UUID-16133035:
+    - 'azure-pipelines-task-lib > uuid':
+        reason: >-
+          Not reachable. uuid@3.4 is transitive via
+          azure-pipelines-task-lib; only uuid/v4 is imported and no
+          call passes buf/offset.
+        expires: 2026-12-01T00:00:00.000Z
+        created: 2026-07-13T12:32:51.940Z
+    - 'azure-pipelines-tool-lib > uuid':
+        reason: >-
+          Not reachable. uuid@3.4 is transitive via
+          azure-pipelines-tool-lib; only uuid/v4 is imported and no
+          call passes buf/offset.
+        expires: 2026-12-01T00:00:00.000Z
+        created: 2026-07-13T12:32:51.940Z
 patch: {}
