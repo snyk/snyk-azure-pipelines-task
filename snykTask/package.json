@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "azure-pipelines-task-lib": "4.17.3",
-    "azure-pipelines-tool-lib": "2.0.8"
+    "azure-pipelines-task-lib": "5.2.7",
+    "azure-pipelines-tool-lib": "2.0.12"
   },
   "overrides": {
     "azure-pipelines-task-lib": {
