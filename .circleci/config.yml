@@ -189,10 +189,13 @@ workflows:
           name: Scan repository for secrets
           context:
             - snyk-bot-slack
+            - prodsec-orb-runtime
           channel: cli-alerts
 
       - security-scans:
-          context: devex_cli
+          context:
+            - devex_cli
+            - prodsec-orb-runtime
 
       - test:
           context:
