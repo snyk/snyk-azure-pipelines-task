@@ -7,7 +7,6 @@
     "azure-pipelines-task-lib": {
       "minimatch@3.0.5": "3.1.5"
     },
-    "brace-expansion": "1.1.15",
     "follow-redirects": "1.16.0"
   }
 }
