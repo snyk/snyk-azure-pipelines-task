@@ -81,11 +81,15 @@ tfx extension publish --manifest-globs vss-extension-dev.json \
 --extension-id $DEV_AZ_EXTENSION_ID \
 --publisher $DEV_AZ_PUBLISHER \
 --override $OVERRIDE_JSON \
---token $DEV_AZURE_DEVOPS_EXT_PAT
+--token $DEV_AZURE_DEVOPS_EXT_PAT \
+--no-wait-validation
 
 publish_exit_code=$?
 if [[ publish_exit_code -eq 0 ]]; then
-  echo "Extension published and shared with Azure org"
+  # --no-wait-validation means tfx returns once the package is uploaded, so the
+  # Marketplace may still reject it. wait-for-extension-availability.js is what
+  # confirms the version was validated and rolled out to the org.
+  echo "Extension uploaded and shared with Azure org"
 else
   echo "Extension failed to pubish with exit code ${publish_exit_code}"
   exit ${publish_exit_code}
@@ -94,4 +98,4 @@ fi
 # Updating version in task.json file
 node "${PWD}/scripts/recovery-task-json-dev.js"
 
-echo "Extension published and shared successfully"
+echo "Extension upload and share complete; awaiting Marketplace validation"
