@@ -84,6 +84,8 @@ jobs:
               NEXT_DEV_VERSION=0.0.1
             fi
 
+            echo "export NEXT_DEV_VERSION=${NEXT_DEV_VERSION}" >> $BASH_ENV
+
             echo "Deploying to dev with ${NEXT_DEV_VERSION} ${AZ_ORG}"
             scripts/ci-deploy.sh $NEXT_DEV_VERSION $DEV_AZ_ORG
 
@@ -99,8 +101,7 @@ jobs:
       - run:
           name: Wait for extension availability
           command: |
-            echo "Sleeping 60s to let Azure DevOps propagate the updated extension..."
-            sleep 60
+            node ./ops/deploy/dist/wait-for-extension-availability.js "$NEXT_DEV_VERSION"
 
       - run:
           name: Launch Test Pipelines
