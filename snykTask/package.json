@@ -4,10 +4,12 @@
     "azure-pipelines-tool-lib": "2.0.8"
   },
   "overrides": {
+    "adm-zip": "0.6.1",
     "azure-pipelines-task-lib": {
       "minimatch@3.0.5": "3.1.5"
     },
-    "brace-expansion": "1.1.15",
-    "follow-redirects": "1.16.0"
+    "brace-expansion": "1.1.21",
+    "follow-redirects": "1.16.2",
+    "qs": "6.17.0"
   }
 }

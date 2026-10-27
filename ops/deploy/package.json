@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "azure-devops-node-api": "^10.1.1"
+  },
+  "overrides": {
+    "qs": "6.17.0"
   }
 }
