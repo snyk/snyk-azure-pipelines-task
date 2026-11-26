@@ -23,6 +23,9 @@ import {
 } from './lib/azure-devops/extension-status';
 import { getInstalledExtensionInfo } from './lib/azure-devops/extensions';
 import { PollOptions, pollUntilReady, ProbeResult } from './lib/poll';
+import { asyncSleep } from './lib/sleep';
+
+const SETTLE_DELAY_MS = 60 * 1000;
 
 const POLL_OPTIONS: PollOptions = {
   intervalMs: 2 * 60 * 1000,
@@ -35,7 +38,7 @@ const POLL_OPTIONS: PollOptions = {
  * validated by the Marketplace and picked up by the dev org. Without this gate
  * the test pipelines silently run against the previously installed version.
  */
-async function main() {
+export async function main() {
   const publisherName = process.env.DEV_AZ_PUBLISHER || '';
   // warning: the Marketplace stuff calls this extensionId - the rest of the extension stuff calls it name
   const extensionName = process.env.DEV_AZ_EXTENSION_ID || '';
@@ -92,6 +95,15 @@ async function main() {
     },
     POLL_OPTIONS,
   );
+
+  // Azure Pipelines can keep running the previous task for a while after the
+  // management API reports the new version as installed.
+  console.log(
+    `Sleeping ${
+      SETTLE_DELAY_MS / 1000
+    } seconds to let Azure DevOps settle extension availability`,
+  );
+  await asyncSleep(SETTLE_DELAY_MS);
 
   console.log(`Extension version ${expectedVersion} is ready to be tested`);
 }
