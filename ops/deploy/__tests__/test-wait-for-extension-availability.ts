@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
+import * as BuildInterfaces from 'azure-devops-node-api/interfaces/BuildInterfaces';
 import * as ExtensionManagementInterfaces from 'azure-devops-node-api/interfaces/ExtensionManagementInterfaces';
 import * as GalleryInterfaces from 'azure-devops-node-api/interfaces/GalleryInterfaces';
 
 import {
   ExtensionClients,
+  ProbeBuildClients,
   waitForExtensionAvailability,
+  waitForResolvedTaskVersion,
 } from '../wait-for-extension-availability';
 import { PollOptions } from '../lib/poll';
 
@@ -119,7 +122,7 @@ test('leaves an org with an older version to auto-update instead of installing',
   expect(org.events).toContain('read installed 1.2.3');
 });
 
-test('waits 60 seconds after the org reports the expected version before returning', async () => {
+test('returns as soon as the org reports the expected version', async () => {
   const org = fakeOrg('1.2.3');
 
   await waitForExtensionAvailability(
@@ -128,5 +131,199 @@ test('waits 60 seconds after the org reports the expected version before returni
     testOptions(org.events),
   );
 
-  expect(org.events).toEqual(['read installed 1.2.3', 'sleep 60000']);
+  expect(org.events).toEqual(['read installed 1.2.3']);
+});
+
+interface ProbeRun {
+  resolvedVersion?: string;
+  result?: BuildInterfaces.BuildResult;
+  inProgressChecks?: number;
+}
+
+function downloads(resolvedVersion: string): ProbeRun {
+  return { resolvedVersion };
+}
+
+/**
+ * A fake probe pipeline whose nth queued build is described by the nth of
+ * `runs`.
+ */
+function fakeProbePipeline(runs: ProbeRun[]) {
+  const events: string[] = [];
+  let queuedBuilds = 0;
+  const run = (buildId: number) => runs[buildId - 1];
+
+  const clients: ProbeBuildClients = {
+    queueProbeBuild: async () => {
+      queuedBuilds += 1;
+      events.push(`queue build ${queuedBuilds}`);
+      return { id: queuedBuilds };
+    },
+    getProbeBuild: async (buildId) => {
+      const probeRun = run(buildId);
+      if (probeRun.inProgressChecks) {
+        probeRun.inProgressChecks -= 1;
+        return { id: buildId, status: BuildInterfaces.BuildStatus.InProgress };
+      }
+      return {
+        id: buildId,
+        status: BuildInterfaces.BuildStatus.Completed,
+        result: probeRun.result || BuildInterfaces.BuildResult.Succeeded,
+      };
+    },
+    getProbeBuildLogLines: async (buildId) =>
+      run(buildId).resolvedVersion
+        ? [
+            `2026-11-26T10:00:00.0000000Z Downloading task: DevSnykSecurityScan (${
+              run(buildId).resolvedVersion
+            })`,
+          ]
+        : [],
+  };
+
+  return { clients, events };
+}
+
+describe('waitForResolvedTaskVersion', () => {
+  test('keeps queueing probe builds until one downloads the expected version', async () => {
+    const pipeline = fakeProbePipeline([
+      downloads('1.2.2'),
+      downloads('1.2.3'),
+    ]);
+
+    await waitForResolvedTaskVersion(
+      pipeline.clients,
+      'DevSnykSecurityScan',
+      '1.2.3',
+      testOptions(pipeline.events),
+    );
+
+    expect(pipeline.events).toEqual([
+      'queue build 1',
+      'sleep 1000',
+      'queue build 2',
+      'sleep 1000',
+    ]);
+  });
+
+  test('times out naming the expected and resolved versions when the probe never catches up', async () => {
+    const pipeline = fakeProbePipeline(Array(20).fill(downloads('1.2.2')));
+
+    await expect(
+      waitForResolvedTaskVersion(
+        pipeline.clients,
+        'DevSnykSecurityScan',
+        '1.2.3',
+        testOptions(pipeline.events),
+      ),
+    ).rejects.toThrow(
+      'Task resolution in pipelines timed out after 10000ms. Last status: probe build 10 downloaded DevSnykSecurityScan 1.2.2, waiting for 1.2.3',
+    );
+  });
+
+  test('treats a failed probe build as pending and queues another', async () => {
+    const pipeline = fakeProbePipeline([
+      { resolvedVersion: '1.2.3', result: BuildInterfaces.BuildResult.Failed },
+      downloads('1.2.3'),
+    ]);
+    const logged: string[] = [];
+
+    await waitForResolvedTaskVersion(
+      pipeline.clients,
+      'DevSnykSecurityScan',
+      '1.2.3',
+      testOptions(pipeline.events, { log: (message) => logged.push(message) }),
+    );
+
+    expect(pipeline.events).toContain('queue build 2');
+    expect(logged).toContainEqual(
+      expect.stringContaining('probe build 1 finished with result Failed'),
+    );
+  });
+
+  test('treats a probe build whose logs do not name the task as pending', async () => {
+    const pipeline = fakeProbePipeline([{}, downloads('1.2.3')]);
+    const logged: string[] = [];
+
+    await waitForResolvedTaskVersion(
+      pipeline.clients,
+      'DevSnykSecurityScan',
+      '1.2.3',
+      testOptions(pipeline.events, { log: (message) => logged.push(message) }),
+    );
+
+    expect(pipeline.events).toContain('queue build 2');
+    expect(logged).toContainEqual(
+      expect.stringContaining(
+        'probe build 1 logs do not show which DevSnykSecurityScan version was downloaded',
+      ),
+    );
+  });
+
+  test('treats an error reading the probe build as pending', async () => {
+    const pipeline = fakeProbePipeline([
+      downloads('1.2.3'),
+      downloads('1.2.3'),
+    ]);
+    pipeline.clients.getProbeBuildLogLines = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('log not found'))
+      .mockResolvedValue([
+        '2026-11-26T10:00:00.0000000Z Downloading task: DevSnykSecurityScan (1.2.3)',
+      ]);
+    const logged: string[] = [];
+
+    await waitForResolvedTaskVersion(
+      pipeline.clients,
+      'DevSnykSecurityScan',
+      '1.2.3',
+      testOptions(pipeline.events, { log: (message) => logged.push(message) }),
+    );
+
+    expect(logged).toContainEqual(
+      expect.stringContaining('could not read probe build 1: log not found'),
+    );
+  });
+
+  test('treats an error queueing the probe build as pending', async () => {
+    const pipeline = fakeProbePipeline([downloads('1.2.3')]);
+    const queueProbeBuild = pipeline.clients.queueProbeBuild;
+    pipeline.clients.queueProbeBuild = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('definition is disabled'))
+      .mockImplementation(queueProbeBuild);
+    const logged: string[] = [];
+
+    await waitForResolvedTaskVersion(
+      pipeline.clients,
+      'DevSnykSecurityScan',
+      '1.2.3',
+      testOptions(pipeline.events, { log: (message) => logged.push(message) }),
+    );
+
+    expect(logged).toContainEqual(
+      expect.stringContaining(
+        'could not queue a probe build: definition is disabled',
+      ),
+    );
+  });
+
+  test('waits for a running probe build instead of queueing another', async () => {
+    const pipeline = fakeProbePipeline([
+      { resolvedVersion: '1.2.3', inProgressChecks: 1 },
+    ]);
+
+    await waitForResolvedTaskVersion(
+      pipeline.clients,
+      'DevSnykSecurityScan',
+      '1.2.3',
+      testOptions(pipeline.events),
+    );
+
+    expect(pipeline.events).toEqual([
+      'queue build 1',
+      'sleep 1000',
+      'sleep 1000',
+    ]);
+  });
 });

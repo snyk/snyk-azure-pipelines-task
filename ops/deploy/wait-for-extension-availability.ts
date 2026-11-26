@@ -14,20 +14,26 @@
  * limitations under the License.
  */
 
+import * as BuildInterfaces from 'azure-devops-node-api/interfaces/BuildInterfaces';
 import * as ExtensionManagementInterfaces from 'azure-devops-node-api/interfaces/ExtensionManagementInterfaces';
 import * as GalleryInterfaces from 'azure-devops-node-api/interfaces/GalleryInterfaces';
 
 import { getAzUrl, getExtensionInfo, getWebApi } from './lib/azure-devops';
 import {
+  getBuild,
+  getBuildLogLines,
+  queueBuild,
+} from './lib/azure-devops/builds';
+import {
   installedVersionStatus,
   marketplaceVersionStatus,
 } from './lib/azure-devops/extension-status';
+import { probeBuildTaskVersionStatus } from './lib/azure-devops/task-version-status';
 import {
   getInstalledExtensionInfo,
   installExtension,
 } from './lib/azure-devops/extensions';
 import { PollOptions, pollUntilReady, ProbeResult } from './lib/poll';
-import { asyncSleep } from './lib/sleep';
 
 export interface ExtensionClients {
   getMarketplaceExtension: () => Promise<
@@ -39,11 +45,25 @@ export interface ExtensionClients {
   installExtension: (version: string) => Promise<void>;
 }
 
-const SETTLE_DELAY_MS = 60 * 1000;
+export interface ProbeBuildClients {
+  queueProbeBuild: () => Promise<BuildInterfaces.Build>;
+  getProbeBuild: (buildId: number) => Promise<BuildInterfaces.Build>;
+  getProbeBuildLogLines: (buildId: number) => Promise<string[]>;
+}
 
 const POLL_OPTIONS: PollOptions = {
   intervalMs: 2 * 60 * 1000,
   timeoutMs: 10 * 60 * 1000,
+};
+
+const PROBE_POLL_OPTIONS: PollOptions = {
+  intervalMs: 30 * 1000,
+  timeoutMs: 10 * 60 * 1000,
+};
+
+const PROBE_BUILD = {
+  projectName: 'snyk-6598',
+  buildDefinitionId: 17,
 };
 
 /**
@@ -102,10 +122,71 @@ export async function waitForExtensionAvailability(
     },
     options,
   );
+}
 
-  // Azure Pipelines can keep running the previous task for a while after the
-  // management API reports the new version as installed.
-  await (options.sleep || asyncSleep)(SETTLE_DELAY_MS);
+/**
+ * The org can report the new extension version as installed while pipelines
+ * still download the previous task version, so only a real build shows which
+ * version the test pipelines will run.
+ */
+export async function waitForResolvedTaskVersion(
+  azure: ProbeBuildClients,
+  taskName: string,
+  expectedVersion: string,
+  options: PollOptions,
+): Promise<void> {
+  let probeBuildId: number | undefined;
+
+  await pollUntilReady(
+    'Task resolution in pipelines',
+    async (): Promise<ProbeResult> => {
+      let detail = '';
+
+      if (probeBuildId !== undefined) {
+        let result: ProbeResult;
+        try {
+          const build = await azure.getProbeBuild(probeBuildId);
+          if (build.status !== BuildInterfaces.BuildStatus.Completed) {
+            return {
+              status: 'pending',
+              detail: `waiting for probe build ${probeBuildId} to complete`,
+            };
+          }
+          const logLines = await azure.getProbeBuildLogLines(probeBuildId);
+          result = probeBuildTaskVersionStatus(
+            build,
+            logLines,
+            taskName,
+            expectedVersion,
+          );
+        } catch (err) {
+          return {
+            status: 'pending',
+            detail: `could not read probe build ${probeBuildId}: ${err.message}`,
+          };
+        }
+        if (result.status === 'ready') {
+          return result;
+        }
+        detail = `${result.detail}; `;
+      }
+
+      try {
+        probeBuildId = (await azure.queueProbeBuild()).id;
+      } catch (err) {
+        probeBuildId = undefined;
+        return {
+          status: 'pending',
+          detail: `${detail}could not queue a probe build: ${err.message}`,
+        };
+      }
+      return {
+        status: 'pending',
+        detail: `${detail}queued probe build ${probeBuildId}`,
+      };
+    },
+    options,
+  );
 }
 
 async function main() {
@@ -114,6 +195,7 @@ async function main() {
   const extensionName = process.env.DEV_AZ_EXTENSION_ID || '';
   const azToken = process.env.DEV_AZURE_DEVOPS_EXT_PAT || '';
   const azOrg = process.env.DEV_AZ_ORG || '';
+  const taskName = process.env.DEV_AZ_TASK_NAME || '';
 
   const expectedVersion = process.argv[2];
   if (!expectedVersion) {
@@ -139,6 +221,22 @@ async function main() {
     },
     expectedVersion,
     POLL_OPTIONS,
+  );
+
+  await waitForResolvedTaskVersion(
+    {
+      queueProbeBuild: () =>
+        queueBuild(webApi, PROBE_BUILD.projectName, {
+          definition: { id: PROBE_BUILD.buildDefinitionId },
+        }),
+      getProbeBuild: (buildId) =>
+        getBuild(webApi, PROBE_BUILD.projectName, buildId),
+      getProbeBuildLogLines: (buildId) =>
+        getBuildLogLines(webApi, PROBE_BUILD.projectName, buildId),
+    },
+    taskName,
+    expectedVersion,
+    PROBE_POLL_OPTIONS,
   );
 
   console.log(`Extension version ${expectedVersion} is ready to be tested`);
