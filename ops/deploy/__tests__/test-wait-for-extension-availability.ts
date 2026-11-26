@@ -118,3 +118,15 @@ test('leaves an org with an older version to auto-update instead of installing',
   expect(org.events).toContain('read installed 1.2.2');
   expect(org.events).toContain('read installed 1.2.3');
 });
+
+test('waits 60 seconds after the org reports the expected version before returning', async () => {
+  const org = fakeOrg('1.2.3');
+
+  await waitForExtensionAvailability(
+    org.clients,
+    '1.2.3',
+    testOptions(org.events),
+  );
+
+  expect(org.events).toEqual(['read installed 1.2.3', 'sleep 60000']);
+});

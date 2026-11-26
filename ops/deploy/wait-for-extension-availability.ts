@@ -27,6 +27,7 @@ import {
   installExtension,
 } from './lib/azure-devops/extensions';
 import { PollOptions, pollUntilReady, ProbeResult } from './lib/poll';
+import { asyncSleep } from './lib/sleep';
 
 export interface ExtensionClients {
   getMarketplaceExtension: () => Promise<
@@ -37,6 +38,8 @@ export interface ExtensionClients {
   >;
   installExtension: (version: string) => Promise<void>;
 }
+
+const SETTLE_DELAY_MS = 60 * 1000;
 
 const POLL_OPTIONS: PollOptions = {
   intervalMs: 2 * 60 * 1000,
@@ -99,6 +102,10 @@ export async function waitForExtensionAvailability(
     },
     options,
   );
+
+  // Azure Pipelines can keep running the previous task for a while after the
+  // management API reports the new version as installed.
+  await (options.sleep || asyncSleep)(SETTLE_DELAY_MS);
 }
 
 async function main() {
