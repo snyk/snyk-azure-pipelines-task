@@ -14,18 +14,29 @@
  * limitations under the License.
  */
 
-import { WebApi } from 'azure-devops-node-api';
+import * as ExtensionManagementInterfaces from 'azure-devops-node-api/interfaces/ExtensionManagementInterfaces';
+import * as GalleryInterfaces from 'azure-devops-node-api/interfaces/GalleryInterfaces';
 
 import { getAzUrl, getExtensionInfo, getWebApi } from './lib/azure-devops';
 import {
   installedVersionStatus,
   marketplaceVersionStatus,
 } from './lib/azure-devops/extension-status';
-import { getInstalledExtensionInfo } from './lib/azure-devops/extensions';
+import {
+  getInstalledExtensionInfo,
+  installExtension,
+} from './lib/azure-devops/extensions';
 import { PollOptions, pollUntilReady, ProbeResult } from './lib/poll';
-import { asyncSleep } from './lib/sleep';
 
-const SETTLE_DELAY_MS = 60 * 1000;
+export interface ExtensionClients {
+  getMarketplaceExtension: () => Promise<
+    GalleryInterfaces.PublishedExtension | undefined
+  >;
+  getInstalledExtension: () => Promise<
+    ExtensionManagementInterfaces.InstalledExtension | undefined
+  >;
+  installExtension: (version: string) => Promise<void>;
+}
 
 const POLL_OPTIONS: PollOptions = {
   intervalMs: 2 * 60 * 1000,
@@ -38,7 +49,59 @@ const POLL_OPTIONS: PollOptions = {
  * validated by the Marketplace and picked up by the dev org. Without this gate
  * the test pipelines silently run against the previously installed version.
  */
-export async function main() {
+export async function waitForExtensionAvailability(
+  azure: ExtensionClients,
+  expectedVersion: string,
+  options: PollOptions,
+): Promise<void> {
+  await pollUntilReady(
+    'Marketplace validation',
+    async (): Promise<ProbeResult> => {
+      try {
+        const extensionDetails = await azure.getMarketplaceExtension();
+        return marketplaceVersionStatus(extensionDetails, expectedVersion);
+      } catch (err) {
+        return {
+          status: 'pending',
+          detail: `could not read the Marketplace extension info: ${err.message}`,
+        };
+      }
+    },
+    options,
+  );
+
+  await pollUntilReady(
+    'Rollout to org',
+    async (): Promise<ProbeResult> => {
+      let installedExtension:
+        | ExtensionManagementInterfaces.InstalledExtension
+        | undefined;
+      try {
+        installedExtension = await azure.getInstalledExtension();
+      } catch (err) {
+        return {
+          status: 'pending',
+          detail: `could not read the installed extension info: ${err.message}`,
+        };
+      }
+
+      // An org that already has an older version is left to auto-update; only
+      // an org without the extension at all would otherwise never get it.
+      if (!installedExtension) {
+        await azure.installExtension(expectedVersion);
+        return {
+          status: 'pending',
+          detail: `installed version ${expectedVersion}, waiting for the org to report it`,
+        };
+      }
+
+      return installedVersionStatus(installedExtension, expectedVersion);
+    },
+    options,
+  );
+}
+
+async function main() {
   const publisherName = process.env.DEV_AZ_PUBLISHER || '';
   // warning: the Marketplace stuff calls this extensionId - the rest of the extension stuff calls it name
   const extensionName = process.env.DEV_AZ_EXTENSION_ID || '';
@@ -51,59 +114,25 @@ export async function main() {
     process.exit(1);
   }
 
-  console.log(`Waiting for extension version ${expectedVersion}`);
-
-  await pollUntilReady(
-    'Marketplace validation',
-    async (): Promise<ProbeResult> => {
-      try {
-        const extensionDetails = await getExtensionInfo(
-          azToken,
-          publisherName,
-          extensionName,
-        );
-        return marketplaceVersionStatus(extensionDetails, expectedVersion);
-      } catch (err) {
-        return {
-          status: 'pending',
-          detail: `could not read the Marketplace extension info: ${err.message}`,
-        };
-      }
-    },
-    POLL_OPTIONS,
-  );
-
-  const webApi: WebApi = await getWebApi(getAzUrl(azOrg), azToken);
-
-  await pollUntilReady(
-    `Rollout to org ${azOrg}`,
-    async (): Promise<ProbeResult> => {
-      try {
-        const installedExtension = await getInstalledExtensionInfo(
-          webApi,
-          publisherName,
-          extensionName,
-        );
-        return installedVersionStatus(installedExtension, expectedVersion);
-      } catch (err) {
-        // the API returns an error while the org has no installed extension to report on
-        return {
-          status: 'pending',
-          detail: `could not read the installed extension info: ${err.message}`,
-        };
-      }
-    },
-    POLL_OPTIONS,
-  );
-
-  // Azure Pipelines can keep running the previous task for a while after the
-  // management API reports the new version as installed.
   console.log(
-    `Sleeping ${
-      SETTLE_DELAY_MS / 1000
-    } seconds to let Azure DevOps settle extension availability`,
+    `Waiting for extension version ${expectedVersion} in org ${azOrg}`,
   );
-  await asyncSleep(SETTLE_DELAY_MS);
+
+  const webApi = await getWebApi(getAzUrl(azOrg), azToken);
+
+  await waitForExtensionAvailability(
+    {
+      getMarketplaceExtension: () =>
+        getExtensionInfo(azToken, publisherName, extensionName),
+      getInstalledExtension: () =>
+        getInstalledExtensionInfo(webApi, publisherName, extensionName),
+      installExtension: async (version) => {
+        await installExtension(webApi, publisherName, extensionName, version);
+      },
+    },
+    expectedVersion,
+    POLL_OPTIONS,
+  );
 
   console.log(`Extension version ${expectedVersion} is ready to be tested`);
 }

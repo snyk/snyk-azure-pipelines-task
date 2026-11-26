@@ -14,44 +14,107 @@
  * limitations under the License.
  */
 
+import * as ExtensionManagementInterfaces from 'azure-devops-node-api/interfaces/ExtensionManagementInterfaces';
 import * as GalleryInterfaces from 'azure-devops-node-api/interfaces/GalleryInterfaces';
 
-import { getExtensionInfo, getWebApi } from '../lib/azure-devops';
-import { getInstalledExtensionInfo } from '../lib/azure-devops/extensions';
-import { asyncSleep } from '../lib/sleep';
-import { main } from '../wait-for-extension-availability';
+import {
+  ExtensionClients,
+  waitForExtensionAvailability,
+} from '../wait-for-extension-availability';
+import { PollOptions } from '../lib/poll';
 
-jest.mock('../lib/azure-devops');
-jest.mock('../lib/azure-devops/extensions');
-jest.mock('../lib/sleep');
+const validated = GalleryInterfaces.ExtensionVersionFlags.Validated;
 
-const expectedVersion = '1.2.3';
+function publishedWithValidated(
+  version: string,
+): GalleryInterfaces.PublishedExtension {
+  return {
+    versions: [{ version, flags: validated }],
+  } as GalleryInterfaces.PublishedExtension;
+}
 
-beforeEach(() => {
-  jest.resetAllMocks();
-  process.argv[2] = expectedVersion;
-  (getWebApi as jest.Mock).mockResolvedValue({});
-  (getExtensionInfo as jest.Mock).mockResolvedValue({
-    versions: [
-      {
-        version: expectedVersion,
-        flags: GalleryInterfaces.ExtensionVersionFlags.Validated,
-      },
-    ],
-  });
-  (getInstalledExtensionInfo as jest.Mock).mockResolvedValue({
-    version: expectedVersion,
-  });
-  (asyncSleep as jest.Mock).mockResolvedValue(undefined);
-  jest.spyOn(console, 'log').mockImplementation(() => undefined);
+function installed(
+  version: string,
+): ExtensionManagementInterfaces.InstalledExtension {
+  return { version } as ExtensionManagementInterfaces.InstalledExtension;
+}
+
+/**
+ * A fake org whose installed version only changes when the deploy installs
+ * the extension or when `autoUpdateTo` is called, so tests can tell the two
+ * apart.
+ */
+function fakeOrg(initiallyInstalled: string | undefined) {
+  let installedVersion = initiallyInstalled;
+  const events: string[] = [];
+
+  const clients: ExtensionClients = {
+    getMarketplaceExtension: async () => publishedWithValidated('1.2.3'),
+    getInstalledExtension: async () => {
+      events.push(`read installed ${installedVersion}`);
+      return installedVersion ? installed(installedVersion) : undefined;
+    },
+    installExtension: jest.fn(async (version: string) => {
+      events.push(`install ${version}`);
+      installedVersion = version;
+    }),
+  };
+
+  return {
+    clients,
+    events,
+    autoUpdateTo: (version: string) => {
+      installedVersion = version;
+    },
+  };
+}
+
+function testOptions(
+  events: string[],
+  overrides: Partial<PollOptions> = {},
+): PollOptions {
+  let clock = 0;
+  return {
+    intervalMs: 1000,
+    timeoutMs: 10000,
+    now: () => clock,
+    sleep: async (milliseconds) => {
+      events.push(`sleep ${milliseconds}`);
+      clock += milliseconds;
+    },
+    log: () => undefined,
+    ...overrides,
+  };
+}
+
+test('installs the expected version when the org does not have the extension', async () => {
+  const org = fakeOrg(undefined);
+
+  await waitForExtensionAvailability(
+    org.clients,
+    '1.2.3',
+    testOptions(org.events),
+  );
+
+  expect(org.clients.installExtension).toHaveBeenCalledWith('1.2.3');
+  expect(org.events).toContain('read installed 1.2.3');
 });
 
-test('waits 60 seconds after the org reports the expected version before returning', async () => {
-  await main();
+test('leaves an org with an older version to auto-update instead of installing', async () => {
+  const org = fakeOrg('1.2.2');
+  let sleeps = 0;
+  const options = testOptions(org.events, {
+    sleep: async () => {
+      sleeps += 1;
+      if (sleeps === 2) {
+        org.autoUpdateTo('1.2.3');
+      }
+    },
+  });
 
-  expect(asyncSleep).toHaveBeenCalledTimes(1);
-  expect(asyncSleep).toHaveBeenCalledWith(60000);
-  expect(
-    (getInstalledExtensionInfo as jest.Mock).mock.invocationCallOrder[0],
-  ).toBeLessThan((asyncSleep as jest.Mock).mock.invocationCallOrder[0]);
+  await waitForExtensionAvailability(org.clients, '1.2.3', options);
+
+  expect(org.clients.installExtension).not.toHaveBeenCalled();
+  expect(org.events).toContain('read installed 1.2.2');
+  expect(org.events).toContain('read installed 1.2.3');
 });
