@@ -61,6 +61,24 @@ export async function getBuild(
   return buildDefinition;
 }
 
+export async function getBuildLogLines(
+  webApi: nodeApi.WebApi,
+  projectName: string,
+  buildId: number,
+): Promise<string[]> {
+  const buildApi = await webApi.getBuildApi();
+  const logs = await buildApi.getBuildLogs(projectName, buildId);
+  const lines: string[] = [];
+  for (const log of logs) {
+    if (log.id !== undefined) {
+      lines.push(
+        ...(await buildApi.getBuildLogLines(projectName, buildId, log.id)),
+      );
+    }
+  }
+  return lines;
+}
+
 export async function queueBuild(
   webApi: nodeApi.WebApi,
   projectName: string,
