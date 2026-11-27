@@ -52,15 +52,15 @@ export interface ProbeBuildClients {
 }
 
 const POLL_OPTIONS: PollOptions = {
-  intervalMs: 2 * 60 * 1000,
-  timeoutMs: 10 * 60 * 1000,
-};
-
-const PROBE_POLL_OPTIONS: PollOptions = {
   intervalMs: 30 * 1000,
   timeoutMs: 10 * 60 * 1000,
 };
 
+// version-probe.yml in the snyk-dev org: a single DevSnykSecurityScan@0 step with
+// `condition: false`. Agents download every referenced task at job initialisation,
+// even for skipped steps, so its "Initialize job" log shows which task version
+// pipelines will actually get, within seconds. Lives in the snyk-6598 project to
+// reuse its mySnykToken service connection.
 const PROBE_BUILD = {
   projectName: 'snyk-6598',
   buildDefinitionId: 17,
@@ -236,7 +236,7 @@ async function main() {
     },
     taskName,
     expectedVersion,
-    PROBE_POLL_OPTIONS,
+    POLL_OPTIONS,
   );
 
   console.log(`Extension version ${expectedVersion} is ready to be tested`);
